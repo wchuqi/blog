@@ -1,4 +1,4 @@
-baseurl: https://wchuqi.github.io/blog/
+baseurl: https://example.com/
 languageCode: en-us
 theme: stack
 publishDir: docs
