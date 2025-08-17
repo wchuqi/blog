@@ -1,6 +1,7 @@
 baseurl: https://example.com/
 languageCode: en-us
 theme: stack
+publishDir: docs
 title: Example Site
 copyright: Example Person
 
