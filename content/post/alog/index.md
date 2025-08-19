@@ -511,6 +511,170 @@ while (descIt.hasNext()) {
 }
 ```
 
+## 树
+
+https://suanfa8.com/tree
+
+在「力扣」上有很多关于「树」的问题。
+
+树的问题很多都可以使用「深度优先遍历」或者「广度优先遍历」去做。
+
+其中，深度优先遍历又分为「前序遍历」「中序遍历」「后序遍历」，很多问题是「后序遍历」。
+
+### 题目
+
+#### 230. 二叉搜索树中第 K 小的元素
+
+https://leetcode.cn/problems/kth-smallest-element-in-a-bst/solutions/13473/di-gui-yu-fei-di-gui-xie-fa-tong-li-wan-cheng-di-1/
+
+思路分析：利用**“二叉搜索树”在“中序遍历”以后，得到的是有序数组**，那么我们就中序遍历好了，遍历到第 k 个数即可。
+
+我写下来发现递归的写法比较容易写错，要设置全局变量，而非递归的写法还相对比较“通用”且好理解。
+
+
+```java
+package 树;
+
+public class A_230 {
+    int cnt = 0;
+    int res = 0;
+    public int kthSmallest(TreeNode root, int k) {
+        cnt = k;
+        dfs(root);
+        return res;
+    }
+    void dfs(TreeNode root) {
+        if (root == null) {
+            return;
+        }
+        dfs(root.left);
+        // 中序遍历
+        cnt--;
+        if (cnt == 0) {
+            this.res = root.val;
+        }
+        dfs(root.right);
+    }
+    class TreeNode {
+      int val;
+      TreeNode left;
+      TreeNode right;
+      TreeNode() {}
+      TreeNode(int val) { this.val = val; }
+      TreeNode(int val, TreeNode left, TreeNode right) {
+          this.val = val;
+          this.left = left;
+          this.right = right;
+      }
+    }
+}
+```
+
+<br/>
+
+```java
+package 树;
+
+import java.util.ArrayDeque;
+import java.util.Deque;
+
+public class A_230_1 {
+    int cnt = 0;
+    public int kthSmallest(TreeNode root, int k) {
+        cnt = k;
+        Deque<Command> queue = new ArrayDeque<>();
+        queue.push(new Command(1, root));
+        while (!queue.isEmpty()) {
+            Command temp = queue.pop();
+            if (temp.type == 0) {
+                cnt--;
+                if (cnt == 0) {
+                    return temp.node.val;
+                }
+            } else {
+                // 中序遍历，这里是right入栈，然后left后入栈
+                if (temp.node.right != null) {
+                    queue.push(new Command(1, temp.node.right));
+                }
+                temp.type=0;
+                queue.push(temp);
+                if (temp.node.left != null) {
+                    queue.push(new Command(1, temp.node.left));
+                }
+            }
+        }
+        return -1;
+    }
+    class Command {
+        int type;
+        TreeNode node;
+        public Command(int type, TreeNode node) {
+            this.type = type;
+            this.node = node;
+        }
+    }
+    class TreeNode {
+      int val;
+      TreeNode left;
+      TreeNode right;
+      TreeNode() {}
+      TreeNode(int val) { this.val = val; }
+      TreeNode(int val, TreeNode left, TreeNode right) {
+          this.val = val;
+          this.left = left;
+          this.right = right;
+      }
+    }
+}
+```
+
+#### 108.将有序数组转成二叉搜索树
+
+给你一个整数数组 nums ，其中元素已经按 升序 排列，请你将其转换为一棵 平衡 二叉搜索树。
+
+思路：题目要求构建**高度平衡二叉搜索树**，找到解决问题的突破口。
+
+1、将有序数组一分为二，中间结点成为根结点，前半部分是左子树，右半部分是右子树；
+2、递归构建左子树和右子树，应用到**分治思想。**
+
+https://leetcode.cn/problems/convert-sorted-array-to-binary-search-tree/solutions/87812/fen-er-zhi-zhi-di-gui-by-liweiwei1419/
+
+```java
+package 树;
+
+public class A_108 {
+    public TreeNode sortedArrayToBST(int[] nums) {
+        return merge(nums, 0, nums.length-1);
+    }
+    TreeNode merge(int[] nums, int left, int right) {
+        if (left > right) {
+            return null;
+        }
+        if (left == right) {
+            return new TreeNode(nums[left]);
+        }
+        int mid = left + (right-left)/2;
+        TreeNode root = new TreeNode(nums[mid]);
+        root.left = merge(nums, left, mid-1);
+        root.right = merge(nums, mid+1, right);
+        return root;
+    }
+    class TreeNode {
+        int val;
+        TreeNode left;
+        TreeNode right;
+        TreeNode() {}
+        TreeNode(int val) { this.val = val; }
+        TreeNode(int val, TreeNode left, TreeNode right) {
+            this.val = val;
+            this.left = left;
+            this.right = right;
+        }
+    }
+}
+```
+
+
 ##  二分查找
 
 ### 模板
