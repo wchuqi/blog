@@ -1,0 +1,21 @@
+# Netlify 配置：把所有路由回退到 index.html，交给前端路由接管
+[build]
+  command = "npm run build"
+  publish = "dist"
+
+# SPA fallback —— 深层链接 / 刷新不再 404
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+
+# 让构建产物里的 RSS / sitemap 用正确的 Content-Type
+[[headers]]
+  for = "/rss.xml"
+  [headers.values]
+    Content-Type = "application/rss+xml; charset=utf-8"
+
+[[headers]]
+  for = "/sitemap.xml"
+  [headers.values]
+    Content-Type = "application/xml; charset=utf-8"
