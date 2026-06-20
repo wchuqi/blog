@@ -3,11 +3,21 @@ import type { TocItem } from '../lib/types'
 
 /**
  * 文章目录。监听滚动高亮当前章节，点击平滑跳转。
- * 只展示 h2 / h3 两级，避免过深。
+ * 展示 h1 / h2 / h3，避免过深。
  */
-export function TableOfContents({ items }: { items: TocItem[] }) {
+interface TableOfContentsProps {
+  items: TocItem[]
+  title?: string
+  onClose?: () => void
+}
+
+export function TableOfContents({
+  items,
+  title = '目录',
+  onClose,
+}: TableOfContentsProps) {
   const [activeId, setActiveId] = useState<string>('')
-  const visible = items.filter((i) => i.depth >= 2 && i.depth <= 3)
+  const visible = items.filter((i) => i.depth >= 1 && i.depth <= 3)
 
   useEffect(() => {
     if (visible.length === 0) return
@@ -48,7 +58,14 @@ export function TableOfContents({ items }: { items: TocItem[] }) {
 
   return (
     <nav className="toc" aria-label="文章目录">
-      <div className="toc__title">目录</div>
+      <div className="toc__head">
+        <div className="toc__title">{title}</div>
+        {onClose && (
+          <button className="toc__toggle" type="button" onClick={onClose}>
+            关闭
+          </button>
+        )}
+      </div>
       <ul className="toc__list">
         {visible.map((item) => (
           <li

@@ -3,12 +3,14 @@ title: Markdown 写作语法速查
 date: 2026-06-08
 description: 一篇用来测试各种 Markdown 渲染效果的文章，涵盖标题、列表、代码、表格、数学符号、任务列表等。
 tags:
-  - Markdown
-  - 教程
+  - "Markdown"
+  - "教程"
 category: 技术
 ---
 
 这篇文章用来演示并测试博客对各种 Markdown 语法的渲染效果。
+
+如果你还没看过项目说明，可以先回到 [[hello-world|博客搭建说明]]。
 
 ## 标题层级
 

@@ -10,7 +10,9 @@ export default defineConfig({
   base,
   plugins: [react()],
   server: {
-    port: 3000,
+    // 端口 3000 在 Windows 上常被 Hyper-V/WSL 纳入保留区间（EACCES），
+    // 改用 Vite 默认端口 5173 避开冲突。
+    port: 5173,
     open: true,
   },
   build: {

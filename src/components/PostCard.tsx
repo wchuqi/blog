@@ -2,7 +2,6 @@ import { Link } from 'react-router-dom'
 import type { Post } from '../lib/types'
 import { formatDate } from '../lib/format'
 
-/** 首页 / 列表页的文章卡片 */
 export function PostCard({ post }: { post: Post }) {
   return (
     <article className="post-card">
@@ -12,24 +11,33 @@ export function PostCard({ post }: { post: Post }) {
         </Link>
       )}
       <div className="post-card__body">
-        <h2 className="post-card__title">
-          {post.pinned && <span className="post-card__pin" title="置顶">📌</span>}
-          <Link to={`/posts/${post.slug}`}>{post.title}</Link>
-        </h2>
-
         <div className="post-card__meta">
-          <time dateTime={post.date}>{formatDate(post.date)}</time>
+          <time dateTime={post.date} className="post-card__date">
+            {formatDate(post.date)}
+          </time>
           <span className="dot">·</span>
           <span>{post.readingMinutes} 分钟</span>
           {post.category && (
             <>
               <span className="dot">·</span>
-              <Link to={`/categories/${encodeURIComponent(post.category)}`}>
+              <Link
+                to={`/categories/${encodeURIComponent(post.category)}`}
+                className="post-card__category"
+              >
                 {post.category}
               </Link>
             </>
           )}
         </div>
+
+        <h2 className="post-card__title">
+          {post.pinned && (
+            <span className="post-card__pin" title="置顶">
+              置顶
+            </span>
+          )}
+          <Link to={`/posts/${post.slug}`}>{post.title}</Link>
+        </h2>
 
         {post.description && (
           <p className="post-card__desc">{post.description}</p>
@@ -48,6 +56,10 @@ export function PostCard({ post }: { post: Post }) {
             ))}
           </div>
         )}
+
+        <Link to={`/posts/${post.slug}`} className="post-card__read">
+          阅读全文
+        </Link>
       </div>
     </article>
   )

@@ -20,6 +20,8 @@ export interface PostFrontmatter {
   draft?: boolean
   /** 自定义作者，缺省使用站点作者 */
   author?: string
+  /** 是否为加密文章：加密后正文以密文存储，需读者输入密码才可见；不会出现在任何列表/搜索/RSS 中 */
+  encrypted?: boolean
 }
 
 /** 解析后的完整文章对象 */
@@ -34,6 +36,32 @@ export interface Post extends PostFrontmatter {
   words: number
   /** 标准化后的日期对象 */
   dateObj: Date
+  /** 正文里的双链关系，语法：[[slug]] 或 [[slug|显示名]] */
+  noteLinks: NoteLink[]
+}
+
+/** 双链引用 */
+export interface NoteLink {
+  /** 原始目标文本，通常是 slug，也可以写文章标题 */
+  target: string
+  /** 页面上显示的文本 */
+  label: string
+  /** 解析成功后的文章 slug；未解析成功则为空 */
+  targetSlug?: string
+}
+
+/** 知识图谱节点 */
+export interface GraphNode {
+  slug: string
+  title: string
+  category?: string
+  tags?: string[]
+}
+
+/** 知识图谱边 */
+export interface GraphEdge {
+  source: string
+  target: string
 }
 
 /** 文章目录中的一个标题项 */

@@ -7,6 +7,7 @@ import { Tags } from './pages/Tags'
 import { TagDetail } from './pages/TagDetail'
 import { Categories } from './pages/Categories'
 import { CategoryDetail } from './pages/CategoryDetail'
+import { Graph } from './pages/Graph'
 import { About } from './pages/About'
 import { NotFound } from './pages/NotFound'
 
@@ -22,7 +23,7 @@ export function App() {
       <Route path="/" element={<Layout />}>
         <Route index element={<Home />} />
         <Route
-          path="posts/:slug"
+          path="posts/*"
           element={
             <Suspense fallback={<div className="empty">加载中…</div>}>
               <PostDetail />
@@ -34,6 +35,7 @@ export function App() {
         <Route path="tags/:tag" element={<TagDetail />} />
         <Route path="categories" element={<Categories />} />
         <Route path="categories/:category" element={<CategoryDetail />} />
+        <Route path="graph" element={<Graph />} />
         <Route path="about" element={<About />} />
         <Route path="*" element={<NotFound />} />
       </Route>

@@ -1,7 +1,7 @@
 // 构建时生成 RSS feed 与 sitemap，输出到 dist/
 // 纯 Node 脚本，不依赖打包器；手动解析 frontmatter，避免引入额外依赖。
-import { readFileSync, writeFileSync, readdirSync, existsSync } from 'node:fs'
-import { join, dirname } from 'node:path'
+import { readFileSync, writeFileSync, readdirSync, existsSync, statSync } from 'node:fs'
+import { join, dirname, relative } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
@@ -67,20 +67,38 @@ function main() {
     return
   }
 
-  const posts = readdirSync(postsDir)
-    .filter((f) => f.endsWith('.md'))
+  // 递归收集 src/posts 下所有 .md 文件（含子目录）的绝对路径
+  function collectMd(dir) {
+    const out = []
+    for (const entry of readdirSync(dir)) {
+      const full = join(dir, entry)
+      if (statSync(full).isDirectory()) {
+        out.push(...collectMd(full))
+      } else if (entry.endsWith('.md')) {
+        out.push(full)
+      }
+    }
+    return out
+  }
+
+  const posts = collectMd(postsDir)
     .map((f) => {
-      const raw = readFileSync(join(postsDir, f), 'utf-8')
+      const raw = readFileSync(f, 'utf-8')
       const { data, body } = parseFrontmatter(raw)
+      // slug = 相对 src/posts 的路径（去扩展名），与前端 slugFromPath 保持一致
+      // 例：src/posts/tech/hello.md -> tech/hello
+      const slug = relative(postsDir, f).replace(/\\/g, '/').replace(/\.md$/, '')
       return {
-        slug: f.replace(/\.md$/, ''),
+        slug,
         title: data.title || f,
         date: data.date || '1970-01-01',
         description: data.description || body.slice(0, 200).replace(/\n/g, ' '),
         draft: data.draft === 'true' || data.draft === true,
+        // 加密文章不进 RSS/sitemap（body 是密文，且不应对外暴露存在）
+        encrypted: data.encrypted === 'true' || data.encrypted === true,
       }
     })
-    .filter((p) => !p.draft)
+    .filter((p) => !p.draft && !p.encrypted)
     .sort((a, b) => new Date(b.date) - new Date(a.date))
 
   const now = new Date().toUTCString()

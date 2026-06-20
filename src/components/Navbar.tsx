@@ -1,4 +1,4 @@
-import { NavLink, Link } from 'react-router-dom'
+import { NavLink } from 'react-router-dom'
 import { siteConfig } from '../config'
 import { useTheme } from '../hooks/useTheme'
 import { SearchBox } from './SearchBox'
@@ -10,10 +10,6 @@ export function Navbar() {
   return (
     <header className="navbar">
       <div className="navbar__inner">
-        <Link to="/" className="navbar__brand">
-          {siteConfig.title}
-        </Link>
-
         <nav className="navbar__nav" aria-label="主导航">
           {siteConfig.nav.map((item) => (
             <NavLink
