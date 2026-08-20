@@ -1,4 +1,14 @@
 ---
+
+review:
+  created: 2026-08-21
+  lastReview: 2026-08-21
+  reps: 0
+  interval: 0
+  ease: 2.5
+---
+
+---
 review:
   created: 2026-08-21
   lastReview: 2026-08-21

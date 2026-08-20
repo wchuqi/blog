@@ -14,6 +14,14 @@ export default defineConfig({
     // 改用 Vite 默认端口 5173 避开冲突。
     port: 5173,
     open: true,
+    proxy: {
+      // 本地 API server（FastAPI, localhost:3001）只在 dev 时存在；
+      // 生产构建不打包 server 代码，proxy 自动失效。
+      '/api': {
+        target: 'http://127.0.0.1:3001',
+        changeOrigin: true,
+      },
+    },
   },
   build: {
     rollupOptions: {

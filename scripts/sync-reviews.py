@@ -97,24 +97,21 @@ def format_review_block(review: dict, nl: str = "\n") -> str:
 
 def replace_or_insert_review(fm_text: str, review: dict, nl: str = "\n") -> str:
     """
-    替换已有 review: 块，或在末尾追加。保留原始换行符。
-    review 块可能是：
-      review: {}          （单行，空）
-      review:
-        created: ...
-        ...
+    先彻底删除已有的 review: 块，再在末尾追加最新快照。
+    采用「先删后加」而非「原地替换」，避免 review 块位于 frontmatter 末尾、
+    fm_text 无尾随换行时正则无法吃尽最后一行、导致 `ease: 2.5---` 粘连的问题。
+    兼容块在文件末尾、末尾无换行的情况（[^\r\n]*\r?\n? 中 \n? 可选）。
     """
-    # 匹配 review: 开头到下一个顶层字段之前（兼容 CRLF/LF）
     pattern = re.compile(
-        r"^review:[ \t]*(?:\{\}|\r?\n(?:[ \t]+[^\r\n]+\r?\n+)*)",
+        r"^review:[ \t]*(?:\{\}|\r?\n(?:[ \t]+[^\r\n]*\r?\n?)*)",
         re.MULTILINE,
     )
-    new_block = format_review_block(review, nl) + nl
-
-    if pattern.search(fm_text):
-        return pattern.sub(lambda m: new_block, fm_text, count=1)
-    # 没有 review 字段，追加到末尾
-    return fm_text.rstrip() + nl + new_block
+    cleaned = pattern.sub("", fm_text)
+    # 修复删除后可能产生的多余空行
+    cleaned = re.sub(r"\n{3,}", "\n\n", cleaned).rstrip()
+    new_block = format_review_block(review, nl)
+    # 末尾保留一个换行，避免 sync_frontmatter 拼装时与 `---` 粘连
+    return f"{cleaned}\n{new_block}\n"
 
 
 # ---------- 扫描文章 ----------

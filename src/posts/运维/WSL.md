@@ -1,7 +1,7 @@
 ---
-title: "WSL 全面指南：架构、原理、配置与实战"
+title: WSL 全面指南：架构、原理、配置与实战
 date: 2026-06-20
-description: "从 WSL2 的底层架构到日常开发实战，覆盖内核、文件系统、网络、GPU、Docker、systemd、多发行版管理、性能调优、安全模型与常见排障。面向开发者和运维人员的完整参考。"
+description: 从 WSL2 的底层架构到日常开发实战，覆盖内核、文件系统、网络、GPU、Docker、systemd、多发行版管理、性能调优、安全模型与常见排障。面向开发者和运维人员的完整参考。
 tags:
   - "运维"
   - "WSL"
@@ -13,15 +13,11 @@ review:
   reps: 0
   interval: 0
   ease: 2.5
-  ease: 2.5---
+---
 
 # WSL 全面指南：架构、原理、配置与实战
-
 WSL（Windows Subsystem for Linux）不是虚拟机，也不是模拟器——它是微软在 Windows 内核中嵌入的真实 Linux 内核，让开发者在不离开 Windows 的前提下获得原生 Linux 环境。本文从架构原理到日常实战，覆盖你需要知道的一切。
-
 > **适用版本：** Windows 10 21H2+ / Windows 11，WSL 2（默认推荐）。文中未特别说明处均指 WSL 2。
-
----
 
 ## 1. WSL 1 vs WSL 2：架构对比
 
@@ -76,7 +72,6 @@ WSL 2 基于 **Hyper-V 轻量级虚拟机**（也叫"实用虚拟机"），运�
 | 旧硬件、不支持 Hyper-V | WSL 1 |
 | 需要 systemd、Docker、K8s、eBPF | 仅 WSL 2 |
 
----
 
 ## 2. 安装与配置
 
@@ -185,7 +180,6 @@ appendWindowsPath=true     # 将 Windows PATH 追加到 Linux PATH
 
 > **注意：** `wsl.conf` 修改后需要 `wsl --shutdown` 或 `wsl --terminate <distro>` 再重启该发行版才生效。
 
----
 
 ## 3. 文件系统架构
 
@@ -238,7 +232,6 @@ diskpart
 wsl --manage <distro> --resize <sizeInMB>
 ```
 
----
 
 ## 4. 网络架构
 
@@ -314,7 +307,6 @@ WIN_HOST=$(cat /etc/resolv.conf | grep nameserver | awk '{print $2}')
 export ALL_PROXY="http://${WIN_HOST}:7890"
 ```
 
----
 
 ## 5. systemd 支持
 
@@ -354,7 +346,6 @@ sudo service ssh start
 command="service docker start && service ssh start"
 ```
 
----
 
 ## 6. GPU 支持（GPU-PV）
 
@@ -398,7 +389,6 @@ python -c "import torch; print(torch.cuda.is_available())"
 pip install tensorflow-directml
 ```
 
----
 
 ## 7. Docker 在 WSL 2 中的运行
 
@@ -443,7 +433,6 @@ sudo usermod -aG docker $USER
 }
 ```
 
----
 
 ## 8. WSL 与 Windows 的互操作
 
@@ -502,7 +491,6 @@ $env:WSLENV = "MY_VAR"
 wsl -- echo $MY_VAR  # 现在会输出 "hello"
 ```
 
----
 
 ## 9. 多发行版管理
 
@@ -564,7 +552,6 @@ wsl --import Ubuntu-24.04 D:\WSL\Ubuntu-24.04 D:\wsl-backup\ubuntu.tar
 default=yourname
 ```
 
----
 
 ## 10. VS Code + WSL 集成
 
@@ -594,7 +581,6 @@ code .
 - 编辑器 UI 在 Windows，文件读写、终端、调试器都在 WSL 内运行。
 - Git、Node、Python 等工具用 WSL 内的版本，不受 Windows 影响。
 
----
 
 ## 11. 安全模型
 
@@ -616,7 +602,6 @@ code .
 - **Group Policy：** 可以通过 GPO 禁用 WSL、限制发行版安装。
 - **Credential Guard：** 与 WSL 2 兼容。
 
----
 
 ## 12. 性能调优
 
@@ -665,7 +650,6 @@ sudo systemctl disable snapd
 sudo systemctl disable multipathd
 ```
 
----
 
 ## 13. 常见场景与最佳实践
 
@@ -733,7 +717,6 @@ sudo apt install redis-server
 sudo systemctl start redis
 ```
 
----
 
 ## 14. 故障排查
 
@@ -855,7 +838,6 @@ autoMemoryReclaim=gradual
 wsl --shutdown
 ```
 
----
 
 ## 15. WSL 的局限性
 
@@ -869,7 +851,6 @@ wsl --shutdown
 | 休眠/睡眠后网络异常 | Windows 休眠后 WSL 网络可能需要 `wsl --shutdown` 重置 |
 | 多用户共享 | WSL 是单用户设计，不适合多用户服务器场景 |
 
----
 
 ## 16. WSLg（图形界面应用）
 
@@ -909,7 +890,6 @@ echo $WAYLAND_DISPLAY  # 应该是 wayland-0
 - 3D 加速支持有限，不适合游戏或 GPU 密集的 GUI 应用。
 - 字体渲染依赖 Windows 侧字体（通过 `/mnt/c/Windows/Fonts` 可访问）。
 
----
 
 ## 17. 总结速查
 
