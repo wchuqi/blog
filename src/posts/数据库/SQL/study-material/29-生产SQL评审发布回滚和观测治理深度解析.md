@@ -7,6 +7,12 @@ tags:
   - "SQL"
   - "深度解析"
 category: "数据库"
+review:
+  created: 2026-06-20
+  lastReview: 2026-06-20
+  reps: 0
+  interval: 0
+  ease: 2.5
 ---
 
 # SQL 学习资料：生产SQL评审发布回滚和观测治理深度解析

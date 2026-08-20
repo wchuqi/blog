@@ -6,6 +6,12 @@ tags:
   - "开发语言"
   - "TypeScript"
 category: "开发语言"
+review:
+  created: 2026-06-20
+  lastReview: 2026-06-20
+  reps: 0
+  interval: 0
+  ease: 2.5
 ---
 
 # TypeScript学习资料：工程化、测试、Lint 和运行时边界

@@ -8,6 +8,12 @@ tags:
   - "AI RAG"
   - "深度解析"
 category: "AI"
+review:
+  created: 2026-06-20
+  lastReview: 2026-06-20
+  reps: 0
+  interval: 0
+  ease: 2.5
 ---
 
 # AI RAG 学习资料：Rerank、Late Interaction、上下文压缩和证据覆盖深度解析

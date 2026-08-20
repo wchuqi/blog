@@ -7,6 +7,12 @@ tags:
   - "前端"
 category: 随笔
 pinned: true
+review:
+  created: 2026-06-10
+  lastReview: 2026-06-10
+  reps: 0
+  interval: 0
+  ease: 2.5
 ---
 
 欢迎来到这个博客！这是一篇示例文章，同时也是一份简易的使用说明。

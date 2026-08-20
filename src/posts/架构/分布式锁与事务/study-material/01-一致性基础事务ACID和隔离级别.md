@@ -6,6 +6,12 @@ tags:
   - "架构"
   - "分布式锁与事务"
 category: "架构"
+review:
+  created: 2026-06-20
+  lastReview: 2026-06-20
+  reps: 0
+  interval: 0
+  ease: 2.5
 ---
 
 # 分布式锁与事务学习资料：一致性基础、事务 ACID 和隔离级别

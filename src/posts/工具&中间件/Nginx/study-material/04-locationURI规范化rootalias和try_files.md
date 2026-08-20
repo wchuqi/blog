@@ -6,6 +6,12 @@ tags:
   - "工具&中间件"
   - "Nginx"
 category: "工具&中间件"
+review:
+  created: 2026-06-20
+  lastReview: 2026-06-20
+  reps: 0
+  interval: 0
+  ease: 2.5
 ---
 
 # Nginx学习资料：location、URI 规范化、root、alias 和 try_files

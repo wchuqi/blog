@@ -6,6 +6,7 @@ import type {
   NoteLink,
   Post,
   PostFrontmatter,
+  ReviewSnapshot,
   TocItem,
 } from './types'
 
@@ -90,12 +91,21 @@ function parsePost(path: string, raw: string): Post {
     console.warn(`[posts] ${slug} 缺少 title，已用 slug 兜底`)
   }
 
+  // 从文件路径推导分类：src/posts/AI/工具/xxx.md -> AI/工具
+  let derivedCategory: string | undefined
+  const pathMatch = path.match(/\/posts\/(.+)\/[^\/]+\.md$/)
+  if (pathMatch) {
+    derivedCategory = pathMatch[1].replace(/\\/g, '/')
+  }
+
   const words = countWords(body)
 
   return {
     ...attributes,
     title: attributes.title ?? slug,
     date: attributes.date ?? '1970-01-01',
+    // 优先使用 frontmatter 中的 category，否则使用从路径推导的
+    category: attributes.category ?? derivedCategory,
     slug,
     content: body,
     words,
@@ -171,7 +181,10 @@ export function resolveMarkdownPostHref(
       )
 
   const targetPost = allParsedPosts.find((p) => p.slug === targetSlug)
-  if (!targetPost) return href
+  if (!targetPost) {
+    console.warn(`[resolveMarkdownPostHref] 找不到目标文章: ${targetSlug}, 当前文章: ${currentSlug}, 原始链接: ${href}`)
+    return href
+  }
   return `/posts/${targetPost.slug}${suffix}`
 }
 
@@ -316,4 +329,90 @@ export function getRelatedPosts(post: Post, limit = 3): Post[] {
     .sort((a, b) => b.shared - a.shared)
     .slice(0, limit)
     .map((x) => x.post)
+}
+
+// ---------------------------------------------------------------------------
+// 遗忘曲线复习系统：基于 frontmatter 快照的纯静态计算
+// ---------------------------------------------------------------------------
+
+const MS_PER_DAY = 24 * 60 * 60 * 1000
+
+/** 取"今天"零点的 Date（只关心日期，不关心时刻） */
+function today(): Date {
+  const d = new Date()
+  d.setHours(0, 0, 0, 0)
+  return d
+}
+
+/** 把日期字符串/Date 归一到当天零点 */
+function startOfDay(value: string | Date): Date {
+  const d = typeof value === 'string' ? new Date(value) : new Date(value)
+  d.setHours(0, 0, 0, 0)
+  return d
+}
+
+/** 两个日期之间的天数差（向下取整） */
+function daysBetween(a: Date, b: Date): number {
+  return Math.floor((a.getTime() - b.getTime()) / MS_PER_DAY)
+}
+
+/**
+ * 记忆保留率 R = e^(-t/s)。
+ * t = 自上次复习经过的天数，s = 记忆稳定性，用当前 interval 当作 s。
+ * 没复习过的文章（interval=0）保留率视为 0。
+ */
+export function retentionRate(review: ReviewSnapshot | undefined, now = today()): number {
+  if (!review || !review.interval || review.interval <= 0) return 0
+  const last = startOfDay(review.lastReview)
+  const t = Math.max(0, daysBetween(now, last))
+  return Math.exp(-t / review.interval)
+}
+
+/** 下次复习日期 = lastReview + interval 天 */
+export function nextReviewDate(review: ReviewSnapshot | undefined): Date | null {
+  if (!review || !review.lastReview) return null
+  const last = startOfDay(review.lastReview)
+  return new Date(last.getTime() + (review.interval || 0) * MS_PER_DAY)
+}
+
+/** 距离下次复习的天数（负数=已逾期，null=无复习数据） */
+export function daysUntilDue(review: ReviewSnapshot | undefined, now = today()): number | null {
+  const next = nextReviewDate(review)
+  if (!next) return null
+  return daysBetween(next, now)
+}
+
+/** 文章是否参与复习系统 */
+export function isInReviewPool(post: Post): boolean {
+  return !post.encrypted && !post.draft && !post.noReview
+}
+
+/**
+ * 取文章开始记忆的日期：优先 review.created，否则回退 frontmatter.date。
+ * 返回 null 表示该文章不应该进复习池（没 date 也没 created）。
+ */
+export function reviewCreatedDate(post: Post): Date | null {
+  if (post.review?.created) return startOfDay(post.review.created)
+  if (post.date) return startOfDay(post.date)
+  return null
+}
+
+/** 复习池：所有参与复习的文章，按下次复习日升序（最早该复习的排前面） */
+export function getReviewPool(): Post[] {
+  return allPosts
+    .filter(isInReviewPool)
+    .filter((p) => reviewCreatedDate(p) !== null)
+    .sort((a, b) => {
+      const da = daysUntilDue(a.review) ?? Infinity
+      const db = daysUntilDue(b.review) ?? Infinity
+      return da - db
+    })
+}
+
+/** 今日待复习的文章（dueIn <= 0） */
+export function getDueToday(): Post[] {
+  return getReviewPool().filter((p) => {
+    const due = daysUntilDue(p.review)
+    return due !== null && due <= 0
+  })
 }

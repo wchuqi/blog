@@ -7,6 +7,12 @@ tags:
   - "Redis"
   - "深度解析"
 category: "工具&中间件"
+review:
+  created: 2026-06-20
+  lastReview: 2026-06-20
+  reps: 0
+  interval: 0
+  ease: 2.5
 ---
 
 # Redis学习资料：Cluster gossip、configEpoch、failover 和脑裂深度解析

@@ -7,6 +7,12 @@ tags:
   - "SQL"
   - "深度解析"
 category: "数据库"
+review:
+  created: 2026-06-20
+  lastReview: 2026-06-20
+  reps: 0
+  interval: 0
+  ease: 2.5
 ---
 
 # SQL 学习资料：BTree索引访问路径覆盖索引和回表深度解析

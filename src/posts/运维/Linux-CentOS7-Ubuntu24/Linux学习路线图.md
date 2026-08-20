@@ -7,6 +7,12 @@ tags:
   - "Linux-CentOS7-Ubuntu24"
   - "学习路线图"
 category: "运维"
+review:
+  created: 2026-06-20
+  lastReview: 2026-06-20
+  reps: 0
+  interval: 0
+  ease: 2.5
 ---
 
 # Linux 学习路线图：CentOS 7 与 Ubuntu 24.04

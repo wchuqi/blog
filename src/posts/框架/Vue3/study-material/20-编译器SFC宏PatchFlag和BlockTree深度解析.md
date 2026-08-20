@@ -7,6 +7,12 @@ tags:
   - "Vue3"
   - "深度解析"
 category: "框架"
+review:
+  created: 2026-06-20
+  lastReview: 2026-06-20
+  reps: 0
+  interval: 0
+  ease: 2.5
 ---
 
 # Vue3学习资料：编译器、SFC 宏、PatchFlag 和 BlockTree 深度解析

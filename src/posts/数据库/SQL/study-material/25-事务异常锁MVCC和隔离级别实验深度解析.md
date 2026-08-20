@@ -8,6 +8,12 @@ tags:
   - "深度解析"
   - "实践练习"
 category: "数据库"
+review:
+  created: 2026-06-20
+  lastReview: 2026-06-20
+  reps: 0
+  interval: 0
+  ease: 2.5
 ---
 
 # SQL 学习资料：事务异常锁MVCC和隔离级别实验深度解析

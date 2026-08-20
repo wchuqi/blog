@@ -14,3 +14,9 @@ yarn-error.log*
 # Playwright CLI artifacts
 .playwright-cli/
 output/
+
+# 本地复习数据库（不入仓库，只在本机）
+review.db
+review.db-journal
+__pycache__/
+*.pyc

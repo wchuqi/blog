@@ -8,6 +8,12 @@ tags:
   - "Prompt Engineering"
   - "深度解析"
 category: "AI"
+review:
+  created: 2026-06-20
+  lastReview: 2026-06-20
+  reps: 0
+  interval: 0
+  ease: 2.5
 ---
 
 # Prompt Engineering 学习资料：PromptOps、成本、延迟、版本、灰度和治理深度解析

@@ -7,6 +7,12 @@ tags:
   - "SQL"
   - "深度解析"
 category: "数据库"
+review:
+  created: 2026-06-20
+  lastReview: 2026-06-20
+  reps: 0
+  interval: 0
+  ease: 2.5
 ---
 
 # SQL 学习资料：递归CTE层级路径和图查询深度解析

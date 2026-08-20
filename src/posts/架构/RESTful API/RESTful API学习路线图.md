@@ -7,6 +7,12 @@ tags:
   - "RESTful API"
   - "学习路线图"
 category: "架构"
+review:
+  created: 2026-06-20
+  lastReview: 2026-06-20
+  reps: 0
+  interval: 0
+  ease: 2.5
 ---
 
 # RESTful API学习路线图

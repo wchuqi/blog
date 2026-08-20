@@ -7,6 +7,12 @@ tags:
   - "TypeScript"
   - "深度解析"
 category: "开发语言"
+review:
+  created: 2026-06-20
+  lastReview: 2026-06-20
+  reps: 0
+  interval: 0
+  ease: 2.5
 ---
 
 # TypeScript学习资料：泛型推断、条件类型分发和 infer 深度解析

@@ -7,6 +7,12 @@ tags:
   - "Linux-CentOS7-Ubuntu24"
   - "知识清单"
 category: "运维"
+review:
+  created: 2026-06-20
+  lastReview: 2026-06-20
+  reps: 0
+  interval: 0
+  ease: 2.5
 ---
 
 # Linux 学习资料：完整知识点清单

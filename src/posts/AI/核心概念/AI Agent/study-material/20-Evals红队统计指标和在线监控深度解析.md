@@ -8,6 +8,12 @@ tags:
   - "AI Agent"
   - "深度解析"
 category: "AI"
+review:
+  created: 2026-06-20
+  lastReview: 2026-06-20
+  reps: 0
+  interval: 0
+  ease: 2.5
 ---
 
 # AI Agent学习资料：Evals、红队、统计指标和在线监控深度解析

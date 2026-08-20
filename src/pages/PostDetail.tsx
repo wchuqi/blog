@@ -18,6 +18,8 @@ import { TableOfContents } from '../components/TableOfContents'
 import { Comments } from '../components/Comments'
 import { CodeBlock } from '../components/CodeBlock'
 import { PasswordGate } from '../components/PasswordGate'
+import { ReviewProgressCard } from '../components/ReviewProgressCard'
+import { ReviewPanel } from '../components/ReviewPanel'
 
 /** 文章详情页：正文渲染 + 目录 + 相关文章 + 评论 */
 export function PostDetail() {
@@ -113,6 +115,12 @@ export function PostDetail() {
 
         {post.cover && (
           <img className="post__cover" src={post.cover} alt={post.title} />
+        )}
+
+        {!post.noReview && !post.encrypted && <ReviewProgressCard post={post} />}
+
+        {import.meta.env.DEV && !post.noReview && !post.encrypted && (
+          <ReviewPanel slug={post.slug} />
         )}
 
         {post.encrypted && decrypted === null ? (

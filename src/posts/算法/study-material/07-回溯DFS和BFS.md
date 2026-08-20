@@ -5,6 +5,12 @@ description: "回溯是系统化试错：选择一个分支，继续深入，如
 tags:
   - "算法"
 category: "算法"
+review:
+  created: 2026-06-20
+  lastReview: 2026-06-20
+  reps: 0
+  interval: 0
+  ease: 2.5
 ---
 
 # 算法学习资料：回溯、DFS 和 BFS

@@ -7,6 +7,12 @@ tags:
   - "Nginx"
   - "学习路线图"
 category: "工具&中间件"
+review:
+  created: 2026-06-20
+  lastReview: 2026-06-20
+  reps: 0
+  interval: 0
+  ease: 2.5
 ---
 
 # Nginx学习路线图

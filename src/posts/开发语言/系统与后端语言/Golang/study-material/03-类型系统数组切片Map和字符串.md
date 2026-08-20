@@ -6,6 +6,12 @@ tags:
   - "开发语言"
   - "Golang"
 category: "开发语言"
+review:
+  created: 2026-06-20
+  lastReview: 2026-06-20
+  reps: 0
+  interval: 0
+  ease: 2.5
 ---
 
 # Golang 学习资料：类型系统、数组、切片、Map 和字符串

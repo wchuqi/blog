@@ -8,6 +8,12 @@ tags:
   - "Prompt Engineering"
   - "深度解析"
 category: "AI"
+review:
+  created: 2026-06-20
+  lastReview: 2026-06-20
+  reps: 0
+  interval: 0
+  ease: 2.5
 ---
 
 # Prompt Engineering 学习资料：安全威胁建模、OWASP 和权限隔离深度解析

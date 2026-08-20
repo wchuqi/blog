@@ -7,6 +7,12 @@ tags:
   - "Golang"
   - "深度解析"
 category: "开发语言"
+review:
+  created: 2026-06-20
+  lastReview: 2026-06-20
+  reps: 0
+  interval: 0
+  ease: 2.5
 ---
 
 # Golang 学习资料：pprof、trace、benchmark 和生产性能排障深度解析

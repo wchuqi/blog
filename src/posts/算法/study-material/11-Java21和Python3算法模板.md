@@ -5,6 +5,12 @@ description: "重点： 面试语言要选最稳的，而不是最炫的。"
 tags:
   - "算法"
 category: "算法"
+review:
+  created: 2026-06-20
+  lastReview: 2026-06-20
+  reps: 0
+  interval: 0
+  ease: 2.5
 ---
 
 # 算法学习资料：Java 21 和 Python 3 算法模板

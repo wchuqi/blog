@@ -6,6 +6,12 @@ tags:
   - "source_code"
   - "py_proj"
 category: "源码项目"
+review:
+  created: 2026-06-20
+  lastReview: 2026-06-20
+  reps: 0
+  interval: 0
+  ease: 2.5
 ---
 
 # 测试触发说明

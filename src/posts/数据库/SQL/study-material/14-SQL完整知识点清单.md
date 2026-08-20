@@ -7,6 +7,12 @@ tags:
   - "SQL"
   - "知识清单"
 category: "数据库"
+review:
+  created: 2026-06-20
+  lastReview: 2026-06-20
+  reps: 0
+  interval: 0
+  ease: 2.5
 ---
 
 # SQL 完整知识点清单

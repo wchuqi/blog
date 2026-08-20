@@ -7,6 +7,12 @@ tags:
   - "Docker"
   - "深度解析"
 category: "工具&中间件"
+review:
+  created: 2026-06-20
+  lastReview: 2026-06-20
+  reps: 0
+  interval: 0
+  ease: 2.5
 ---
 
 # Docker学习资料：镜像分层、overlay2、BuildKit 和缓存深度解析

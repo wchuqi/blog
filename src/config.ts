@@ -1,9 +1,9 @@
 // 站点全局配置 —— 改这里就能定制你的博客
 export const siteConfig = {
   /** 站点标题，显示在导航栏与浏览器标签 */
-  title: '我的博客',
+  title: 'LiveForYoung',
   /** 站点副标题 / 一句话简介 */
-  description: '记录技术、思考与生活',
+  description: 'I\'ll try anything once.',
   /** 站点部署后的完整地址，用于生成 RSS 中的绝对链接，结尾不要带斜杠 */
   url: 'https://example.com',
   /** 默认作者 */
@@ -18,6 +18,7 @@ export const siteConfig = {
     { label: '标签', to: '/tags' },
     { label: '分类', to: '/categories' },
     { label: '图谱', to: '/graph' },
+    { label: '复习', to: '/review' },
     { label: '关于', to: '/about' },
   ],
 

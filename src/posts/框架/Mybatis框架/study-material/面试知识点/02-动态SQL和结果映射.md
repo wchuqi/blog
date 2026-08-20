@@ -7,6 +7,12 @@ tags:
   - "Mybatis框架"
   - "面试"
 category: "框架"
+review:
+  created: 2026-06-20
+  lastReview: 2026-06-20
+  reps: 0
+  interval: 0
+  ease: 2.5
 ---
 
 # MyBatis 面试知识点：动态 SQL 和结果映射

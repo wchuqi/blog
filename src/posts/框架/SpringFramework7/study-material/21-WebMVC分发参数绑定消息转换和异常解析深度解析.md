@@ -7,6 +7,12 @@ tags:
   - "SpringFramework7"
   - "深度解析"
 category: "框架"
+review:
+  created: 2026-06-20
+  lastReview: 2026-06-20
+  reps: 0
+  interval: 0
+  ease: 2.5
 ---
 
 # Spring Framework 7 学习资料：Web MVC 分发、参数绑定、消息转换和异常解析深度解析

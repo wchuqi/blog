@@ -6,6 +6,12 @@ tags:
   - "开发语言"
   - "Pandas"
 category: "开发语言"
+review:
+  created: 2026-06-20
+  lastReview: 2026-06-20
+  reps: 0
+  interval: 0
+  ease: 2.5
 ---
 
 # Pandas学习资料：groupby、聚合、transform 和透视表

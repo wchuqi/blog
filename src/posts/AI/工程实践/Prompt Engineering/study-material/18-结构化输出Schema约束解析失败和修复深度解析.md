@@ -8,6 +8,12 @@ tags:
   - "Prompt Engineering"
   - "深度解析"
 category: "AI"
+review:
+  created: 2026-06-20
+  lastReview: 2026-06-20
+  reps: 0
+  interval: 0
+  ease: 2.5
 ---
 
 # Prompt Engineering 学习资料：结构化输出、Schema 约束、解析失败和修复深度解析

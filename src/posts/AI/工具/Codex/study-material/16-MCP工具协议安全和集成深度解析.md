@@ -8,6 +8,12 @@ tags:
   - "Codex"
   - "深度解析"
 category: "AI"
+review:
+  created: 2026-06-20
+  lastReview: 2026-06-20
+  reps: 0
+  interval: 0
+  ease: 2.5
 ---
 
 # Codex学习资料：MCP工具协议安全和集成深度解析

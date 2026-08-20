@@ -7,6 +7,12 @@ tags:
   - "Vue3"
   - "学习路线图"
 category: "框架"
+review:
+  created: 2026-06-20
+  lastReview: 2026-06-20
+  reps: 0
+  interval: 0
+  ease: 2.5
 ---
 
 # Vue3学习路线图

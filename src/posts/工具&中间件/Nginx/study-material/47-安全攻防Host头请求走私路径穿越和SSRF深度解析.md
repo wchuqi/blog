@@ -7,6 +7,12 @@ tags:
   - "Nginx"
   - "深度解析"
 category: "工具&中间件"
+review:
+  created: 2026-06-20
+  lastReview: 2026-06-20
+  reps: 0
+  interval: 0
+  ease: 2.5
 ---
 
 # Nginx学习资料：安全攻防：Host 头、请求走私、路径穿越和 SSRF 深度解析

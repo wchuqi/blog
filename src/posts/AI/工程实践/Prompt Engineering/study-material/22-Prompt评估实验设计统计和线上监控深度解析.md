@@ -9,6 +9,12 @@ tags:
   - "深度解析"
   - "实践练习"
 category: "AI"
+review:
+  created: 2026-06-20
+  lastReview: 2026-06-20
+  reps: 0
+  interval: 0
+  ease: 2.5
 ---
 
 # Prompt Engineering 学习资料：Prompt 评估、实验设计、统计和线上监控深度解析

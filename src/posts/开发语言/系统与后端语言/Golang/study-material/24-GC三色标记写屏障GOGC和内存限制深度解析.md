@@ -7,6 +7,12 @@ tags:
   - "Golang"
   - "深度解析"
 category: "开发语言"
+review:
+  created: 2026-06-20
+  lastReview: 2026-06-20
+  reps: 0
+  interval: 0
+  ease: 2.5
 ---
 
 # Golang 学习资料：GC、三色标记、写屏障、GOGC 和内存限制深度解析

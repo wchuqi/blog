@@ -8,6 +8,12 @@ tags:
   - "AI Context Engineering"
   - "深度解析"
 category: "AI"
+review:
+  created: 2026-06-20
+  lastReview: 2026-06-20
+  reps: 0
+  interval: 0
+  ease: 2.5
 ---
 
 # AI Context Engineering 学习资料：Agent 控制流、状态机和上下文恢复深度解析

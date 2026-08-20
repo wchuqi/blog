@@ -7,6 +7,12 @@ tags:
   - "FastApi"
   - "学习资料总览"
 category: "开发语言"
+review:
+  created: 2026-06-20
+  lastReview: 2026-06-20
+  reps: 0
+  interval: 0
+  ease: 2.5
 ---
 
 # FastAPI学习资料

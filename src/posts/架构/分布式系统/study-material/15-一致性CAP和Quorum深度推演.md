@@ -6,6 +6,12 @@ tags:
   - "架构"
   - "分布式系统"
 category: "架构"
+review:
+  created: 2026-06-20
+  lastReview: 2026-06-20
+  reps: 0
+  interval: 0
+  ease: 2.5
 ---
 
 # 分布式系统学习资料：一致性、CAP 和 quorum 深度推演

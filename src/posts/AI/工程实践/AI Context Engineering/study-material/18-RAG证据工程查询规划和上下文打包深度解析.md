@@ -8,6 +8,12 @@ tags:
   - "AI Context Engineering"
   - "深度解析"
 category: "AI"
+review:
+  created: 2026-06-20
+  lastReview: 2026-06-20
+  reps: 0
+  interval: 0
+  ease: 2.5
 ---
 
 # AI Context Engineering 学习资料：RAG 证据工程、查询规划和上下文打包深度解析

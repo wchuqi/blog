@@ -7,6 +7,12 @@ tags:
   - "Golang"
   - "深度解析"
 category: "开发语言"
+review:
+  created: 2026-06-20
+  lastReview: 2026-06-20
+  reps: 0
+  interval: 0
+  ease: 2.5
 ---
 
 # Golang 学习资料：net/http、Transport、连接池、超时、重试和优雅关闭深度解析

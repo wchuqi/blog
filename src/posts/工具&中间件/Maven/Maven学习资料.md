@@ -7,6 +7,12 @@ tags:
   - "Maven"
   - "学习资料总览"
 category: "工具&中间件"
+review:
+  created: 2026-06-20
+  lastReview: 2026-06-20
+  reps: 0
+  interval: 0
+  ease: 2.5
 ---
 
 # Maven 学习资料

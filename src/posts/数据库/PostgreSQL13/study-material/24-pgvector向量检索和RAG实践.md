@@ -6,6 +6,12 @@ tags:
   - "数据库"
   - "PostgreSQL13"
 category: "数据库"
+review:
+  created: 2026-06-20
+  lastReview: 2026-06-20
+  reps: 0
+  interval: 0
+  ease: 2.5
 ---
 
 # PostgreSQL 13 学习资料：pgvector 向量检索和 RAG 实践

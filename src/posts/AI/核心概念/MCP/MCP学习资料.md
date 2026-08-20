@@ -8,6 +8,12 @@ tags:
   - "MCP"
   - "学习资料总览"
 category: "AI"
+review:
+  created: 2026-06-20
+  lastReview: 2026-06-20
+  reps: 0
+  interval: 0
+  ease: 2.5
 ---
 
 # MCP 学习资料

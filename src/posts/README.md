@@ -5,6 +5,12 @@ description: "面向求职、面试和系统化复习的技术知识库。仓库
 tags:
   - "求职资料"
 category: "求职资料"
+review:
+  created: 2026-06-20
+  lastReview: 2026-06-20
+  reps: 0
+  interval: 0
+  ease: 2.5
 ---
 
 # job_search

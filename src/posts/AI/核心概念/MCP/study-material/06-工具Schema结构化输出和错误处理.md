@@ -7,6 +7,12 @@ tags:
   - "核心概念"
   - "MCP"
 category: "AI"
+review:
+  created: 2026-06-20
+  lastReview: 2026-06-20
+  reps: 0
+  interval: 0
+  ease: 2.5
 ---
 
 # MCP 学习资料：工具 Schema、结构化输出和错误处理

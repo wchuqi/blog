@@ -7,6 +7,12 @@ tags:
   - "Shell"
   - "深度解析"
 category: "开发语言"
+review:
+  created: 2026-06-20
+  lastReview: 2026-06-20
+  reps: 0
+  interval: 0
+  ease: 2.5
 ---
 
 # Shell学习资料：Subshell、作用域、lastpipe 和并发控制深度解析

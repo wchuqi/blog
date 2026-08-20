@@ -6,6 +6,12 @@ tags:
   - "开发语言"
   - "Golang"
 category: "开发语言"
+review:
+  created: 2026-06-20
+  lastReview: 2026-06-20
+  reps: 0
+  interval: 0
+  ease: 2.5
 ---
 
 # Golang 学习资料：标准库、IO、网络和 HTTP 服务

@@ -7,6 +7,12 @@ tags:
   - "paramiko"
   - "面试"
 category: "开发语言"
+review:
+  created: 2026-06-20
+  lastReview: 2026-06-20
+  reps: 0
+  interval: 0
+  ease: 2.5
 ---
 
 # Paramiko面试知识点：连接、命令执行和 SFTP

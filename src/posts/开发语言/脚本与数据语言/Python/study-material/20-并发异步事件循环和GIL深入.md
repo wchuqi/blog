@@ -6,6 +6,12 @@ tags:
   - "开发语言"
   - "Python"
 category: "开发语言"
+review:
+  created: 2026-06-20
+  lastReview: 2026-06-20
+  reps: 0
+  interval: 0
+  ease: 2.5
 ---
 
 # Python学习资料：并发、异步事件循环和 GIL 深入

@@ -8,6 +8,12 @@ tags:
   - "Prompt Engineering"
   - "深度解析"
 category: "AI"
+review:
+  created: 2026-06-20
+  lastReview: 2026-06-20
+  reps: 0
+  interval: 0
+  ease: 2.5
 ---
 
 # Prompt Engineering 学习资料：Agent 规划、记忆、状态机和失败恢复深度解析

@@ -8,6 +8,7 @@ import { TagDetail } from './pages/TagDetail'
 import { Categories } from './pages/Categories'
 import { CategoryDetail } from './pages/CategoryDetail'
 import { Graph } from './pages/Graph'
+import { Review } from './pages/Review'
 import { About } from './pages/About'
 import { NotFound } from './pages/NotFound'
 
@@ -15,6 +16,11 @@ import { NotFound } from './pages/NotFound'
 const PostDetail = lazy(() =>
   import('./pages/PostDetail').then((m) => ({ default: m.PostDetail }))
 )
+
+// Admin 页只在本地 dev 下挂载（Vditor + API 调用）；公网构建不打包
+const Admin = import.meta.env.DEV
+  ? lazy(() => import('./pages/Admin').then((m) => ({ default: m.Admin })))
+  : null
 
 /** 应用路由表 */
 export function App() {
@@ -36,6 +42,17 @@ export function App() {
         <Route path="categories" element={<Categories />} />
         <Route path="categories/:category" element={<CategoryDetail />} />
         <Route path="graph" element={<Graph />} />
+        <Route path="review" element={<Review />} />
+        {Admin && (
+          <Route
+            path="admin"
+            element={
+              <Suspense fallback={<div className="empty">加载中…</div>}>
+                <Admin />
+              </Suspense>
+            }
+          />
+        )}
         <Route path="about" element={<About />} />
         <Route path="*" element={<NotFound />} />
       </Route>
