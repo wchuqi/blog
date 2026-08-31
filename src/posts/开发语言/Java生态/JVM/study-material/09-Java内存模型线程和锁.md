@@ -5,13 +5,13 @@ description: "多线程程序的问题不只是多个线程同时执行，还包
 tags:
   - "开发语言"
   - "JVM"
-category: "开发语言"
 review:
   created: 2026-06-20
   lastReview: 2026-06-20
   reps: 0
   interval: 0
   ease: 2.5
+noReview: true
 ---
 
 # JVM 学习资料：Java 内存模型、线程和锁

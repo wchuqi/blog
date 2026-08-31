@@ -6,13 +6,13 @@ tags:
   - "开发语言"
   - "paramiko"
   - "面试"
-category: "开发语言"
 review:
   created: 2026-06-20
   lastReview: 2026-06-20
   reps: 0
   interval: 0
   ease: 2.5
+noReview: true
 ---
 
 # Paramiko面试知识点：SSH 基础和安全模型

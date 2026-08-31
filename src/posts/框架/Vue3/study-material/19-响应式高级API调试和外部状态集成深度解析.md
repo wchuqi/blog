@@ -6,13 +6,13 @@ tags:
   - "框架"
   - "Vue3"
   - "深度解析"
-category: "框架"
 review:
   created: 2026-06-20
   lastReview: 2026-06-20
   reps: 0
   interval: 0
   ease: 2.5
+noReview: true
 ---
 
 # Vue3学习资料：响应式高级 API、调试和外部状态集成深度解析

@@ -5,13 +5,13 @@ description: "跨服务最终一致经常依赖消息。核心难题是：业务
 tags:
   - "架构"
   - "分布式锁与事务"
-category: "架构"
 review:
   created: 2026-06-20
   lastReview: 2026-06-20
   reps: 0
   interval: 0
   ease: 2.5
+noReview: true
 ---
 
 # 分布式锁与事务学习资料：可靠消息、Outbox/Inbox 和事务消息

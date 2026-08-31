@@ -5,13 +5,13 @@ description: "http 模块处理 HTTP 协议，能看 URI、header、status。str
 tags:
   - "工具&中间件"
   - "Nginx"
-category: "工具&中间件"
 review:
   created: 2026-06-20
   lastReview: 2026-06-20
   reps: 0
   interval: 0
   ease: 2.5
+noReview: true
 ---
 
 # Nginx学习资料：stream 四层代理、TCP 和 UDP

@@ -5,13 +5,13 @@ description: "Git 基础操作围绕三块区域展开：工作区、暂存区�
 tags:
   - "工具&中间件"
   - "Git"
-category: "工具&中间件"
 review:
   created: 2026-06-20
   lastReview: 2026-06-20
   reps: 0
   interval: 0
   ease: 2.5
+noReview: true
 ---
 
 # Git 学习资料：阶段 1：Git 基础和本地提交

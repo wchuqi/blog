@@ -5,13 +5,13 @@ description: "SSH 安全模型包含两个核心问题：客户端如何确认�
 tags:
   - "开发语言"
   - "paramiko"
-category: "开发语言"
 review:
   created: 2026-06-20
   lastReview: 2026-06-20
   reps: 0
   interval: 0
   ease: 2.5
+noReview: true
 ---
 
 # Paramiko学习资料：SSH 安全模型、Host Key 和认证

@@ -5,13 +5,13 @@ description: "WebFlux 是 Spring 的响应式 Web 框架，基于 Reactive Strea
 tags:
   - "框架"
   - "SpringFramework7"
-category: "框架"
 review:
   created: 2026-06-20
   lastReview: 2026-06-20
   reps: 0
   interval: 0
   ease: 2.5
+noReview: true
 ---
 
 # Spring Framework 7 学习资料：WebFlux 响应式编程

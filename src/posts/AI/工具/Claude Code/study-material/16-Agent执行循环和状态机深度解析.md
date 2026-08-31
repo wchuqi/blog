@@ -7,13 +7,13 @@ tags:
   - "工具"
   - "Claude Code"
   - "深度解析"
-category: "AI"
 review:
   created: 2026-06-20
   lastReview: 2026-06-20
   reps: 0
   interval: 0
   ease: 2.5
+noReview: true
 ---
 
 # Claude Code 学习资料：Agent 执行循环和状态机深度解析

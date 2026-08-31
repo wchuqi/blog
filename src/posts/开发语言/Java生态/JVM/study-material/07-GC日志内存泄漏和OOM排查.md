@@ -5,13 +5,13 @@ description: "GC 日志是 JVM 内存压力的时间线。它告诉你什么时�
 tags:
   - "开发语言"
   - "JVM"
-category: "开发语言"
 review:
   created: 2026-06-20
   lastReview: 2026-06-20
   reps: 0
   interval: 0
   ease: 2.5
+noReview: true
 ---
 
 # JVM 学习资料：GC 日志、内存泄漏和 OOM 排查

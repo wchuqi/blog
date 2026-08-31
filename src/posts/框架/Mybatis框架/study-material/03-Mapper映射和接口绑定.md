@@ -5,13 +5,13 @@ description: "Mapper 是 MyBatis 的入口。你定义 Java 接口，MyBatis 为
 tags:
   - "框架"
   - "Mybatis框架"
-category: "框架"
 review:
   created: 2026-06-20
   lastReview: 2026-06-20
   reps: 0
   interval: 0
   ease: 2.5
+noReview: true
 ---
 
 # MyBatis 学习资料：Mapper 映射和接口绑定

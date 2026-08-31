@@ -5,13 +5,13 @@ description: "引入 Web Starter 后，Boot 会根据 classpath 自动配置 Spr
 tags:
   - "框架"
   - "SpringBoot框架"
-category: "框架"
 review:
   created: 2026-06-20
   lastReview: 2026-06-20
   reps: 0
   interval: 0
   ease: 2.5
+noReview: true
 ---
 
 # Spring Boot 4 学习资料：Web 应用、REST 和错误处理

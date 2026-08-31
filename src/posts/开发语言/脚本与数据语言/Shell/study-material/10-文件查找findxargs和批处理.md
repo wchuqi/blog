@@ -5,13 +5,13 @@ description: "Shell 批处理文件时最大的风险是把文件名当普通文
 tags:
   - "开发语言"
   - "Shell"
-category: "开发语言"
 review:
   created: 2026-06-20
   lastReview: 2026-06-20
   reps: 0
   interval: 0
   ease: 2.5
+noReview: true
 ---
 
 # Shell学习资料：文件查找、find、xargs 和批处理

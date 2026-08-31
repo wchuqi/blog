@@ -5,13 +5,13 @@ description: "Rust 的代码组织分成两个层面：编译和发布层面的 
 tags:
   - "开发语言"
   - "Rust"
-category: "开发语言"
 review:
   created: 2026-06-20
   lastReview: 2026-06-20
   reps: 0
   interval: 0
   ease: 2.5
+noReview: true
 ---
 
 # Rust学习资料：模块、Crate、Workspace 和依赖解析

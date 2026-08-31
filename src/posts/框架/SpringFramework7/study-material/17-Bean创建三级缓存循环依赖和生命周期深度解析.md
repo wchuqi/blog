@@ -6,13 +6,13 @@ tags:
   - "框架"
   - "SpringFramework7"
   - "深度解析"
-category: "框架"
 review:
   created: 2026-06-20
   lastReview: 2026-06-20
   reps: 0
   interval: 0
   ease: 2.5
+noReview: true
 ---
 
 # Spring Framework 7 学习资料：Bean 创建、三级缓存和循环依赖深度解析

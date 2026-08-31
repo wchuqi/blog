@@ -5,13 +5,13 @@ description: "Git 历史一旦推送并被复制，就很难彻底消除影响�
 tags:
   - "工具&中间件"
   - "Git"
-category: "工具&中间件"
 review:
   created: 2026-06-20
   lastReview: 2026-06-20
   reps: 0
   interval: 0
   ease: 2.5
+noReview: true
 ---
 
 # Git 学习资料：Hooks、签名、安全和敏感信息

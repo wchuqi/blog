@@ -5,13 +5,13 @@ description: "Redis 单条命令在服务端执行期间不会被其他命令插
 tags:
   - "工具&中间件"
   - "Redis"
-category: "工具&中间件"
 review:
   created: 2026-06-20
   lastReview: 2026-06-20
   reps: 0
   interval: 0
   ease: 2.5
+noReview: true
 ---
 
 # Redis学习资料：事务、Lua 和原子性

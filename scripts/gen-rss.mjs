@@ -131,7 +131,7 @@ ${items}
 `
 
   // ---- sitemap ----
-  const staticPaths = ['', '/archives', '/tags', '/categories', '/about']
+  const staticPaths = ['', '/archives', '/tags', '/articles', '/graph', '/about']
   const urls = [
     ...staticPaths.map((p) => `${site.url}${p}`),
     ...posts.map((p) => `${site.url}/posts/${p.slug}`),

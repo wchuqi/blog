@@ -5,13 +5,13 @@ description: "易错： 把 -Xmx 设置成容器内存的 95%。"
 tags:
   - "开发语言"
   - "JVM"
-category: "开发语言"
 review:
   created: 2026-06-20
   lastReview: 2026-06-20
   reps: 0
   interval: 0
   ease: 2.5
+noReview: true
 ---
 
 # JVM 学习资料：JVM 参数、容器化和生产基线

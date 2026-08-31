@@ -5,13 +5,13 @@ description: "Nginx 性能调优不是背参数。最大连接数受 worker 数�
 tags:
   - "工具&中间件"
   - "Nginx"
-category: "工具&中间件"
 review:
   created: 2026-06-20
   lastReview: 2026-06-20
   reps: 0
   interval: 0
   ease: 2.5
+noReview: true
 ---
 
 # Nginx学习资料：性能优化、worker、事件、sendfile 和 buffer

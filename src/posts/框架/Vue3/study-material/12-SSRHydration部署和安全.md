@@ -5,13 +5,13 @@ description: "普通 Vue SPA 在浏览器中渲染，首屏 HTML 主要是挂载
 tags:
   - "框架"
   - "Vue3"
-category: "框架"
 review:
   created: 2026-06-20
   lastReview: 2026-06-20
   reps: 0
   interval: 0
   ease: 2.5
+noReview: true
 ---
 
 # Vue3学习资料：SSR、Hydration、部署和安全

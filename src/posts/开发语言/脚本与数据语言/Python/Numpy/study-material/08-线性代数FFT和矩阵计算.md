@@ -5,13 +5,13 @@ description: "NumPy 的 linalg 模块提供基础线性代数能力，底层通�
 tags:
   - "开发语言"
   - "Numpy"
-category: "开发语言"
 review:
   created: 2026-06-20
   lastReview: 2026-06-20
   reps: 0
   interval: 0
   ease: 2.5
+noReview: true
 ---
 
 # NumPy学习资料：线性代数、FFT 和矩阵计算

@@ -5,13 +5,13 @@ description: "Pydantic 是 FastAPI 的数据层核心。请求进入时，外部
 tags:
   - "开发语言"
   - "FastApi"
-category: "开发语言"
 review:
   created: 2026-06-20
   lastReview: 2026-06-20
   reps: 0
   interval: 0
   ease: 2.5
+noReview: true
 ---
 
 # FastAPI学习资料：Pydantic v2、校验、序列化和 OpenAPI

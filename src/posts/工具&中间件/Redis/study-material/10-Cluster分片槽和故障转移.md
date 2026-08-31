@@ -5,13 +5,13 @@ description: "Redis Cluster 将 key 映射到固定数量的 hash slot，每个�
 tags:
   - "工具&中间件"
   - "Redis"
-category: "工具&中间件"
 review:
   created: 2026-06-20
   lastReview: 2026-06-20
   reps: 0
   interval: 0
   ease: 2.5
+noReview: true
 ---
 
 # Redis学习资料：Cluster、分片槽和故障转移

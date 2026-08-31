@@ -5,13 +5,13 @@ description: "Nginx 常作为 TLS 终止点。客户端和 Nginx 建立 TLS，Ng
 tags:
   - "工具&中间件"
   - "Nginx"
-category: "工具&中间件"
 review:
   created: 2026-06-20
   lastReview: 2026-06-20
   reps: 0
   interval: 0
   ease: 2.5
+noReview: true
 ---
 
 # Nginx学习资料：TLS、HTTPS、证书和安全配置

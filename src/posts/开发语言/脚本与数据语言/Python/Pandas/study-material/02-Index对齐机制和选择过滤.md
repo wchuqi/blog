@@ -5,13 +5,13 @@ description: "Pandas 的 Index 是数据标签。loc 按标签选择，iloc 按�
 tags:
   - "开发语言"
   - "Pandas"
-category: "开发语言"
 review:
   created: 2026-06-20
   lastReview: 2026-06-20
   reps: 0
   interval: 0
   ease: 2.5
+noReview: true
 ---
 
 # Pandas学习资料：Index、对齐机制和选择过滤

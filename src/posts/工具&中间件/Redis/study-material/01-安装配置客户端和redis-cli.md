@@ -5,13 +5,13 @@ description: "Redis 服务端由配置决定监听地址、端口、持久化、
 tags:
   - "工具&中间件"
   - "Redis"
-category: "工具&中间件"
 review:
   created: 2026-06-20
   lastReview: 2026-06-20
   reps: 0
   interval: 0
   ease: 2.5
+noReview: true
 ---
 
 # Redis学习资料：安装、配置、客户端和 redis-cli

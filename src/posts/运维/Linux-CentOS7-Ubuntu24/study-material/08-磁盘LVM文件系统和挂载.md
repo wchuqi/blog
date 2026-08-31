@@ -5,13 +5,13 @@ description: "磁盘管理是生产 Linux 的高风险区域。数据从块设�
 tags:
   - "运维"
   - "Linux-CentOS7-Ubuntu24"
-category: "运维"
 review:
   created: 2026-06-20
   lastReview: 2026-06-20
   reps: 0
   interval: 0
   ease: 2.5
+noReview: true
 ---
 
 # Linux 学习资料：磁盘、LVM、文件系统和挂载

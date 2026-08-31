@@ -5,13 +5,13 @@ description: "Shell 文本处理的优势是流式组合。grep 负责筛选行�
 tags:
   - "开发语言"
   - "Shell"
-category: "开发语言"
 review:
   created: 2026-06-20
   lastReview: 2026-06-20
   reps: 0
   interval: 0
   ease: 2.5
+noReview: true
 ---
 
 # Shell学习资料：文本处理 grep、sed、awk、cut、sort、uniq

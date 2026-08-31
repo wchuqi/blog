@@ -5,13 +5,13 @@ description: "Go 把失败当成普通返回值，是为了让错误处理出现
 tags:
   - "开发语言"
   - "Golang"
-category: "开发语言"
 review:
   created: 2026-06-20
   lastReview: 2026-06-20
   reps: 0
   interval: 0
   ease: 2.5
+noReview: true
 ---
 
 # Golang 学习资料：错误处理、panic recover 和上下文取消

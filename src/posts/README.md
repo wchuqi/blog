@@ -4,13 +4,13 @@ date: 2026-06-20
 description: "面向求职、面试和系统化复习的技术知识库。仓库内容以学习路线图、分章节学习资料、面试知识点和配套示例代码为主，覆盖后端、数据库、中间件、架构、算法、运维、前端框架和 AI 工程实践等方向。"
 tags:
   - "求职资料"
-category: "求职资料"
 review:
   created: 2026-06-20
   lastReview: 2026-06-20
   reps: 0
   interval: 0
   ease: 2.5
+noReview: true
 ---
 
 # job_search

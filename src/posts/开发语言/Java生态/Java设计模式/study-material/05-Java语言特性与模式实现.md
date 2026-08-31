@@ -5,13 +5,13 @@ description: "设计模式来自面向对象经验，但 Java 语言一直在演
 tags:
   - "开发语言"
   - "Java设计模式"
-category: "开发语言"
 review:
   created: 2026-06-20
   lastReview: 2026-06-20
   reps: 0
   interval: 0
   ease: 2.5
+noReview: true
 ---
 
 # Java设计模式学习资料：Java 语言特性与模式实现

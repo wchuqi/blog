@@ -5,13 +5,13 @@ description: "前端测试不是只测 DOM 文本，而是验证用户行为、�
 tags:
   - "框架"
   - "Vue3"
-category: "框架"
 review:
   created: 2026-06-20
   lastReview: 2026-06-20
   reps: 0
   interval: 0
   ease: 2.5
+noReview: true
 ---
 
 # Vue3学习资料：测试、调试、DevTools 和质量工具

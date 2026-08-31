@@ -6,13 +6,13 @@ tags:
   - "开发语言"
   - "TypeScript"
   - "深度解析"
-category: "开发语言"
 review:
   created: 2026-06-20
   lastReview: 2026-06-20
   reps: 0
   interval: 0
   ease: 2.5
+noReview: true
 ---
 
 # TypeScript学习资料：运行时边界、Schema 和类型安全 API 设计深度解析

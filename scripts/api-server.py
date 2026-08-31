@@ -44,6 +44,19 @@ app.add_middleware(
 FM_RE = re.compile(r"^---\r?\n([\s\S]*?)\r?\n---\r?\n?([\s\S]*)$", re.MULTILINE)
 
 
+def detect_newline(raw: str) -> str:
+    """检测文本主要换行符，默认 \\n"""
+    return "\r\n" if "\r\n" in raw else "\n"
+
+
+def write_md(path: Path, raw: str) -> None:
+    """以原始换行符写回 .md，避免 CRLF/LF 互相污染 diff"""
+    nl = detect_newline(raw)
+    new_raw = raw.replace("\r\n", "\n").replace("\n", nl)
+    with open(path, "w", encoding="utf-8", newline="") as f:
+        f.write(new_raw)
+
+
 def parse_md(raw: str) -> tuple[str, str, bool]:
     m = FM_RE.match(raw)
     if not m:
@@ -77,7 +90,6 @@ class ReviewRequest(BaseModel):
 class CreatePostRequest(BaseModel):
     title: str
     slug: str | None = None  # 可选，缺省由 title 推导
-    category: str | None = None
     tags: list[str] | None = None
     description: str | None = None
     noReview: bool = False
@@ -85,7 +97,6 @@ class CreatePostRequest(BaseModel):
 
 class UpdateFrontmatterRequest(BaseModel):
     title: str | None = None
-    category: str | None = None
     tags: list[str] | None = None
     description: str | None = None
     noReview: bool | None = None
@@ -156,6 +167,8 @@ def api_list_posts() -> list[dict]:
     """列出所有文章（含子目录）"""
     posts = []
     for md_file in POSTS_DIR.rglob("*.md"):
+        if any(part.startswith(".") for part in md_file.relative_to(POSTS_DIR).parts):
+            continue
         raw = md_file.read_text(encoding="utf-8")
         fm_text, _, has_fm = parse_md(raw)
         title = fm_value(fm_text, "title") or slug_from_path(md_file)
@@ -164,13 +177,12 @@ def api_list_posts() -> list[dict]:
             "slug": slug_from_path(md_file),
             "title": title.strip("'\""),
             "date": post_date.strip("'\"") if post_date else None,
-            "category": fm_value(fm_text, "category"),
             "path": str(md_file.relative_to(ROOT)),
         })
     return posts
 
 
-@app.get("/api/posts/{slug}")
+@app.get("/api/posts/{slug:path}")
 def api_get_post(slug: str) -> dict:
     """读取单篇文章（frontmatter + 正文）"""
     path = post_path_for_slug(slug)
@@ -205,8 +217,6 @@ def api_create_post(req: CreatePostRequest) -> dict:
     ]
     if req.description:
         fm_lines.append(f"description: {req.description}")
-    if req.category:
-        fm_lines.append(f"category: {req.category}")
     if req.tags:
         fm_lines.append("tags:")
         for t in req.tags:
@@ -223,7 +233,7 @@ def api_create_post(req: CreatePostRequest) -> dict:
     return {"slug": slug, "path": str(path.relative_to(ROOT))}
 
 
-@app.put("/api/posts/{slug}/content")
+@app.put("/api/posts/{slug:path}/content")
 def api_update_content(slug: str, req: UpdateContentRequest) -> dict:
     """更新文章正文（保留 frontmatter）"""
     path = post_path_for_slug(slug)
@@ -235,11 +245,11 @@ def api_update_content(slug: str, req: UpdateContentRequest) -> dict:
         new_raw = f"---\n---\n\n{req.content}"
     else:
         new_raw = f"---\n{fm_text}---\n{req.content}"
-    path.write_text(new_raw, encoding="utf-8")
+    write_md(path, new_raw)
     return {"ok": True}
 
 
-@app.put("/api/posts/{slug}/frontmatter")
+@app.put("/api/posts/{slug:path}/frontmatter")
 def api_update_frontmatter(slug: str, req: UpdateFrontmatterRequest) -> dict:
     """更新文章的 frontmatter 字段（不碰正文）"""
     path = post_path_for_slug(slug)
@@ -263,12 +273,19 @@ def api_update_frontmatter(slug: str, req: UpdateFrontmatterRequest) -> dict:
 
     if req.title is not None:
         set_field("title", req.title)
-    if req.category is not None:
-        set_field("category", req.category)
     if req.description is not None:
         set_field("description", req.description)
     if req.noReview is not None:
         set_field("noReview", "true" if req.noReview else None)
+        if req.noReview:
+            # 从复习池移除：清理 SQLite 卡片 + 复习历史 + frontmatter review 块
+            conn = db.get_db()
+            conn.execute("DELETE FROM reviews WHERE slug = ?", (slug,))
+            conn.execute("DELETE FROM cards WHERE slug = ?", (slug,))
+            conn.commit()
+            review_pattern = re.compile(r"^review:\n(?:  [^\n]*\n)*", re.MULTILINE)
+            fm_text = review_pattern.sub("", fm_text)
+            fm_text = re.sub(r"\n{3,}", "\n\n", fm_text).strip() + "\n"
     if req.tags is not None:
         # tags 是数组，特殊处理
         pattern = re.compile(r"^tags:.*?(?:\n  - .*)*", re.MULTILINE)
@@ -278,11 +295,11 @@ def api_update_frontmatter(slug: str, req: UpdateFrontmatterRequest) -> dict:
             fm_text = fm_text.rstrip() + "\ntags:\n" + "\n".join(f"  - {t}" for t in req.tags) + "\n"
 
     new_raw = f"---\n{fm_text.rstrip()}\n---\n{body}"
-    path.write_text(new_raw, encoding="utf-8")
+    write_md(path, new_raw)
     return {"ok": True}
 
 
-@app.delete("/api/posts/{slug}")
+@app.delete("/api/posts/{slug:path}")
 def api_delete_post(slug: str) -> dict:
     """删除文章文件 + 清理 SQLite 复习记录"""
     path = post_path_for_slug(slug)
@@ -294,6 +311,19 @@ def api_delete_post(slug: str) -> dict:
     conn.execute("DELETE FROM reviews WHERE slug = ?", (slug,))
     conn.execute("DELETE FROM cards WHERE slug = ?", (slug,))
     conn.commit()
+    return {"ok": True}
+
+
+@app.post("/api/sync-review")
+def api_sync_review() -> dict:
+    """重新生成 public/review.json（扫描 frontmatter + SQLite 全量聚合）"""
+    import subprocess
+    result = subprocess.run(
+        ["python", str(ROOT / "scripts" / "sync-reviews.py")],
+        capture_output=True, text=True, cwd=str(ROOT),
+    )
+    if result.returncode != 0:
+        raise HTTPException(500, result.stderr)
     return {"ok": True}
 
 

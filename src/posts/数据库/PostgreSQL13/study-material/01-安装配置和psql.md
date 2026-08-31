@@ -5,13 +5,13 @@ description: "PostgreSQL 的运行依赖一个数据目录。数据目录里保�
 tags:
   - "数据库"
   - "PostgreSQL13"
-category: "数据库"
 review:
   created: 2026-06-20
   lastReview: 2026-06-20
   reps: 0
   interval: 0
   ease: 2.5
+noReview: true
 ---
 
 # PostgreSQL 13 学习资料：安装配置和 psql

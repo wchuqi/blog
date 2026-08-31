@@ -6,13 +6,13 @@ tags:
   - "工具&中间件"
   - "Nginx"
   - "面试"
-category: "工具&中间件"
 review:
   created: 2026-06-20
   lastReview: 2026-06-20
   reps: 0
   interval: 0
   ease: 2.5
+noReview: true
 ---
 
 # Nginx面试知识点：配置、server 和 location

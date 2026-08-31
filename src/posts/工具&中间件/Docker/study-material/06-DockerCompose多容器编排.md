@@ -5,13 +5,13 @@ description: "Compose 把一组 docker run 参数写成声明式 YAML。它适�
 tags:
   - "工具&中间件"
   - "Docker"
-category: "工具&中间件"
 review:
   created: 2026-06-20
   lastReview: 2026-06-20
   reps: 0
   interval: 0
   ease: 2.5
+noReview: true
 ---
 
 # Docker学习资料：Docker Compose 多容器编排

@@ -5,13 +5,13 @@ description: "在 Spring Boot 项目中，你通常不直接手动创建 SqlSess
 tags:
   - "框架"
   - "Mybatis框架"
-category: "框架"
 review:
   created: 2026-06-20
   lastReview: 2026-06-20
   reps: 0
   interval: 0
   ease: 2.5
+noReview: true
 ---
 
 # MyBatis 学习资料：Spring Boot 集成、事务和测试

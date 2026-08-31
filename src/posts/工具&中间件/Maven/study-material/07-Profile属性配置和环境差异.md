@@ -5,13 +5,13 @@ description: "属性是 Maven 配置的变量系统，profile 是按条件切换
 tags:
   - "工具&中间件"
   - "Maven"
-category: "工具&中间件"
 review:
   created: 2026-06-20
   lastReview: 2026-06-20
   reps: 0
   interval: 0
   ease: 2.5
+noReview: true
 ---
 
 # Maven 学习资料：Profile、属性、配置和环境差异

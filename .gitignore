@@ -20,3 +20,10 @@ review.db
 review.db-journal
 __pycache__/
 *.pyc
+
+# 本地工具 / AI 会话目录（不入仓库）
+.claude/
+.opencode/
+.design-audit/
+plans/
+src/posts/.solomd/

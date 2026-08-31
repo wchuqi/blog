@@ -5,13 +5,13 @@ description: "Redis 快是因为内存操作、事件循环、数据结构优化
 tags:
   - "工具&中间件"
   - "Redis"
-category: "工具&中间件"
 review:
   created: 2026-06-20
   lastReview: 2026-06-20
   reps: 0
   interval: 0
   ease: 2.5
+noReview: true
 ---
 
 # Redis学习资料：性能优化、慢查询、big key、hot key 和网络 IO

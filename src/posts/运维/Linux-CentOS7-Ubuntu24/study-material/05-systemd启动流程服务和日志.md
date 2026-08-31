@@ -5,13 +5,13 @@ description: "systemd 是现代 Linux 的 PID 1，也是服务管理器、日志
 tags:
   - "运维"
   - "Linux-CentOS7-Ubuntu24"
-category: "运维"
 review:
   created: 2026-06-20
   lastReview: 2026-06-20
   reps: 0
   interval: 0
   ease: 2.5
+noReview: true
 ---
 
 # Linux 学习资料：systemd、启动流程、服务和日志

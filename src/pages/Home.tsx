@@ -1,134 +1,13 @@
 import { Link } from 'react-router-dom'
-import { allPosts, getCategories, getTags } from '../lib/posts'
+import { allPosts, getTags } from '../lib/posts'
 import { siteConfig } from '../config'
 import { formatShortDate } from '../lib/format'
 
+/** 首页：站点简介 + 统计 + 标签索引 + 最近更新（完整文章树在「文章」页） */
 export function Home() {
-  const categories = getCategories()
   const tags = getTags()
   const totalWords = allPosts.reduce((sum, post) => sum + post.words, 0)
   const latestPosts = allPosts.slice(0, 5)
-  const uncategorizedPosts = allPosts.filter((post) => !post.category)
-
-  // 构建层级分类结构
-  interface CategoryNode {
-    name: string
-    fullPath: string
-    count: number
-    posts: typeof allPosts
-    children: Map<string, CategoryNode>
-  }
-
-  const buildCategoryTree = () => {
-    const root: Map<string, CategoryNode> = new Map()
-
-    for (const post of allPosts) {
-      if (!post.category) continue
-
-      const parts = post.category.split('/')
-      let currentLevel = root
-      let fullPath = ''
-
-      for (let i = 0; i < parts.length; i++) {
-        const part = parts[i]
-        fullPath = fullPath ? `${fullPath}/${part}` : part
-
-        if (!currentLevel.has(part)) {
-          currentLevel.set(part, {
-            name: part,
-            fullPath: fullPath,
-            count: 0,
-            posts: [],
-            children: new Map()
-          })
-        }
-
-        const node = currentLevel.get(part)!
-
-        // 所有层级都累加计数
-        node.count++
-
-        if (i === parts.length - 1) {
-          // 叶子节点，添加文章
-          node.posts.push(post)
-        }
-
-        currentLevel = node.children
-      }
-    }
-
-    return root
-  }
-
-  const categoryTree = buildCategoryTree()
-
-  // 递归渲染分类树
-  const renderCategoryNode = (node: CategoryNode, level: number = 0): JSX.Element => {
-    const hasChildren = node.children.size > 0
-
-    return (
-      <li className="knowledge-tree__branch" key={node.fullPath}>
-        <details className="knowledge-tree__details">
-          <summary className="knowledge-tree__summary">
-            <span className="knowledge-tree__category-name">
-              {node.name}
-            </span>
-            {node.posts.length > 0 && (
-              <span className="knowledge-tree__latest">
-                {node.posts[0]?.title}
-              </span>
-            )}
-            <strong>{node.count}</strong>
-          </summary>
-
-          {hasChildren && (
-            <ul className="knowledge-tree__subcategories">
-              {[...node.children.values()].map(child =>
-                renderCategoryNode(child, level + 1)
-              )}
-            </ul>
-          )}
-
-          {node.posts.length > 0 && (
-            <>
-              <div className="knowledge-tree__category-actions">
-                <Link to={`/categories/${encodeURIComponent(node.fullPath)}`}>
-                  查看分类页
-                </Link>
-              </div>
-              <ul className="knowledge-tree__posts">
-                {node.posts.map((post) => (
-                  <li key={post.slug}>
-                    <Link
-                      to={`/posts/${post.slug}`}
-                      className="knowledge-tree__post"
-                    >
-                      <span>{post.title}</span>
-                      <time dateTime={post.date}>
-                        {formatShortDate(post.date)}
-                      </time>
-                    </Link>
-                    {post.tags && post.tags.length > 0 && (
-                      <div className="knowledge-tree__tags">
-                        {post.tags.map((tag) => (
-                          <Link
-                            key={tag}
-                            to={`/tags/${encodeURIComponent(tag)}`}
-                          >
-                            {tag}
-                          </Link>
-                        ))}
-                      </div>
-                    )}
-                  </li>
-                ))}
-              </ul>
-            </>
-          )}
-        </details>
-      </li>
-    )
-  }
 
   return (
     <div className="home">
@@ -144,10 +23,6 @@ export function Home() {
           <div>
             <dt>文章</dt>
             <dd>{allPosts.length}</dd>
-          </div>
-          <div>
-            <dt>分类</dt>
-            <dd>{categories.length}</dd>
           </div>
           <div>
             <dt>标签</dt>
@@ -168,67 +43,6 @@ export function Home() {
 
       <section className="knowledge" aria-labelledby="knowledge-title">
         <div className="knowledge-grid">
-          <div className="knowledge-panel knowledge-panel--wide">
-            {categoryTree.size === 0 && uncategorizedPosts.length === 0 ? (
-              <p className="knowledge-empty">还没有分类。</p>
-            ) : (
-              <div className="knowledge-tree" role="tree">
-                <div className="knowledge-tree__root">
-                  <span>{siteConfig.title}</span>
-                  <strong>{allPosts.length} 篇</strong>
-                </div>
-                <ul className="knowledge-tree__branches">
-                  {[...categoryTree.values()].map((node) => renderCategoryNode(node))}
-                  {uncategorizedPosts.length > 0 && (
-                    <li className="knowledge-tree__branch" key="uncategorized">
-                      <details className="knowledge-tree__details">
-                        <summary className="knowledge-tree__summary">
-                          <span className="knowledge-tree__category-name">
-                            未分类
-                          </span>
-                          <span className="knowledge-tree__latest">
-                            {uncategorizedPosts[0]?.title}
-                          </span>
-                          <strong>{uncategorizedPosts.length}</strong>
-                        </summary>
-                        <div className="knowledge-tree__category-actions">
-                          <span>未分类文章</span>
-                        </div>
-                        <ul className="knowledge-tree__posts">
-                          {uncategorizedPosts.map((post) => (
-                            <li key={post.slug}>
-                              <Link
-                                to={`/posts/${post.slug}`}
-                                className="knowledge-tree__post"
-                              >
-                                <span>{post.title}</span>
-                                <time dateTime={post.date}>
-                                  {formatShortDate(post.date)}
-                                </time>
-                              </Link>
-                              {post.tags && post.tags.length > 0 && (
-                                <div className="knowledge-tree__tags">
-                                  {post.tags.map((tag) => (
-                                    <Link
-                                      key={tag}
-                                      to={`/tags/${encodeURIComponent(tag)}`}
-                                    >
-                                      {tag}
-                                    </Link>
-                                  ))}
-                                </div>
-                              )}
-                            </li>
-                          ))}
-                        </ul>
-                      </details>
-                    </li>
-                  )}
-                </ul>
-              </div>
-            )}
-          </div>
-
           <div className="knowledge-panel">
             <div className="knowledge-panel__head">
               <h3>标签索引</h3>
@@ -271,6 +85,17 @@ export function Home() {
                 ))}
               </ol>
             )}
+          </div>
+
+          <div className="knowledge-panel knowledge-panel--wide">
+            <div className="knowledge-panel__head">
+              <h3>全部文章</h3>
+              <Link to="/articles">浏览全部</Link>
+            </div>
+            <p className="knowledge-empty">
+              完整的树形文章列表已移至
+              <Link to="/articles">「文章」页</Link>。
+            </p>
           </div>
         </div>
       </section>

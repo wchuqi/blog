@@ -13,6 +13,7 @@ review:
   reps: 0
   interval: 0
   ease: 2.5
+noReview: true
 ---
 
 # WSL 全面指南：架构、原理、配置与实战

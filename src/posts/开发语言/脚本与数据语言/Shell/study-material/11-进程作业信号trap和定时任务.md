@@ -5,13 +5,13 @@ description: "Shell 脚本经常创建子进程、后台任务和临时文件。
 tags:
   - "开发语言"
   - "Shell"
-category: "开发语言"
 review:
   created: 2026-06-20
   lastReview: 2026-06-20
   reps: 0
   interval: 0
   ease: 2.5
+noReview: true
 ---
 
 # Shell学习资料：进程、作业、信号、trap 和定时任务

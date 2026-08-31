@@ -5,13 +5,13 @@ description: "Spring Boot 提供很多开箱即用能力，但生产安全不是
 tags:
   - "框架"
   - "SpringBoot框架"
-category: "框架"
 review:
   created: 2026-06-20
   lastReview: 2026-06-20
   reps: 0
   interval: 0
   ease: 2.5
+noReview: true
 ---
 
 # Spring Boot 4 学习资料：安全配置、Secrets 和生产边界

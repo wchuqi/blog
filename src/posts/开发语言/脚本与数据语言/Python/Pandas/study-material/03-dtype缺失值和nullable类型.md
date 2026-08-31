@@ -5,13 +5,13 @@ description: "Pandas dtype 决定列的存储、计算和缺失值行为。传�
 tags:
   - "开发语言"
   - "Pandas"
-category: "开发语言"
 review:
   created: 2026-06-20
   lastReview: 2026-06-20
   reps: 0
   interval: 0
   ease: 2.5
+noReview: true
 ---
 
 # Pandas学习资料：dtype、缺失值和 nullable 类型

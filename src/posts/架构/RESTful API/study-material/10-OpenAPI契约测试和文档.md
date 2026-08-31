@@ -5,13 +5,13 @@ description: "OpenAPI 用机器可读格式描述 API，包括路径、方法、
 tags:
   - "架构"
   - "RESTful API"
-category: "架构"
 review:
   created: 2026-06-20
   lastReview: 2026-06-20
   reps: 0
   interval: 0
   ease: 2.5
+noReview: true
 ---
 
 # RESTful API学习资料：OpenAPI契约测试和文档

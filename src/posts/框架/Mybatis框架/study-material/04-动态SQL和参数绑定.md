@@ -5,13 +5,13 @@ description: "动态 SQL 是 MyBatis 的核心能力之一。业务查询通常�
 tags:
   - "框架"
   - "Mybatis框架"
-category: "框架"
 review:
   created: 2026-06-20
   lastReview: 2026-06-20
   reps: 0
   interval: 0
   ease: 2.5
+noReview: true
 ---
 
 # MyBatis 学习资料：动态 SQL 和参数绑定

@@ -1,6 +1,6 @@
 import { useEffect } from 'react'
 import { siteConfig } from '../config'
-import { allPosts, getTags, getCategories } from '../lib/posts'
+import { allPosts, getTags } from '../lib/posts'
 
 /** 关于页：站点简介 + 统计信息。可自由修改这里的文案。 */
 export function About() {
@@ -32,7 +32,6 @@ export function About() {
           <li>文章总数：{allPosts.length} 篇</li>
           <li>累计字数：约 {totalWords.toLocaleString()} 字</li>
           <li>标签数量：{getTags().length} 个</li>
-          <li>分类数量：{getCategories().length} 个</li>
         </ul>
 
         {siteConfig.social.length > 0 && (

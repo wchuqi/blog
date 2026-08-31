@@ -5,13 +5,13 @@ description: "JVM 启动后通常先解释执行字节码，同时收集运行�
 tags:
   - "开发语言"
   - "JVM"
-category: "开发语言"
 review:
   created: 2026-06-20
   lastReview: 2026-06-20
   reps: 0
   interval: 0
   ease: 2.5
+noReview: true
 ---
 
 # JVM 学习资料：JIT 编译、逃逸分析和性能陷阱

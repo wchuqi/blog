@@ -5,13 +5,13 @@ description: "Linux 中“一切皆文件”不是说所有东西都是普通文
 tags:
   - "运维"
   - "Linux-CentOS7-Ubuntu24"
-category: "运维"
 review:
   created: 2026-06-20
   lastReview: 2026-06-20
   reps: 0
   interval: 0
   ease: 2.5
+noReview: true
 ---
 
 # Linux 学习资料：文件系统、权限、ACL 和链接

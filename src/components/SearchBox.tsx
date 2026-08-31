@@ -4,25 +4,28 @@ import { allPosts } from '../lib/posts'
 import { formatDate } from '../lib/format'
 import type { Post } from '../lib/types'
 
+type SearchDoc = { slug: string; text: string }
+
 /** 在标题、摘要、标签、正文中做大小写不敏感的包含匹配并打分 */
-function search(query: string): Post[] {
+function search(query: string, docs: SearchDoc[] | null): Post[] {
   const q = query.trim().toLowerCase()
   if (!q) return []
   const terms = q.split(/\s+/)
+  const bodyMap = docs ? new Map(docs.map((d) => [d.slug, d.text])) : null
 
   return allPosts
     .map((post) => {
       const title = post.title.toLowerCase()
       const desc = (post.description ?? '').toLowerCase()
       const tags = (post.tags ?? []).join(' ').toLowerCase()
-      const body = post.content.toLowerCase()
 
       let score = 0
       for (const term of terms) {
         if (title.includes(term)) score += 10
         if (tags.includes(term)) score += 5
         if (desc.includes(term)) score += 3
-        if (body.includes(term)) score += 1
+        // 全文索引是独立 chunk，首次打开搜索时才开始加载；未就绪前只搜元数据
+        if (bodyMap?.get(post.slug)?.includes(term)) score += 1
       }
       return { post, score }
     })
@@ -37,10 +40,18 @@ export function SearchBox() {
   const [open, setOpen] = useState(false)
   const [query, setQuery] = useState('')
   const [active, setActive] = useState(0)
+  // 全文搜索索引：首次打开搜索框时才动态加载（独立 chunk，避免拖慢首屏）
+  const [docs, setDocs] = useState<SearchDoc[] | null>(null)
   const inputRef = useRef<HTMLInputElement>(null)
   const navigate = useNavigate()
 
-  const results = useMemo(() => search(query), [query])
+  useEffect(() => {
+    if (open && docs === null) {
+      import('virtual:posts-search-index').then((m) => setDocs(m.default))
+    }
+  }, [open, docs])
+
+  const results = useMemo(() => search(query, docs), [query, docs])
 
   // 打开时聚焦输入框
   useEffect(() => {
@@ -64,6 +75,19 @@ export function SearchBox() {
     return () => window.removeEventListener('keydown', onKey)
   }, [])
 
+  // Esc 全局关闭：无论焦点在不在输入框（点击遮罩后焦点丢失也能关）
+  useEffect(() => {
+    if (!open) return
+    const onEsc = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        e.preventDefault()
+        setOpen(false)
+      }
+    }
+    window.addEventListener('keydown', onEsc)
+    return () => window.removeEventListener('keydown', onEsc)
+  }, [open])
+
   const close = useCallback(() => setOpen(false), [])
 
   const go = useCallback(
@@ -75,9 +99,7 @@ export function SearchBox() {
   )
 
   const onKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'Escape') {
-      close()
-    } else if (e.key === 'ArrowDown') {
+    if (e.key === 'ArrowDown') {
       e.preventDefault()
       setActive((a) => Math.min(a + 1, results.length - 1))
     } else if (e.key === 'ArrowUp') {

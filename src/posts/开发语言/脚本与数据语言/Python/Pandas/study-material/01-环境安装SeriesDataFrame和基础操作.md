@@ -5,13 +5,13 @@ description: "Series 是带索引的一维数据，DataFrame 是由多列 Series
 tags:
   - "开发语言"
   - "Pandas"
-category: "开发语言"
 review:
   created: 2026-06-20
   lastReview: 2026-06-20
   reps: 0
   interval: 0
   ease: 2.5
+noReview: true
 ---
 
 # Pandas学习资料：环境安装、Series、DataFrame 和基础操作

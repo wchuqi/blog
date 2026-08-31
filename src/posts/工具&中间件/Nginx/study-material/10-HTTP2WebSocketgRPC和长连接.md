@@ -5,13 +5,13 @@ description: "不同协议对代理要求不同。WebSocket 需要 HTTP Upgrade 
 tags:
   - "工具&中间件"
   - "Nginx"
-category: "工具&中间件"
 review:
   created: 2026-06-20
   lastReview: 2026-06-20
   reps: 0
   interval: 0
   ease: 2.5
+noReview: true
 ---
 
 # Nginx学习资料：HTTP/2、WebSocket、gRPC 和长连接

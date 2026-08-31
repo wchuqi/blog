@@ -6,13 +6,13 @@ tags:
   - "工具&中间件"
   - "Docker"
   - "知识清单"
-category: "工具&中间件"
 review:
   created: 2026-06-20
   lastReview: 2026-06-20
   reps: 0
   interval: 0
   ease: 2.5
+noReview: true
 ---
 
 # Docker学习资料：Docker完整知识点清单

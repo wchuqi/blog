@@ -5,13 +5,13 @@ description: "HTTP 方法不是随便选的动作标签，它们携带协议层�
 tags:
   - "架构"
   - "RESTful API"
-category: "架构"
 review:
   created: 2026-06-20
   lastReview: 2026-06-20
   reps: 0
   interval: 0
   ease: 2.5
+noReview: true
 ---
 
 # RESTful API学习资料：HTTP方法安全性幂等性

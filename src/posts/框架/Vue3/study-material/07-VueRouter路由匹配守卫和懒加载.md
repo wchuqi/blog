@@ -5,13 +5,13 @@ description: "Vue Router 管理的是“当前 URL 对应哪个组件树”。�
 tags:
   - "框架"
   - "Vue3"
-category: "框架"
 review:
   created: 2026-06-20
   lastReview: 2026-06-20
   reps: 0
   interval: 0
   ease: 2.5
+noReview: true
 ---
 
 # Vue3学习资料：Vue Router 路由匹配、守卫和懒加载

@@ -6,13 +6,13 @@ tags:
   - "工具&中间件"
   - "Nginx"
   - "深度解析"
-category: "工具&中间件"
 review:
   created: 2026-06-20
   lastReview: 2026-06-20
   reps: 0
   interval: 0
   ease: 2.5
+noReview: true
 ---
 
 # Nginx学习资料：HTTP 请求解析状态机、URI 归一化和变量求值深度解析

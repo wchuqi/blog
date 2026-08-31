@@ -5,13 +5,13 @@ description: "慢 SQL 定位不是看到一条耗时长的 SQL 就直接加索�
 tags:
   - "数据库"
   - "PostgreSQL13"
-category: "数据库"
 review:
   created: 2026-06-20
   lastReview: 2026-06-20
   reps: 0
   interval: 0
   ease: 2.5
+noReview: true
 ---
 
 # PostgreSQL 13 学习资料：慢 SQL 定位和 SQL 调优

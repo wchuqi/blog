@@ -5,13 +5,13 @@ description: "DDL 是业务模型的骨架。一个表结构不仅存数据，�
 tags:
   - "数据库"
   - "SQL"
-category: "数据库"
 review:
   created: 2026-06-20
   lastReview: 2026-06-20
   reps: 0
   interval: 0
   ease: 2.5
+noReview: true
 ---
 
 # SQL 学习资料：DDL表约束范式和数据建模

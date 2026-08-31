@@ -5,13 +5,13 @@ description: "Bitmap 本质上是 String 的位操作，适合大量布尔状态
 tags:
   - "工具&中间件"
   - "Redis"
-category: "工具&中间件"
 review:
   created: 2026-06-20
   lastReview: 2026-06-20
   reps: 0
   interval: 0
   ease: 2.5
+noReview: true
 ---
 
 # Redis学习资料：Bitmap、HyperLogLog、Geo 和 Stream

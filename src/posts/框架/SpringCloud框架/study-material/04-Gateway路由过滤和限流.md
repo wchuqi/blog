@@ -5,13 +5,13 @@ description: "Gateway 位于外部客户端和内部服务之间，是流量入�
 tags:
   - "框架"
   - "SpringCloud框架"
-category: "框架"
 review:
   created: 2026-06-20
   lastReview: 2026-06-20
   reps: 0
   interval: 0
   ease: 2.5
+noReview: true
 ---
 
 # Spring Cloud 学习资料：Gateway 路由、过滤和限流

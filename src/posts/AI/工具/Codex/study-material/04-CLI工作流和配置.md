@@ -6,13 +6,13 @@ tags:
   - "AI"
   - "工具"
   - "Codex"
-category: "AI"
 review:
   created: 2026-06-20
   lastReview: 2026-06-20
   reps: 0
   interval: 0
   ease: 2.5
+noReview: true
 ---
 
 # Codex学习资料：CLI工作流和配置

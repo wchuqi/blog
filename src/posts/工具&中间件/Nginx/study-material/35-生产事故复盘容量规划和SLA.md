@@ -5,13 +5,13 @@ description: "易错： 没有保存发布前后的 nginx -T。"
 tags:
   - "工具&中间件"
   - "Nginx"
-category: "工具&中间件"
 review:
   created: 2026-06-20
   lastReview: 2026-06-20
   reps: 0
   interval: 0
   ease: 2.5
+noReview: true
 ---
 
 # Nginx学习资料：生产事故复盘、容量规划和 SLA

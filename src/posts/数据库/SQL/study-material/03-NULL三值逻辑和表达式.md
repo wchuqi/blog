@@ -5,13 +5,13 @@ description: "NULL 是 SQL 中最容易被低估的概念。普通布尔逻辑�
 tags:
   - "数据库"
   - "SQL"
-category: "数据库"
 review:
   created: 2026-06-20
   lastReview: 2026-06-20
   reps: 0
   interval: 0
   ease: 2.5
+noReview: true
 ---
 
 # SQL 学习资料：NULL三值逻辑和表达式

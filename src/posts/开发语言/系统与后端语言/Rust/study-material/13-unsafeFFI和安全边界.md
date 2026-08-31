@@ -5,13 +5,13 @@ description: "unsafe 是 Rust 和底层世界连接的边界。它允许解引�
 tags:
   - "开发语言"
   - "Rust"
-category: "开发语言"
 review:
   created: 2026-06-20
   lastReview: 2026-06-20
   reps: 0
   interval: 0
   ease: 2.5
+noReview: true
 ---
 
 # Rust学习资料：unsafe、FFI 和安全边界

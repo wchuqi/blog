@@ -7,13 +7,13 @@ tags:
   - "工具"
   - "Claude Code"
   - "深度解析"
-category: "AI"
 review:
   created: 2026-06-20
   lastReview: 2026-06-20
   reps: 0
   interval: 0
   ease: 2.5
+noReview: true
 ---
 
 # Claude Code 学习资料：Agent SDK 平台化架构、评估和可观测性深度解析

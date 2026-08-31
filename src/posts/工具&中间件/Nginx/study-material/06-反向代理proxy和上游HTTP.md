@@ -5,13 +5,13 @@ description: "反向代理是 Nginx 最常见用途。客户端连接 Nginx，Ng
 tags:
   - "工具&中间件"
   - "Nginx"
-category: "工具&中间件"
 review:
   created: 2026-06-20
   lastReview: 2026-06-20
   reps: 0
   interval: 0
   ease: 2.5
+noReview: true
 ---
 
 # Nginx学习资料：反向代理 proxy 和上游 HTTP

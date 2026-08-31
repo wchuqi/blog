@@ -5,13 +5,13 @@ description: "Go 的测试能力内置在工具链里，测试文件以 test.go 
 tags:
   - "开发语言"
   - "Golang"
-category: "开发语言"
 review:
   created: 2026-06-20
   lastReview: 2026-06-20
   reps: 0
   interval: 0
   ease: 2.5
+noReview: true
 ---
 
 # Golang 学习资料：测试、基准测试、Fuzz 和质量工具

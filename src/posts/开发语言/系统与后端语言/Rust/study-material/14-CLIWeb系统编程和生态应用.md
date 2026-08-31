@@ -5,13 +5,13 @@ description: "Rust 生态强调显式组合。很多能力不是标准库内置�
 tags:
   - "开发语言"
   - "Rust"
-category: "开发语言"
 review:
   created: 2026-06-20
   lastReview: 2026-06-20
   reps: 0
   interval: 0
   ease: 2.5
+noReview: true
 ---
 
 # Rust学习资料：CLI、Web、系统编程和生态应用

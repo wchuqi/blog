@@ -7,13 +7,13 @@ tags:
   - "工具"
   - "OpenCode"
   - "深度解析"
-category: "AI"
 review:
   created: 2026-06-20
   lastReview: 2026-06-20
   reps: 0
   interval: 0
   ease: 2.5
+noReview: true
 ---
 
 # OpenCode 学习资料：上下文工程、AGENTS.md 和命令系统深度解析

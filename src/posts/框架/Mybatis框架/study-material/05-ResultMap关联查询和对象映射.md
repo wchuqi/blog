@@ -5,13 +5,13 @@ description: "数据库返回的是二维表 ResultSet，Java 业务常用对象
 tags:
   - "框架"
   - "Mybatis框架"
-category: "框架"
 review:
   created: 2026-06-20
   lastReview: 2026-06-20
   reps: 0
   interval: 0
   ease: 2.5
+noReview: true
 ---
 
 # MyBatis 学习资料：ResultMap、关联查询和对象映射

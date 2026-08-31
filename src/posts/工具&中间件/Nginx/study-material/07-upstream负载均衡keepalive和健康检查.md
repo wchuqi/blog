@@ -5,13 +5,13 @@ description: "upstream 定义后端服务器池。Nginx 根据策略选择后端
 tags:
   - "工具&中间件"
   - "Nginx"
-category: "工具&中间件"
 review:
   created: 2026-06-20
   lastReview: 2026-06-20
   reps: 0
   interval: 0
   ease: 2.5
+noReview: true
 ---
 
 # Nginx学习资料：upstream、负载均衡、keepalive 和健康检查

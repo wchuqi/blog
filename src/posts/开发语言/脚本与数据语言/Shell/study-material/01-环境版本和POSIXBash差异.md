@@ -5,13 +5,13 @@ description: "Shell 不是一个单一语言。/bin/sh 在不同系统上可能�
 tags:
   - "开发语言"
   - "Shell"
-category: "开发语言"
 review:
   created: 2026-06-20
   lastReview: 2026-06-20
   reps: 0
   interval: 0
   ease: 2.5
+noReview: true
 ---
 
 # Shell学习资料：环境、版本和 POSIX/Bash 差异

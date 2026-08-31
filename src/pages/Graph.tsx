@@ -23,17 +23,24 @@ const maxCanvasEdges = 4200
 const denseGraphThreshold = 600
 const massiveGraphThreshold = 6000
 const goldenAngle = Math.PI * (3 - Math.sqrt(5))
+
+/** 图谱聚类键：按第一级子目录分组（替代已被移除的 category 字段） */
+function clusterKey(slug: string): string {
+  const head = slug.split('/')[0]
+  return head || '其他'
+}
+
 const categoryPalette = [
-  '#2563eb',
-  '#0f766e',
-  '#c2410c',
-  '#7c3aed',
-  '#be123c',
-  '#4d7c0f',
-  '#0369a1',
-  '#a16207',
-  '#db2777',
-  '#0891b2',
+  '#0071e3',
+  '#34c759',
+  '#ff9f0a',
+  '#bf5af2',
+  '#ff375f',
+  '#5ac8fa',
+  '#0a84ff',
+  '#ffd60a',
+  '#ff6482',
+  '#30d158',
 ]
 
 type CanvasGraphNode = GraphNode &
@@ -227,7 +234,7 @@ export function Graph() {
   const canvasNodeLimit = getCanvasNodeLimit(graph.nodes.length)
   const canvasEdgeLimit = getCanvasEdgeLimit(graph.edges.length, graph.nodes.length)
   const clusterCount = useMemo(
-    () => new Set(graph.nodes.map((node) => node.category ?? '未分类')).size,
+    () => new Set(graph.nodes.map((node) => clusterKey(node.slug))).size,
     [graph.nodes]
   )
   const visibilityAnchor = graph.nodes.length > canvasNodeLimit ? selectedSlug : ''
@@ -289,7 +296,7 @@ export function Graph() {
 
     return graph.nodes
       .filter((node) => {
-        const haystack = [node.title, node.slug, node.category, ...(node.tags ?? [])]
+        const haystack = [node.title, node.slug, clusterKey(node.slug), ...(node.tags ?? [])]
           .filter(Boolean)
           .join(' ')
           .toLowerCase()
@@ -326,12 +333,12 @@ export function Graph() {
     const panelColor = computedStyle.getPropertyValue('--panel-strong').trim() || '#ffffff'
     const totalCategoryCounts = new Map<string, number>()
     for (const node of graph.nodes) {
-      const category = node.category ?? '未分类'
+      const category = clusterKey(node.slug)
       totalCategoryCounts.set(category, (totalCategoryCounts.get(category) ?? 0) + 1)
     }
     const visibleCategoryCounts = new Map<string, number>()
     for (const node of renderGraph.nodes) {
-      const category = node.category ?? '未分类'
+      const category = clusterKey(node.slug)
       visibleCategoryCounts.set(category, (visibleCategoryCounts.get(category) ?? 0) + 1)
     }
     const categories = [...totalCategoryCounts.entries()]
@@ -354,6 +361,12 @@ export function Graph() {
     const denseGraph = renderGraph.nodes.length > denseGraphThreshold
     const massiveGraph = graph.nodes.length > massiveGraphThreshold
 
+    const reducedMotionQuery = window.matchMedia('(prefers-reduced-motion: reduce)')
+    let reducedMotion = reducedMotionQuery.matches
+    const onReducedMotionChange = (event: MediaQueryListEvent) => {
+      reducedMotion = event.matches
+    }
+
     const getCategoryCenterByName = (category: string) => {
       if (categories.length <= 1) return { x: width / 2, y: height / 2 }
       const index = categoryIndexByName.get(category) ?? 0
@@ -370,7 +383,7 @@ export function Graph() {
       }
     }
 
-    const getCategoryCenter = (node: GraphNode) => getCategoryCenterByName(node.category ?? '未分类')
+    const getCategoryCenter = (node: GraphNode) => getCategoryCenterByName(clusterKey(node.slug))
 
     const getClusters = (): CanvasGraphCluster[] => {
       return categories
@@ -393,7 +406,7 @@ export function Graph() {
     const visibleCategoryIndexes = new Map<string, number>()
     const nodes: CanvasGraphNode[] = renderGraph.nodes.map((node) => {
       const degree = degreeBySlug.get(node.slug) ?? 0
-      const category = node.category ?? '未分类'
+      const category = clusterKey(node.slug)
       const categoryIndex = visibleCategoryIndexes.get(category) ?? 0
       const categoryTotal = visibleCategoryCounts.get(category) ?? 1
       visibleCategoryIndexes.set(category, categoryIndex + 1)
@@ -409,7 +422,7 @@ export function Graph() {
 
       return {
         ...node,
-        color: colorByCategory(node.category ?? '未分类'),
+        color: colorByCategory(clusterKey(node.slug)),
         degree,
         radius,
         x: center.x + Math.cos(angle) * spread,
@@ -600,7 +613,7 @@ export function Graph() {
       context.lineCap = 'round'
 
       for (const node of nodes) {
-        const category = node.category ?? '未分类'
+        const category = clusterKey(node.slug)
         const cluster = clusterByName.get(category)
         if (!cluster) continue
 
@@ -758,7 +771,7 @@ export function Graph() {
 
       const selectedNode = selectedSlug ? nodeBySlug.get(selectedSlug) : undefined
       const clusters = getClusters()
-      const selectedCategory = selectedNode ? selectedNode.category ?? '未分类' : undefined
+      const selectedCategory = selectedNode ? clusterKey(selectedNode.slug) : undefined
       drawCategoryGuides(clusters, selectedCategory, time)
       drawClusters(clusters, selectedCategory)
 
@@ -785,7 +798,7 @@ export function Graph() {
         context.lineWidth = active ? 1.45 / transform.k : denseGraph ? 0.42 / transform.k : 0.72 / transform.k
         context.shadowBlur = active ? 10 / transform.k : 0
         context.shadowColor = active ? target.color : 'transparent'
-        if (active) {
+        if (active && !reducedMotion) {
           context.setLineDash([6 / transform.k, 8 / transform.k])
           context.lineDashOffset = -time / 80 / transform.k
         }
@@ -797,7 +810,7 @@ export function Graph() {
           drawArrow(arrowBase.x, arrowBase.y, x2, y2, active ? target.color : source.color, active ? 0.9 : 0.38)
         }
 
-        if (active) {
+        if (active && !reducedMotion) {
           const t = (time / 1050 + links.indexOf(link) * 0.11) % 1
           const pulse = getQuadraticPoint(x1, y1, cx, cy, x2, y2, t)
           context.beginPath()
@@ -816,7 +829,7 @@ export function Graph() {
         const dimmed = Boolean(selectedSlug && !active && !connected)
         const x = node.x ?? width / 2
         const y = node.y ?? height / 2
-        const pulse = active ? Math.sin(time / 240) * 0.5 : 0
+        const pulse = active && !reducedMotion ? Math.sin(time / 240) * 0.5 : 0
         const radius = node.radius + (active ? 1.35 + pulse : connected ? 0.7 : 0)
 
         if (active || connected || node === hoveredNode) {
@@ -825,7 +838,7 @@ export function Graph() {
           context.fillStyle = hexToRgba(node.color, active ? 0.14 : 0.08)
           context.fill()
 
-          if (active) {
+          if (active && !reducedMotion) {
             const orbitRadius = radius + 8
             const orbitAngle = time / 620
             context.beginPath()
@@ -965,6 +978,7 @@ export function Graph() {
     canvas.addEventListener('pointermove', handlePointerMove)
     canvas.addEventListener('pointerup', finishPointer)
     canvas.addEventListener('pointercancel', finishPointer)
+    reducedMotionQuery.addEventListener('change', onReducedMotionChange)
 
     resizeCanvas()
     spatialIndex.addAll(nodes)
@@ -980,6 +994,7 @@ export function Graph() {
       canvas.removeEventListener('pointermove', handlePointerMove)
       canvas.removeEventListener('pointerup', finishPointer)
       canvas.removeEventListener('pointercancel', finishPointer)
+      reducedMotionQuery.removeEventListener('change', onReducedMotionChange)
       resetViewRef.current = () => undefined
       focusSelectedRef.current = () => undefined
     }
@@ -1059,7 +1074,7 @@ export function Graph() {
             {selected && (
               <>
                 <div className="graph-panel__head">
-                  <span>{selected.category ?? '未分类'}</span>
+                  <span>{clusterKey(selected.slug)}</span>
                   <h2>{selected.title}</h2>
                   <Link to={`/posts/${selected.slug}`}>打开笔记</Link>
                 </div>

@@ -5,13 +5,13 @@ description: "Nginx 先根据本地监听地址和端口找到候选 server，�
 tags:
   - "工具&中间件"
   - "Nginx"
-category: "工具&中间件"
 review:
   created: 2026-06-20
   lastReview: 2026-06-20
   reps: 0
   interval: 0
   ease: 2.5
+noReview: true
 ---
 
 # Nginx学习资料：虚拟主机、listen 和 server_name 匹配

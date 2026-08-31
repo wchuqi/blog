@@ -1,12 +1,11 @@
 import { Link } from 'react-router-dom'
-import { allPosts, getTags, getCategories } from '../lib/posts'
+import { allPosts, getTags } from '../lib/posts'
 import { siteConfig } from '../config'
 import { formatShortDate } from '../lib/format'
 
 export function HomeSidebar() {
   const { profile } = siteConfig
   const tags = getTags().slice(0, 12)
-  const categories = getCategories().slice(0, 6)
   const recent = allPosts.slice(0, 5)
 
   const tagCount = getTags().length
@@ -54,10 +53,6 @@ export function HomeSidebar() {
             <Link to="/tags" className="stats__item">
               <span className="stats__num">{tagCount}</span>
               <span className="stats__label">标签</span>
-            </Link>
-            <Link to="/categories" className="stats__item">
-              <span className="stats__num">{categories.length}</span>
-              <span className="stats__label">分类</span>
             </Link>
             <div className="stats__item">
               <span className="stats__num">

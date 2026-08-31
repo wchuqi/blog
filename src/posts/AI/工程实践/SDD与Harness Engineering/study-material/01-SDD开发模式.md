@@ -6,13 +6,13 @@ tags:
   - "AI"
   - "工程实践"
   - "SDD与Harness Engineering"
-category: "AI"
 review:
   created: 2026-06-20
   lastReview: 2026-06-20
   reps: 0
   interval: 0
   ease: 2.5
+noReview: true
 ---
 
 # SDD与Harness Engineering学习资料：SDD开发模式

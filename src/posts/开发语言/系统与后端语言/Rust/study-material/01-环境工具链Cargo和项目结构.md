@@ -5,13 +5,13 @@ description: "Rust 的工具链是一套紧密集成的工程系统。rustc 是�
 tags:
   - "开发语言"
   - "Rust"
-category: "开发语言"
 review:
   created: 2026-06-20
   lastReview: 2026-06-20
   reps: 0
   interval: 0
   ease: 2.5
+noReview: true
 ---
 
 # Rust学习资料：环境工具链Cargo和项目结构

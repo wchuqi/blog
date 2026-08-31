@@ -121,10 +121,17 @@ def slug_from_path(path: Path) -> str:
     return rel[:-3]  # 去 .md
 
 
+def is_hidden(path: Path) -> bool:
+    """位于点目录（或自身是点文件）的 .md 视为工具数据，不进复习池"""
+    return any(part.startswith(".") for part in path.relative_to(POSTS_DIR).parts)
+
+
 def scan_posts() -> list[dict]:
     """扫描所有 .md，返回 [{path, slug, fm_text, body, has_fm, title, date, no_review, nl}]"""
     posts = []
     for md_file in POSTS_DIR.rglob("*.md"):
+        if is_hidden(md_file):
+            continue
         # 以字节读取再解码，保留原始换行符（CRLF/LF）不丢失
         raw = md_file.read_bytes().decode("utf-8")
         nl = detect_newline(raw)
@@ -134,10 +141,6 @@ def scan_posts() -> list[dict]:
         no_review = parse_frontmatter_value(fm_text, "noReview")
         is_encrypted = parse_frontmatter_value(fm_text, "encrypted")
         is_draft = parse_frontmatter_value(fm_text, "draft")
-        # 路径推导分类
-        rel = md_file.relative_to(POSTS_DIR).as_posix()
-        path_parts = rel.split("/")
-        category = "/".join(path_parts[:-1]) if len(path_parts) > 1 else parse_frontmatter_value(fm_text, "category")
         posts.append({
             "path": md_file,
             "slug": slug_from_path(md_file),
@@ -150,7 +153,6 @@ def scan_posts() -> list[dict]:
             "no_review": no_review == "true" if no_review else False,
             "encrypted": is_encrypted == "true" if is_encrypted else False,
             "draft": is_draft == "true" if is_draft else False,
-            "category": category,
         })
     return posts
 
@@ -251,13 +253,14 @@ def build_review_json(conn: sqlite3.Connection, posts: list[dict]) -> dict:
         # dueIn
         if last_review and interval > 0:
             due_in = (date.fromisoformat(next_review[:10]) - today).days
+        elif reps == 0:
+            due_in = 0
         else:
             due_in = (date.fromisoformat(created[:10]) - today).days
 
         cards_data.append({
             "slug": slug,
             "title": post["title"],
-            "category": post["category"],
             "created": created,
             "lastReview": last_review or created,
             "reps": reps,
@@ -272,10 +275,23 @@ def build_review_json(conn: sqlite3.Connection, posts: list[dict]) -> dict:
     stats = db.get_stats(conn)
     heatmap = db.get_heatmap(conn)
 
+    # 收集显式退出复习池的文章（noReview: true，排除加密/草稿）
+    excluded = []
+    for post in posts:
+        if post["encrypted"] or post["draft"]:
+            continue
+        if not post["no_review"]:
+            continue
+        excluded.append({
+            "slug": post["slug"],
+            "title": post["title"],
+        })
+
     return {
         "stats": stats,
         "cards": cards_data,
         "heatmap": heatmap,
+        "excluded": excluded,
     }
 
 
@@ -286,12 +302,19 @@ def main():
     posts = scan_posts()
     print(f"[sync] 扫描到 {len(posts)} 篇文章")
 
+    # 清理已退出复习池的文章（noReview: true）的 SQLite 遗留数据
+    for post in posts:
+        if post["no_review"] and not post["encrypted"] and not post["draft"]:
+            conn.execute("DELETE FROM reviews WHERE slug = ?", (post["slug"],))
+            conn.execute("DELETE FROM cards WHERE slug = ?", (post["slug"],))
+    conn.commit()
+
     # 确保所有参与复习的文章在 SQLite 中有卡片记录
     for post in posts:
         if post["encrypted"] or post["draft"] or post["no_review"]:
             continue
         created = post["date"] or date.today().isoformat()
-        db.ensure_card(conn, post["slug"], post["title"], post["category"], created)
+        db.ensure_card(conn, post["slug"], post["title"], None, created)
 
     updated = sync_frontmatter(conn, posts)
     print(f"[sync] 已更新 {updated} 篇文章的 frontmatter 快照")

@@ -5,13 +5,13 @@ description: "ASGI 是 Python 异步 Web 应用和服务器之间的协议。Uvi
 tags:
   - "开发语言"
   - "FastApi"
-category: "开发语言"
 review:
   created: 2026-06-20
   lastReview: 2026-06-20
   reps: 0
   interval: 0
   ease: 2.5
+noReview: true
 ---
 
 # FastAPI学习资料：ASGI运行模型和生命周期

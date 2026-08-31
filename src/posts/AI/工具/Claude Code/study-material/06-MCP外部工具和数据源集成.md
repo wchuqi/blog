@@ -6,13 +6,13 @@ tags:
   - "AI"
   - "工具"
   - "Claude Code"
-category: "AI"
 review:
   created: 2026-06-20
   lastReview: 2026-06-20
   reps: 0
   interval: 0
   ease: 2.5
+noReview: true
 ---
 
 # Claude Code 学习资料：MCP 外部工具和数据源集成

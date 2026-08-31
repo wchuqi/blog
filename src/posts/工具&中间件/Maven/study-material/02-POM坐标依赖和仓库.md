@@ -5,13 +5,13 @@ description: "POM 是 Maven 项目的说明书。它不只是列依赖，还描�
 tags:
   - "工具&中间件"
   - "Maven"
-category: "工具&中间件"
 review:
   created: 2026-06-20
   lastReview: 2026-06-20
   reps: 0
   interval: 0
   ease: 2.5
+noReview: true
 ---
 
 # Maven 学习资料：POM、坐标、依赖和仓库

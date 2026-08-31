@@ -5,7 +5,6 @@ description: 第一篇文章。介绍这个纯前端 Markdown 博客的技术选
 tags:
   - "公告"
   - "前端"
-category: 随笔
 pinned: true
 review:
   created: 2026-06-10
@@ -13,6 +12,7 @@ review:
   reps: 0
   interval: 0
   ease: 2.5
+noReview: true
 ---
 
 欢迎来到这个博客！这是一篇示例文章，同时也是一份简易的使用说明。
@@ -35,7 +35,7 @@ review:
 我把常见的博客功能都做了进来：
 
 1. 文章列表与分页
-2. 标签（tags）与分类（category）
+2. 标签（tags）
 3. 按年份归档
 4. 站内全文搜索（试试按 `Ctrl / Cmd + K`）
 5. 深色 / 浅色模式，手动切换
@@ -58,7 +58,6 @@ description: 一句话摘要
 tags:
   - 标签A
   - 标签B
-category: 技术
 ---
 
 正文从这里开始……
@@ -72,7 +71,6 @@ category: 技术
 | `date` | 日期 `YYYY-MM-DD` | 是 |
 | `description` | 摘要 | 否 |
 | `tags` | 标签数组 | 否 |
-| `category` | 分类 | 否 |
 | `cover` | 封面图地址 | 否 |
 | `pinned` | 是否置顶 | 否 |
 | `draft` | 草稿（生产构建中隐藏） | 否 |

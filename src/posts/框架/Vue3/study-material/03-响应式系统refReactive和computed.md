@@ -5,13 +5,13 @@ description: "Vue3 的响应式系统基于 Proxy 和 effect。读取响应式�
 tags:
   - "框架"
   - "Vue3"
-category: "框架"
 review:
   created: 2026-06-20
   lastReview: 2026-06-20
   reps: 0
   interval: 0
   ease: 2.5
+noReview: true
 ---
 
 # Vue3学习资料：响应式系统 ref、reactive 和 computed

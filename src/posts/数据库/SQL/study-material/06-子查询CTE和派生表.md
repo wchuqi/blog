@@ -5,13 +5,13 @@ description: "复杂 SQL 不应该写成一团。子查询、派生表和 CTE �
 tags:
   - "数据库"
   - "SQL"
-category: "数据库"
 review:
   created: 2026-06-20
   lastReview: 2026-06-20
   reps: 0
   interval: 0
   ease: 2.5
+noReview: true
 ---
 
 # SQL 学习资料：子查询CTE和派生表

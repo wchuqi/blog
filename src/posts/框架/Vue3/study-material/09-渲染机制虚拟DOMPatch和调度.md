@@ -5,13 +5,13 @@ description: "Vue 组件渲染会生成虚拟节点树。状态变化后，组�
 tags:
   - "框架"
   - "Vue3"
-category: "框架"
 review:
   created: 2026-06-20
   lastReview: 2026-06-20
   reps: 0
   interval: 0
   ease: 2.5
+noReview: true
 ---
 
 # Vue3学习资料：渲染机制、虚拟 DOM、Patch 和调度

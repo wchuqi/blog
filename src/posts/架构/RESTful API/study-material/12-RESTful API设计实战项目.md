@@ -5,13 +5,13 @@ description: "设计一套“电商订单 API”，覆盖 RESTful API 的主要�
 tags:
   - "架构"
   - "RESTful API"
-category: "架构"
 review:
   created: 2026-06-20
   lastReview: 2026-06-20
   reps: 0
   interval: 0
   ease: 2.5
+noReview: true
 ---
 
 # RESTful API学习资料：RESTful API设计实战项目

@@ -5,13 +5,13 @@ description: "ReDoS 审计不是看到 . 就判死刑，也不是看到嵌套括
 tags:
   - "工具&中间件"
   - "正则表达式"
-category: "工具&中间件"
 review:
   created: 2026-06-20
   lastReview: 2026-06-20
   reps: 0
   interval: 0
   ease: 2.5
+noReview: true
 ---
 
 # 正则表达式学习资料：ReDoS 审计和复杂度分析

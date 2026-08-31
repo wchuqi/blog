@@ -1,40 +1,55 @@
-import fm from 'front-matter'
 import GithubSlugger from 'github-slugger'
+import indexData from 'virtual:posts-index'
 import type {
   GraphEdge,
   GraphNode,
-  NoteLink,
   Post,
-  PostFrontmatter,
   ReviewSnapshot,
   TocItem,
 } from './types'
+import type { IndexEntry } from './types'
 
 /**
- * 用 Vite 的 import.meta.glob 在构建时把 src/posts 下（含任意子目录）的所有 .md 文件
- * 以原始字符串的形式静态打包进来。eager: true 表示同步加载。
- * 下面的 glob 用了递归通配模式，会匹配子目录，所以可以按 年份/分类 等方式任意分目录存放文章。
+ * 文章正文按需加载：构建时每个 .md 是一个独立 chunk，
+ * 只有调用 getPostContent 时才会拉取对应文件。
+ * 元数据（标题/标签/双链/复习快照等）来自 virtual:posts-index，主包内同步可用。
  */
-const modules = import.meta.glob<string>('../posts/**/*.md', {
+const contentLoaders = import.meta.glob<string>('../posts/**/*.md', {
   query: '?raw',
   import: 'default',
-  eager: true,
 })
 
-/** 统计字数：中文按字符计，英文按单词计 */
-function countWords(text: string): number {
-  const cjk = (text.match(/[一-龥]/g) || []).length
-  const en = (text.replace(/[一-龥]/g, ' ').match(/[a-zA-Z0-9]+/g) || [])
-    .length
-  return cjk + en
+const loaderBySlug = new Map(
+  Object.entries(contentLoaders).map(([file, load]) => [slugFromPath(file), load])
+)
+
+const contentCache = new Map<string, Promise<string>>()
+
+/**
+ * 拦截 import.meta.glob 的 HMR 更新，防止 .md 文件被 API 修改时
+ * 触发整页刷新或组件重挂载（导致 PostDetail 的 inReview 等本地状态丢失）。
+ */
+if (import.meta.hot) {
+  import.meta.hot.accept()
+}
+
+/** 加载单篇文章的 Markdown 原文（带缓存）；slug 不存在则返回 undefined */
+export function getPostContent(slug: string): Promise<string | undefined> {
+  const loader = loaderBySlug.get(slug)
+  if (!loader) return Promise.resolve(undefined)
+  if (!contentCache.has(slug)) {
+    contentCache.set(
+      slug,
+      loader().then((raw) => raw.replace(/^---\r?\n[\s\S]*?\r?\n---\r?\n?/, ''))
+    )
+  }
+  return contentCache.get(slug)!
 }
 
 /**
- * 把相对 src/posts 的路径转成路由 slug：去掉前缀与扩展名。
+ * 把 glob key 转成路由 slug：去掉前缀与扩展名。
  *   ../posts/hello-world.md        -> hello-world      （根目录文章，保持原样）
  *   ../posts/tech/hello.md         -> tech/hello        （子目录文章，带目录前缀）
- *   ../posts/2024/notes/intro.md   -> 2024/notes/intro
- * 目录前缀让重名文件也能各自唯一，URL 形如 /posts/tech/hello。
  */
 function slugFromPath(path: string): string {
   return path
@@ -42,89 +57,45 @@ function slugFromPath(path: string): string {
     .replace(/\.md$/, '')
 }
 
-/** 从 Markdown 正文提取 Obsidian 风格双链：[[slug]] 或 [[slug|显示名]] */
-function extractNoteLinks(markdown: string): NoteLink[] {
-  const links: NoteLink[] = []
-  let inCodeBlock = false
-
-  for (const line of markdown.split('\n')) {
-    if (/^```/.test(line.trim())) {
-      inCodeBlock = !inCodeBlock
-      continue
-    }
-    if (inCodeBlock) continue
-
-    const matches = line.matchAll(/\[\[([^\]\|\n]+)(?:\|([^\]\n]+))?\]\]/g)
-    for (const match of matches) {
-      const target = match[1].trim()
-      const label = (match[2] ?? target).trim()
-      if (target) links.push({ target, label })
-    }
+function entryToPost(entry: IndexEntry): Post {
+  return {
+    ...entry,
+    dateObj: new Date(entry.date ?? '1970-01-01'),
+    noteLinks: entry.noteLinks ?? [],
   }
+}
 
-  return links
+/**
+ * 按双链目标查找文章，依次尝试：
+ *   1. 完整 slug（可带 /posts/ 前缀）
+ *   2. frontmatter 标题精确匹配
+ *   3. slug 后缀匹配（允许省略目录前缀，直接用中文文件名引用）
+ */
+function findPostByLink(posts: Post[], target: string): Post | undefined {
+  const normalized = target.replace(/^\/?posts\//, '')
+  return (
+    posts.find((post) => post.slug === normalized) ??
+    posts.find((post) => post.title === target) ??
+    posts.find((post) => post.slug.endsWith('/' + normalized))
+  )
 }
 
 function resolveNoteLinks(posts: Post[]): Post[] {
-  const bySlug = new Map(posts.map((post) => [post.slug, post]))
-  const byTitle = new Map(posts.map((post) => [post.title, post]))
-
   return posts.map((post) => ({
     ...post,
-    noteLinks: post.noteLinks.map((link) => {
-      const normalizedTarget = link.target.replace(/^\/?posts\//, '')
-      const targetPost = bySlug.get(normalizedTarget) ?? byTitle.get(link.target)
-      return {
-        ...link,
-        targetSlug: targetPost?.slug,
-      }
-    }),
+    noteLinks: post.noteLinks.map((link) => ({
+      ...link,
+      targetSlug: findPostByLink(posts, link.target)?.slug,
+    })),
   }))
-}
-
-/** 解析单个 Markdown 文件为 Post 对象 */
-function parsePost(path: string, raw: string): Post {
-  const { attributes, body } = fm<PostFrontmatter>(raw)
-  const slug = slugFromPath(path)
-
-  if (!attributes.title) {
-    console.warn(`[posts] ${slug} 缺少 title，已用 slug 兜底`)
-  }
-
-  // 从文件路径推导分类：src/posts/AI/工具/xxx.md -> AI/工具
-  let derivedCategory: string | undefined
-  const pathMatch = path.match(/\/posts\/(.+)\/[^\/]+\.md$/)
-  if (pathMatch) {
-    derivedCategory = pathMatch[1].replace(/\\/g, '/')
-  }
-
-  const words = countWords(body)
-
-  return {
-    ...attributes,
-    title: attributes.title ?? slug,
-    date: attributes.date ?? '1970-01-01',
-    // 优先使用 frontmatter 中的 category，否则使用从路径推导的
-    category: attributes.category ?? derivedCategory,
-    slug,
-    content: body,
-    words,
-    noteLinks: extractNoteLinks(body),
-    // 按每分钟约 400 字（中英文混合）估算阅读时间，至少 1 分钟
-    readingMinutes: Math.max(1, Math.round(words / 400)),
-    dateObj: new Date(attributes.date ?? '1970-01-01'),
-  }
 }
 
 /**
  * 全部文章（含加密文章），按日期倒序；生产环境过滤草稿。
  * 这是内部完整集合，仅供 getPost 用——加密文章不进列表，但可通过直链访问。
  */
-const parsedPosts: Post[] = Object.entries(modules)
-  .map(([path, raw]) => parsePost(path, raw as string))
+const parsedPosts: Post[] = resolveNoteLinks(indexData.map(entryToPost))
   .filter((p) => (import.meta.env.PROD ? !p.draft : true))
-
-const allParsedPosts: Post[] = resolveNoteLinks(parsedPosts)
   .sort((a, b) => {
     // 置顶优先
     if (!!a.pinned !== !!b.pinned) return a.pinned ? -1 : 1
@@ -136,11 +107,11 @@ const allParsedPosts: Post[] = resolveNoteLinks(parsedPosts)
  * 这样首页/归档/标签/分类/搜索侧边栏等所有消费者都不需要单独判断，
  * 加密文章自然不会出现在任何列表里，只能通过直链 /posts/xxx 访问。
  */
-export const allPosts: Post[] = allParsedPosts.filter((p) => !p.encrypted)
+export const allPosts: Post[] = parsedPosts.filter((p) => !p.encrypted)
 
 /** 按 slug 取单篇（从完整集合查，所以直链能命中加密文章） */
 export function getPost(slug: string): Post | undefined {
-  return allParsedPosts.find((p) => p.slug === slug)
+  return parsedPosts.find((p) => p.slug === slug)
 }
 
 function normalizeSlugPath(path: string): string {
@@ -180,7 +151,7 @@ export function resolveMarkdownPostHref(
         [...currentSlug.split('/').slice(0, -1), withoutExt].join('/')
       )
 
-  const targetPost = allParsedPosts.find((p) => p.slug === targetSlug)
+  const targetPost = findPostByLink(parsedPosts, targetSlug)
   if (!targetPost) {
     console.warn(`[resolveMarkdownPostHref] 找不到目标文章: ${targetSlug}, 当前文章: ${currentSlug}, 原始链接: ${href}`)
     return href
@@ -201,17 +172,6 @@ export function getTags() {
     .sort((a, b) => b.count - a.count)
 }
 
-/** 分类聚合统计 */
-export function getCategories() {
-  const map = new Map<string, number>()
-  for (const p of allPosts) {
-    if (p.category) map.set(p.category, (map.get(p.category) ?? 0) + 1)
-  }
-  return [...map.entries()]
-    .map(([name, count]) => ({ name, count }))
-    .sort((a, b) => b.count - a.count)
-}
-
 /** 按年份分组归档 */
 export function getArchives() {
   const map = new Map<number, Post[]>()
@@ -225,7 +185,7 @@ export function getArchives() {
     .sort((a, b) => b.year - a.year)
 }
 
-/** 把正文中的 [[双链]] 转成普通 Markdown 链接，供 react-markdown 渲染 */
+/** 把正文中的 [[双链]] 转成普通 Markdown 链接，供 react-markdown 渲染（跳过代码块与行内代码） */
 export function renderNoteLinks(markdown: string): string {
   let inCodeBlock = false
 
@@ -238,19 +198,25 @@ export function renderNoteLinks(markdown: string): string {
       }
       if (inCodeBlock) return line
 
-      return line.replace(
-        /\[\[([^\]\|\n]+)(?:\|([^\]\n]+))?\]\]/g,
-        (raw, target: string, label?: string) => {
-          const normalizedTarget = target.trim().replace(/^\/?posts\//, '')
-          const targetPost =
-            allParsedPosts.find((post) => post.slug === normalizedTarget) ??
-            allParsedPosts.find((post) => post.title === target.trim())
-          if (!targetPost) return raw
-          return `[${(label ?? targetPost.title).trim()}](/posts/${targetPost.slug})`
-        }
+      // 行内代码（`...`）中的 [[..]] 不是双链，只转换反引号外的片段
+      const segments = line.split('`')
+      const converted = segments.map((segment, i) =>
+        i % 2 === 0 ? convertLine(segment) : segment
       )
+      return converted.join('`')
     })
     .join('\n')
+
+  function convertLine(line: string): string {
+    return line.replace(
+      /\[\[([^\]\|\n]+)(?:\|([^\]\n]+))?\]\]/g,
+      (raw, target: string, label?: string) => {
+        const targetPost = findPostByLink(parsedPosts, target.trim())
+        if (!targetPost) return raw
+        return `[${(label ?? targetPost.title).trim()}](/posts/${targetPost.slug})`
+      }
+    )
+  }
 }
 
 /** 当前文章的反向链接 */
@@ -266,7 +232,6 @@ export function getPostGraph(): { nodes: GraphNode[]; edges: GraphEdge[] } {
   const nodes = allPosts.map((post) => ({
     slug: post.slug,
     title: post.title,
-    category: post.category,
     tags: post.tags,
   }))
   const edgeKeys = new Set<string>()

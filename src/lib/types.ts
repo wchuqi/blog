@@ -10,8 +10,6 @@ export interface PostFrontmatter {
   description?: string
   /** 标签列表 */
   tags?: string[]
-  /** 分类，单选 */
-  category?: string
   /** 封面图地址 */
   cover?: string
   /** 是否置顶 */
@@ -42,12 +40,10 @@ export interface ReviewSnapshot {
   ease: number
 }
 
-/** 解析后的完整文章对象 */
+/** 解析后的完整文章对象（不含正文，正文通过 getPostContent 懒加载） */
 export interface Post extends PostFrontmatter {
   /** 路由用的唯一标识，来自文件名 */
   slug: string
-  /** 正文 Markdown 原文 */
-  content: string
   /** 预估阅读时间，单位分钟 */
   readingMinutes: number
   /** 正文字数（中英文混合估算） */
@@ -55,6 +51,15 @@ export interface Post extends PostFrontmatter {
   /** 标准化后的日期对象 */
   dateObj: Date
   /** 正文里的双链关系，语法：[[slug]] 或 [[slug|显示名]] */
+  noteLinks: NoteLink[]
+}
+
+/** 构建时生成的文章元数据索引条目（vite 插件扫描 src/posts 产出） */
+export interface IndexEntry extends PostFrontmatter {
+  slug: string
+  date: string
+  words: number
+  readingMinutes: number
   noteLinks: NoteLink[]
 }
 
@@ -72,7 +77,6 @@ export interface NoteLink {
 export interface GraphNode {
   slug: string
   title: string
-  category?: string
   tags?: string[]
 }
 
@@ -118,7 +122,6 @@ export interface ReviewLogEntry {
 export interface ReviewCard {
   slug: string
   title: string
-  category?: string
   /** 开始记忆的日期 */
   created: string
   /** 最近一次复习日期 */
@@ -161,9 +164,17 @@ export interface ReviewHeatmapCell {
   count: number
 }
 
+/** 未纳入复习的文章（frontmatter 标了 noReview: true） */
+export interface ReviewExcludedItem {
+  slug: string
+  title: string
+}
+
 /** public/review.json 的完整结构 */
 export interface ReviewData {
   stats: ReviewStats
   cards: ReviewCard[]
   heatmap: ReviewHeatmapCell[]
+  /** 显式退出复习池的文章 */
+  excluded: ReviewExcludedItem[]
 }

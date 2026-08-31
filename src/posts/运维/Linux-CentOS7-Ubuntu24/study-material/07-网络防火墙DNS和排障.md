@@ -5,13 +5,13 @@ description: "网络排障不能只问“服务器通不通”。要拆成：本
 tags:
   - "运维"
   - "Linux-CentOS7-Ubuntu24"
-category: "运维"
 review:
   created: 2026-06-20
   lastReview: 2026-06-20
   reps: 0
   interval: 0
   ease: 2.5
+noReview: true
 ---
 
 # Linux 学习资料：网络、防火墙、DNS 和排障

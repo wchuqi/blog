@@ -6,13 +6,13 @@ tags:
   - "AI"
   - "工程实践"
   - "AI Context Engineering"
-category: "AI"
 review:
   created: 2026-06-20
   lastReview: 2026-06-20
   reps: 0
   interval: 0
   ease: 2.5
+noReview: true
 ---
 
 # AI Context Engineering 学习资料：基础术语、上下文窗口和 Token 预算

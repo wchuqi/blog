@@ -5,13 +5,13 @@ description: "URI 是资源的稳定地址。路径一般表达资源层级，�
 tags:
   - "架构"
   - "RESTful API"
-category: "架构"
 review:
   created: 2026-06-20
   lastReview: 2026-06-20
   reps: 0
   interval: 0
   ease: 2.5
+noReview: true
 ---
 
 # RESTful API学习资料：URI路径查询和命名规范

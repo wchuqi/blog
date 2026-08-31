@@ -6,13 +6,13 @@ tags:
   - "架构"
   - "分布式锁与事务"
   - "深度解析"
-category: "架构"
 review:
   created: 2026-06-20
   lastReview: 2026-06-20
   reps: 0
   interval: 0
   ease: 2.5
+noReview: true
 ---
 
 # 分布式锁与事务学习资料：Redis Redlock 争议和 fencing token 落地深度解析

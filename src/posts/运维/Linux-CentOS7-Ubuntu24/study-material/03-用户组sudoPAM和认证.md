@@ -5,13 +5,13 @@ description: "Linux 的用户系统不仅是用户名和密码。内核真正识
 tags:
   - "运维"
   - "Linux-CentOS7-Ubuntu24"
-category: "运维"
 review:
   created: 2026-06-20
   lastReview: 2026-06-20
   reps: 0
   interval: 0
   ease: 2.5
+noReview: true
 ---
 
 # Linux 学习资料：用户、组、sudo、PAM 和认证

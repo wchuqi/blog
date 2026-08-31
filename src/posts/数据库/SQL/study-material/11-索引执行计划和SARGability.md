@@ -5,13 +5,13 @@ description: "索引不是“越多越快”。索引是额外的数据结构，
 tags:
   - "数据库"
   - "SQL"
-category: "数据库"
 review:
   created: 2026-06-20
   lastReview: 2026-06-20
   reps: 0
   interval: 0
   ease: 2.5
+noReview: true
 ---
 
 # SQL 学习资料：索引执行计划和SARGability

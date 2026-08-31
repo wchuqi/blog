@@ -5,13 +5,13 @@ description: "很多库都接受或返回 NumPy 数组。Pandas 的 DataFrame �
 tags:
   - "开发语言"
   - "Numpy"
-category: "开发语言"
 review:
   created: 2026-06-20
   lastReview: 2026-06-20
   reps: 0
   interval: 0
   ease: 2.5
+noReview: true
 ---
 
 # NumPy学习资料：Pandas、SciPy、机器学习和图像生态互操作

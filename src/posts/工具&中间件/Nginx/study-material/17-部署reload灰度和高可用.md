@@ -5,13 +5,13 @@ description: "Nginx 配置变更是流量入口变更，必须可验证、可回
 tags:
   - "工具&中间件"
   - "Nginx"
-category: "工具&中间件"
 review:
   created: 2026-06-20
   lastReview: 2026-06-20
   reps: 0
   interval: 0
   ease: 2.5
+noReview: true
 ---
 
 # Nginx学习资料：部署、reload、灰度和高可用

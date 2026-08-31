@@ -197,9 +197,10 @@ def review_card(conn: sqlite3.Connection, slug: str, grade: int) -> dict[str, An
 # ---------- 统计与待复习 ----------
 
 def days_until_due(card: sqlite3.Row, today: date | None = None) -> int | None:
-    """距离下次复习的天数（负=已逾期），无复习记录返回 None"""
+    """距离下次复习的天数（负=已逾期），从未复习返回 0（今天到期）"""
     if not card["last_review"] or card["interval"] <= 0:
-        # 从没复习过：从 created 起算，第 0 天就该复习
+        if card["reps"] == 0:
+            return 0
         created = parse_iso(card["created"])
         if created is None:
             return None
@@ -237,7 +238,10 @@ def get_stats(conn: sqlite3.Connection) -> dict[str, Any]:
     )
 
     today = date.today()
-    due_today = sum(1 for c in cards if (days_until_due(c, today) or 1) <= 0)
+    due_today = sum(
+        1 for c in cards
+        if (d := days_until_due(c, today)) is not None and d <= 0
+    )
     overdue = sum(
         1 for c in cards
         if (d := days_until_due(c, today)) is not None and d < 0

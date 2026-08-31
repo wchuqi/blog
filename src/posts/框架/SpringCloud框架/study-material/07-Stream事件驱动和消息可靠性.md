@@ -5,13 +5,13 @@ description: "同步 HTTP 调用适合立即返回结果的场景，但跨服务
 tags:
   - "框架"
   - "SpringCloud框架"
-category: "框架"
 review:
   created: 2026-06-20
   lastReview: 2026-06-20
   reps: 0
   interval: 0
   ease: 2.5
+noReview: true
 ---
 
 # Spring Cloud 学习资料：Stream 事件驱动和消息可靠性

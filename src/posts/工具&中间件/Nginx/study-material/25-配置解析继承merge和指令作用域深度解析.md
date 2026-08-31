@@ -6,13 +6,13 @@ tags:
   - "工具&中间件"
   - "Nginx"
   - "深度解析"
-category: "工具&中间件"
 review:
   created: 2026-06-20
   lastReview: 2026-06-20
   reps: 0
   interval: 0
   ease: 2.5
+noReview: true
 ---
 
 # Nginx学习资料：配置解析、继承、merge 和指令作用域深度解析

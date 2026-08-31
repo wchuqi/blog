@@ -5,13 +5,13 @@ description: "聚合的关键是“粒度”。原始表是一行一条业务事
 tags:
   - "数据库"
   - "SQL"
-category: "数据库"
 review:
   created: 2026-06-20
   lastReview: 2026-06-20
   reps: 0
   interval: 0
   ease: 2.5
+noReview: true
 ---
 
 # SQL 学习资料：GROUP BY聚合HAVING和去重

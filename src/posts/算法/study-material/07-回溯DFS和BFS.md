@@ -4,13 +4,13 @@ date: 2026-06-20
 description: "回溯是系统化试错：选择一个分支，继续深入，如果不满足条件就撤销选择，尝试下一个分支。DFS 关注“沿着一条路走到底”，BFS 关注“按层扩散”。在无权图最短路中，BFS 第一次到达目标时通常就是最短距离。"
 tags:
   - "算法"
-category: "算法"
 review:
   created: 2026-06-20
   lastReview: 2026-06-20
   reps: 0
   interval: 0
   ease: 2.5
+noReview: true
 ---
 
 # 算法学习资料：回溯、DFS 和 BFS

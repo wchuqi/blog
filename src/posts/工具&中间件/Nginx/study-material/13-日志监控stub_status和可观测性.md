@@ -5,13 +5,13 @@ description: "Nginx 是流量入口，日志字段决定排障能力。只记录
 tags:
   - "工具&中间件"
   - "Nginx"
-category: "工具&中间件"
 review:
   created: 2026-06-20
   lastReview: 2026-06-20
   reps: 0
   interval: 0
   ease: 2.5
+noReview: true
 ---
 
 # Nginx学习资料：日志、监控、stub_status 和可观测性

@@ -5,13 +5,13 @@ description: "Spring Boot 测试的目标不是所有测试都启动完整应用
 tags:
   - "框架"
   - "SpringBoot框架"
-category: "框架"
 review:
   created: 2026-06-20
   lastReview: 2026-06-20
   reps: 0
   interval: 0
   ease: 2.5
+noReview: true
 ---
 
 # Spring Boot 4 学习资料：测试体系、切片测试和 Testcontainers

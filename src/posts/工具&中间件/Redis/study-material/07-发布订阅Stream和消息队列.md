@@ -5,13 +5,13 @@ description: "Redis 可以做消息，但不同机制语义差异很大。Pub/Su
 tags:
   - "工具&中间件"
   - "Redis"
-category: "工具&中间件"
 review:
   created: 2026-06-20
   lastReview: 2026-06-20
   reps: 0
   interval: 0
   ease: 2.5
+noReview: true
 ---
 
 # Redis学习资料：发布订阅、Stream 和消息队列

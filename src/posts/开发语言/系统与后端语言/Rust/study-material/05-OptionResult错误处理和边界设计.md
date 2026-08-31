@@ -5,13 +5,13 @@ description: "Rust 没有空指针作为普通引用值，也没有以异常作�
 tags:
   - "开发语言"
   - "Rust"
-category: "开发语言"
 review:
   created: 2026-06-20
   lastReview: 2026-06-20
   reps: 0
   interval: 0
   ease: 2.5
+noReview: true
 ---
 
 # Rust学习资料：Option、Result、错误处理和边界设计

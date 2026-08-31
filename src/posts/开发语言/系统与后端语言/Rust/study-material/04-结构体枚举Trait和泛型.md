@@ -5,13 +5,13 @@ description: "Rust 没有传统类继承，主要用结构体表达数据，用�
 tags:
   - "开发语言"
   - "Rust"
-category: "开发语言"
 review:
   created: 2026-06-20
   lastReview: 2026-06-20
   reps: 0
   interval: 0
   ease: 2.5
+noReview: true
 ---
 
 # Rust学习资料：结构体枚举Trait和泛型

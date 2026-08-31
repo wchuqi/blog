@@ -5,13 +5,13 @@ description: "分布式锁通常不是永久锁，而是租约锁。客户端拿
 tags:
   - "架构"
   - "分布式锁与事务"
-category: "架构"
 review:
   created: 2026-06-20
   lastReview: 2026-06-20
   reps: 0
   interval: 0
   ease: 2.5
+noReview: true
 ---
 
 # 分布式锁与事务学习资料：分布式锁基础、租约、TTL 和互斥边界

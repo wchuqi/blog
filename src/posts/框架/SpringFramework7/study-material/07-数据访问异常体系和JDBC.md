@@ -5,13 +5,13 @@ description: "JDBC 原生 API 样板代码多：获取连接、创建语句、�
 tags:
   - "框架"
   - "SpringFramework7"
-category: "框架"
 review:
   created: 2026-06-20
   lastReview: 2026-06-20
   reps: 0
   interval: 0
   ease: 2.5
+noReview: true
 ---
 
 # Spring Framework 7 学习资料：数据访问异常体系和 JDBC

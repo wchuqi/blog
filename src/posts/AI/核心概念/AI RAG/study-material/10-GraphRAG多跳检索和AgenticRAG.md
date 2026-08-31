@@ -6,13 +6,13 @@ tags:
   - "AI"
   - "核心概念"
   - "AI RAG"
-category: "AI"
 review:
   created: 2026-06-20
   lastReview: 2026-06-20
   reps: 0
   interval: 0
   ease: 2.5
+noReview: true
 ---
 
 # AI RAG 学习资料：GraphRAG、多跳检索和 Agentic RAG

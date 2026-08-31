@@ -5,13 +5,13 @@ description: "Pinia 是 Vue 官方推荐的状态管理库。它适合保存跨�
 tags:
   - "框架"
   - "Vue3"
-category: "框架"
 review:
   created: 2026-06-20
   lastReview: 2026-06-20
   reps: 0
   interval: 0
   ease: 2.5
+noReview: true
 ---
 
 # Vue3学习资料：Pinia 状态管理和持久化边界

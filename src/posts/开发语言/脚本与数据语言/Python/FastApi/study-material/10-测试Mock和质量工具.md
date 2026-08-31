@@ -5,13 +5,13 @@ description: "FastAPI 测试的优势在于依赖注入可覆盖。你可以把�
 tags:
   - "开发语言"
   - "FastApi"
-category: "开发语言"
 review:
   created: 2026-06-20
   lastReview: 2026-06-20
   reps: 0
   interval: 0
   ease: 2.5
+noReview: true
 ---
 
 # FastAPI学习资料：测试、Mock 和质量工具

@@ -5,13 +5,13 @@ description: "基于 算法 目录全部文档生成的 Python 3.14 算法项目
 tags:
   - "source_code"
   - "algo_py"
-category: "源码项目"
 review:
   created: 2026-06-20
   lastReview: 2026-06-20
   reps: 0
   interval: 0
   ease: 2.5
+noReview: true
 ---
 
 # algo_py

@@ -4,6 +4,18 @@ export type Theme = 'light' | 'dark'
 
 const STORAGE_KEY = 'blog-theme-v2'
 
+/** 切换瞬间挂 data-theme-switching，让全页颜色柔和过渡（CSS 侧生效） */
+let switchTimer: number | undefined
+
+function markThemeSwitching() {
+  const root = document.documentElement
+  root.setAttribute('data-theme-switching', '')
+  window.clearTimeout(switchTimer)
+  switchTimer = window.setTimeout(() => {
+    root.removeAttribute('data-theme-switching')
+  }, 300)
+}
+
 /** 读取初始主题：用户选择 > 默认浅色 */
 function getInitialTheme(): Theme {
   if (typeof window === 'undefined') return 'light'
@@ -25,6 +37,7 @@ export function useTheme() {
   }, [theme])
 
   const toggle = useCallback(() => {
+    markThemeSwitching()
     setTheme((t) => (t === 'dark' ? 'light' : 'dark'))
   }, [])
 

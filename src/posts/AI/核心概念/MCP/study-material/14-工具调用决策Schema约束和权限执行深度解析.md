@@ -7,13 +7,13 @@ tags:
   - "核心概念"
   - "MCP"
   - "深度解析"
-category: "AI"
 review:
   created: 2026-06-20
   lastReview: 2026-06-20
   reps: 0
   interval: 0
   ease: 2.5
+noReview: true
 ---
 
 # MCP 学习资料：工具调用决策、Schema 约束和权限执行深度解析

@@ -5,13 +5,13 @@ description: "Go 标准库覆盖了大量后端开发基础能力。io.Reader �
 tags:
   - "开发语言"
   - "Golang"
-category: "开发语言"
 review:
   created: 2026-06-20
   lastReview: 2026-06-20
   reps: 0
   interval: 0
   ease: 2.5
+noReview: true
 ---
 
 # Golang 学习资料：标准库、IO、网络和 HTTP 服务

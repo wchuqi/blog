@@ -5,13 +5,13 @@ description: "dtype 决定单个元素的字节数和解释方式。shape 决定
 tags:
   - "开发语言"
   - "Numpy"
-category: "开发语言"
 review:
   created: 2026-06-20
   lastReview: 2026-06-20
   reps: 0
   interval: 0
   ease: 2.5
+noReview: true
 ---
 
 # NumPy学习资料：dtype、shape、strides 和内存布局

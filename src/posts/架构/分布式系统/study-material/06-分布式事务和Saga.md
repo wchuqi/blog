@@ -5,13 +5,13 @@ description: "本地事务依靠单个数据库管理锁、日志和提交。跨
 tags:
   - "架构"
   - "分布式系统"
-category: "架构"
 review:
   created: 2026-06-20
   lastReview: 2026-06-20
   reps: 0
   interval: 0
   ease: 2.5
+noReview: true
 ---
 
 # 分布式系统学习资料：分布式事务和 Saga

@@ -5,13 +5,13 @@ description: "SQL 注入不是“用户输入里有奇怪字符”这么简单�
 tags:
   - "数据库"
   - "SQL"
-category: "数据库"
 review:
   created: 2026-06-20
   lastReview: 2026-06-20
   reps: 0
   interval: 0
   ease: 2.5
+noReview: true
 ---
 
 # SQL 学习资料：SQL注入权限和安全边界

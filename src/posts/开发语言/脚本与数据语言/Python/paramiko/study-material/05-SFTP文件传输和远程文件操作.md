@@ -5,13 +5,13 @@ description: "SFTP 是基于 SSH 的文件传输协议，走 SSH 加密通道。
 tags:
   - "开发语言"
   - "paramiko"
-category: "开发语言"
 review:
   created: 2026-06-20
   lastReview: 2026-06-20
   reps: 0
   interval: 0
   ease: 2.5
+noReview: true
 ---
 
 # Paramiko学习资料：SFTP 文件传输和远程文件操作

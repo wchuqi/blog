@@ -7,7 +7,7 @@
 - 📝 **Markdown 写作** —— 文章放在 `src/posts/*.md`（支持子目录组织），用 frontmatter 写元数据，无需数据库
 - 🌗 **深色模式** —— 跟随系统，可手动切换并记忆
 - 🔍 **站内搜索** —— 标题/标签/摘要/正文全文检索，`Ctrl/Cmd + K` 唤起
-- 🏷️ **标签 & 分类** —— 自动聚合，独立列表页
+- 🏷️ **标签** —— 自动聚合，独立列表页
 - 🗂️ **归档** —— 按年份时间线
 - 📑 **文章目录（TOC）** —— 滚动高亮、平滑跳转
 - 🔗 **相关文章** —— 按共享标签推荐
@@ -38,7 +38,6 @@ title: 文章标题
 date: 2026-06-10
 description: 一句话摘要，显示在列表页
 tags: [React, 前端]
-category: 技术
 cover: /images/cover.jpg   # 可选，封面图
 pinned: false              # 可选，是否置顶
 draft: false               # 可选，草稿不会出现在生产构建
@@ -119,8 +118,56 @@ src/
     format.ts        格式化工具
   hooks/             useTheme 等
   components/        Navbar、Footer、SearchBox、TOC、PostCard、PasswordGate、HomeSidebar…
-  pages/             Home、PostDetail、Archives、Tags、Categories、Graph、About…
+  pages/             Home、PostDetail、Archives、Tags、Graph、About…
 scripts/
   gen-rss.mjs        构建时生成 RSS、sitemap、404.html
   encrypt.mjs        文章加解密 CLI
+.claude/
+  skills/
+    knowledge-writer/  Claude Code 技能：生成高质量学习资料
 ```
+
+## Claude Code 技能
+
+本项目包含自定义的 Claude Code 技能，用于快速生成高质量的技术学习资料。
+
+### `/knowledge-writer` - 知识文档写作
+
+自动生成符合博客风格的深度学习资料，支持多种知识总结方法论。
+
+**使用方法**：
+```bash
+/knowledge-writer [主题名称]
+```
+
+**示例**：
+```bash
+/knowledge-writer AI Agent Loop Engineering
+/knowledge-writer Redis 缓存实践
+/knowledge-writer React Hooks 最佳实践
+```
+
+**生成的文档包含**：
+- 完整的 frontmatter（标题、日期、描述、标签）
+- 学习目标、理论导读、核心心智模型
+- 3-8 个知识点详解（是什么→能干什么→怎么用）
+- 2-4 个由浅入深的实例
+- 练习题和验收标准
+- 重点、难点、易错总结
+
+**支持的知识总结方法**：
+- **递进式**（是什么→能干什么→怎么用）：适合工具/框架/概念
+- **5W2H 分析法**：适合操作类知识/工程实践
+- **对比矩阵法**：适合技术选型/相似概念比较
+- **STAR 场景法**：适合最佳实践/案例分析
+- **问题树方法**：适合排障/调优/诊断类知识
+- **金字塔原理**：适合复杂系统/架构设计
+
+技能会根据主题类型自动选择最合适的方法，也可以混合使用多种方法。
+
+**文档特点**：
+- 全中文写作，专业术语规范处理
+- 代码示例完整可运行，包含详细注释
+- 实践导向，每个知识点都回答"能用来做什么"
+- 符合项目既有的学习资料风格和结构
+

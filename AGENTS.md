@@ -1,20 +1,31 @@
 # AGENTS.md
 
-Vite + React + TypeScript 个人博客。Markdown 驱动，无后端，无数据库。
+Vite + React + TypeScript 个人博客。Markdown 驱动，静态部署为主，附带一个仅本地运行的 FastAPI + SQLite 后端用于写作和间隔重复复习。
 
 ## 命令
 
 ```bash
-npm install       # 安装依赖
-npm run dev       # 开发服务器 localhost:5173（自动打开浏览器）
-npm run build     # tsc -b && vite build && node scripts/gen-rss.mjs
-npm run preview   # 预览 dist/
-npm run lint      # eslint . — 警告：eslint 不在 devDependencies 中，需单独安装才能运行
-npm run rss       # 重新生成 rss.xml + sitemap.xml + 404.html 到 dist/
-npm run encrypt   # 加密/解密文章（见下文）
+npm install         # 安装依赖
+npm run dev         # 开发服务器 localhost:5173（仅前端，不含 API server）
+npm run build       # tsc -b && vite build && node scripts/gen-rss.mjs
+npm run preview     # 预览 dist/
+npm run lint        # eslint . — 警告：eslint 不在 devDependencies 中，需单独安装才能运行
+npm run rss         # 重新生成 rss.xml + sitemap.xml + 404.html 到 dist/
+npm run encrypt     # 加密/解密文章（见下文）
+npm run sync-reviews # 运行 scripts/sync-reviews.py，刷 frontmatter 快照 + 重新生成 public/review.json
+npm run api         # 启动 FastAPI 后端 localhost:3001（写作 / 复习评分，见下文）
 ```
 
 **没有单独的 typecheck 或 test 脚本**。类型检查仅在 `npm run build`（`tsc -b`）中运行。**没有测试套件**。
+
+### 本地完整开发环境（Windows）
+
+仓库根目录的 `dev.bat` 是一键启动脚本，封装了完整本地开发环境：
+
+- `dev.bat` —— 清理残留进程（占用 3001 / 5173 端口的）→ 运行 `sync-reviews.py` 生成快照 → 启动 FastAPI（3001）→ 启动 Vite（5173）。隐藏窗口运行，日志写入 `dev.log`；`scripts/dev-monitor.ps1` 轮询 5173，就绪后自动打开浏览器。
+- `dev.bat sync` —— 复习完后同步数据：运行 `sync-reviews.py` + `git add src/posts public/review.json` + 提交 "chore: sync review data"。
+
+`dev.bat` 不是 npm 脚本，仅在 Windows 上使用。跨平台时手动分别跑 `npm run api` 和 `npm run dev`。
 
 ## 构建流程
 
@@ -23,7 +34,7 @@ npm run encrypt   # 加密/解密文章（见下文）
 2. `vite build` — 打包到 `dist/`，含手动分块（react / markdown 独立 chunk，长期缓存）
 3. `node scripts/gen-rss.mjs` — 生成 `rss.xml`、`sitemap.xml` 和 `404.html`（GitHub Pages 的 SPA 回退）
 
-如果需要验证类型正确性但不想完整构建，没有快捷方式——必须运行完整构建。
+**构建产物是纯静态站点**：FastAPI 后端、SQLite、`review.db` 都不进生产构建，只有 Vite 代理在 dev 时把它们接到前端。如果需要验证类型正确性但不想完整构建，没有快捷方式——必须运行完整构建。
 
 ## 项目结构
 
@@ -34,35 +45,104 @@ src/
   App.tsx            路由表（PostDetail 懒加载）
   posts/             Markdown 文章（含子目录，文件名即 URL slug）
   lib/
-    posts.ts         通过 import.meta.glob 加载所有 .md（eager，raw strings），提取双链、构建图谱
-    types.ts         Post、PostFrontmatter、TocItem、Taxonomy、NoteLink、GraphNode、GraphEdge
+    posts.ts         文章加载（元数据来自 virtual:posts-index，正文来自 ?raw glob 懒加载）、双链解析、复习判定
+    types.ts         Post、PostFrontmatter、ReviewSnapshot、ReviewCard、IndexEntry、GraphNode、GraphEdge 等
     crypto.ts        客户端 AES-256-GCM 解密（加密文章用）
     format.ts        格式化辅助函数
-  pages/             路由级组件（Home、PostDetail、Archives、Tags、Categories、Graph、About 等）
-  components/        共享 UI（Navbar、Footer、SearchBox、TOC、PostCard、PasswordGate、HomeSidebar 等）
+  pages/             Home、Articles、PostDetail、Archives、Tags、TagDetail、Graph、Review、About、NotFound
+  components/        Navbar、Footer、SearchBox、TOC、PostCard、PasswordGate、HomeSidebar、Comments、Review* 等
   hooks/             useTheme 等
   styles.css         全局样式 + 明暗主题 CSS 变量
 scripts/
   gen-rss.mjs        构建时生成 RSS/sitemap/404（纯 Node，无依赖）
   encrypt.mjs        文章加解密 CLI
+  api-server.py      FastAPI 后端（仅本地 dev）：文章 CRUD + 复习评分（localhost:3001）
+  db.py              SQLite 访问层（cards / reviews 两张表，review.db 在仓库根，gitignore）
+  sync-reviews.py    从 review.db 刷写 frontmatter review 快照 + 生成 public/review.json
+  dev-monitor.ps1    dev.bat 的就绪监视器（轮询 5173，就绪后开浏览器）
+  check-col1.cjs     一次性 Playwright 排障脚本（手动跑，非构建链路）
+public/
+  review.json        公网只读的复习数据快照（构建时静态引入，随仓库提交）
 ```
+
+## 文章加载机制
+
+文章加载分两层（区别于旧的 eager raw glob）：
+
+- **元数据**：`vite.config.ts` 中的 `postsIndexPlugin()` 在构建/dev 启动时扫描 `src/posts`，用 `front-matter` 解析 frontmatter，计算字数 / 阅读时长 / 双链，产出 `virtual:posts-index`（进主包）和 `virtual:posts-search-index`（搜索用，独立 chunk，按需 import）。`src/lib/posts.ts` 通过 `import indexData from 'virtual:posts-index'` 读取。
+- **正文**：`import.meta.glob('../posts/**/*.md', { query: '?raw', import: 'default' })` 是**非 eager** 的，每篇文章单独成块，只在打开文章时 `getPostContent(slug)` 按需加载，加载后去掉 frontmatter 返回正文。有 `contentCache` 和 HMR 守卫，避免通过 API 编辑 `.md` 后整页刷新。
+
+dev 模式下插件监听 `src/posts` 的 `add`/`unlink` 事件自动重建索引；Windows 上重命名/移动可能漏事件，前端有两个手动兜底入口（见"Dev 专用端点"）。
 
 ## 文章
 
 - 文件放在 `src/posts/`（或子目录）。文件名即 URL slug。
+- **文档名称必须使用中文**（如 `单词王体系总览.md`），可用短横线 `-` 分隔主副标题；禁止使用英文 slug 或 `#`、空格等特殊字符。双链引用时同样使用中文文件名（去掉 `.md` 后缀）。
 - **子目录文章**：`src/posts/tech/hello.md` → `/posts/tech/hello`，目录前缀保证同名文件不冲突。
-- Vite 的 `import.meta.glob('../posts/**/*.md', { eager: true })` 自动发现新文件——无需修改配置。
-- Frontmatter 字段：`title`（必填）、`date`、`description`、`tags`、`category`、`cover`、`pinned`、`draft`、`encrypted`、`author`。
+- Vite 插件自动发现新文件——无需修改配置。
+- Frontmatter 字段：`title`（必填）、`date`、`description`、`tags`、`cover`、`pinned`、`draft`、`encrypted`、`author`、`noReview`、`review`。
 - `draft: true` 的文章在生产构建中排除，但在开发模式下可见。
 - 文章排序：置顶优先，然后按日期降序。
 
 ## 双链 & 知识图谱
 
 - 正文中使用 Obsidian 风格双链语法引用其他文章：`[[slug]]` 或 `[[slug|显示文本]]`。
-- `src/lib/posts.ts` 解析双链，构建有向图（`GraphNode` + `GraphEdge`）。
+- `vite.config.ts` 的 `extractNoteLinks` 在构建时解析双链（跳过代码块和行内代码），结果随元数据索引暴露。
 - `/graph` 页面使用 D3 force-directed 布局（Canvas 渲染）可视化文章之间的关联关系。
-- 双链仅在正文段落中解析，代码块内的 `[[...]]` 会被忽略。
 - 未匹配到现有文章的双链仍会显示文本，但不会产生图谱边。
+
+## 间隔重复复习系统
+
+本地 SM-2 算法（`scripts/db.py` 实现），公网只读展示。评分：`5 = 记得`、`4 = 模糊`、`0 = 忘了`；`grade >= 3` 算成功，否则 `reps` 归零、`interval=1`、`ease -0.2`。`ease` 初始 2.5，范围 1.3–3.0。间隔：第 1 次 → 1 天，第 2 次 → 6 天，之后 `round(上次 interval × ease)`。
+
+### 数据流
+
+```
+本地 SQLite (review.db)  ──sync-reviews.py──►  每篇文章 frontmatter 的 review: 快照
+                   │                          ＋
+                   └────────────────────────►  public/review.json（公网只读）
+```
+
+- `review.db`（仓库根）是本机真相源，**gitignore**，不入仓库。
+- `scripts/sync-reviews.py` 读 `review.db`，把 SM-2 状态（`created`/`lastReview`/`reps`/`interval`/`ease`）写回每篇文章 frontmatter 的 `review:` 块，同时聚合生成 `public/review.json`（含 `stats`/`cards`/`heatmap`/`excluded`）。跳过 `encrypted`/`draft`/`noReview` 的文章。
+- `public/review.json` **随仓库提交**，是公网唯一可见的复习数据；生产构建不跑 sync，公网数据只在���地 sync 后随提交更新。
+- 判定文章是否在复习池：`isInReviewPool(post) = !encrypted && !draft && !noReview`（`src/lib/posts.ts`）。
+
+### 前端入口
+
+- `/review` 页（`src/pages/Review.tsx`）：统计条 + GitHub 风格热力图（近 182 天）+ ease 趋势 + 分组列表（已逾期/今日/即将到期/尚未到期/不在复习里）。数据来自 `public/review.json`，带时间戳防缓存。
+- `PostDetail`（`/posts/*`）：
+  - `ReviewProgressCard`（静态，所有在复习池的非加密文章）—— 读 `post.review` 快照，展示保留率 / 下次复习。
+  - `ReviewPanel`（**仅 dev**）—— `忘了/模糊/记得` 按钮，`POST /api/cards/{slug}/review` 写入 SQLite。
+  - `ReviewToggle`（**仅 dev**）—— `PUT /api/posts/{slug}/frontmatter` 切 `noReview`，然后触发 `POST /api/sync-review` 重生成快照。
+  - `DeletePostButton`（**仅 dev**）—— 删文章。
+- 所有写操作都受 `import.meta.env.DEV` 门控；生产构建里这些 UI 不渲染，公网纯只读。
+
+### 触发 sync 的途径
+
+- 手动 `npm run sync-reviews`
+- API 端点 `POST /api/sync-review`（内部 subprocess 调 `sync-reviews.py`）
+- Vite dev 中间件 `/__sync-reviews`（导航栏"更新复习"按钮调用）
+- `dev.bat` 启动时跑一次；`dev.bat sync` 跑一次并提交
+
+**重要**：`review.db` 不进仓库，`public/review.json` 进仓库。换机器或重置环境后，本地 `review.db` 与已提交的 `public/review.json` 可能不一致——以本地 `review.db` 为准，sync 后覆盖 `public/review.json`。
+
+## 本地 API 后端（仅 dev）
+
+`scripts/api-server.py` 是 FastAPI 应用，监听 `127.0.0.1:3001`，**无鉴权**（CORS `*`，无 token/密码）；唯一的"门"是前端 `import.meta.env.DEV`，生产构建不打包 server 代码，Vite proxy 也自动失效。Vite dev 把 `/api` 代理到它。
+
+主要端点：
+
+- 复习：`GET /api/stats`、`GET /api/today`、`GET /api/cards`、`GET /api/cards/{slug}`、`POST /api/cards/{slug}/review`
+- 文章：`GET /api/posts`、`GET /api/posts/{slug:path}`、`POST /api/posts`（新建，含模板）、`PUT /api/posts/{slug:path}/content`（替换正文）、`PUT /api/posts/{slug:path}/frontmatter`（改 title/description/tags/noReview；设 `noReview:true` 会同时删 card/复习记录并剥离 `review:` 块）、`DELETE /api/posts/{slug:path}`
+- `POST /api/sync-review`：subprocess 跑 `sync-reviews.py`
+
+前端当前实际用到的写操作：新建文章（`POST /api/posts`，来自 `Admin.tsx`）、删除文章（`DeletePostButton`）、切 `noReview`（`ReviewToggle`）、改 tags（`PostDetail` 的 `removeTag`）、复习评分（`ReviewPanel`）。`PUT .../content` 端点存在但**前端暂未接入**（无内联正文编辑器；`vditor` 在 devDependencies 中但 `src/` 没有引用）。
+
+### Dev 专用端点（Vite 中间件，非 Python）
+
+- `POST /__refresh-posts-index` —— 重扫 `src/posts`、失效虚拟模块、整页刷新。导航栏"更新双链"按钮和 `DeletePostButton` 调用。
+- `POST /____sync-reviews` —— 跑 `sync-reviews.py`、失效索引、广播 `reviews-synced` WebSocket 事件让 `/review` 页原地刷新。导航栏"更新复习"按钮调用。
 
 ## 加密文章
 
@@ -75,7 +155,7 @@ scripts/
 
 批量加密所有标记的文章：`npm run encrypt -- --all`
 
-加密文章从 RSS、sitemap 和所有列表/搜索视图中排除。只能通过直接访问 `/posts/<slug>` 访问。
+加密文章从 RSS、sitemap、搜索索引和所有列表视图中排除，也不进入复习池。只能通过直接访问 `/posts/<slug>` 访问。`PasswordGate.tsx` 是加密文章的解密门，与管理/写作鉴权无关。
 
 **重要**：`scripts/encrypt.mjs` 和 `src/lib/crypto.ts` 必须保持同步（相同的 PBKDF2 迭代次数、相同的加密算法、相同的格式）。
 
@@ -102,4 +182,8 @@ scripts/
 - 子目录文章会添加前缀 slug：`src/posts/tech/hello.md` → `/posts/tech/hello`。
 - `vite.config.ts` 配置了 `manualChunks`：React 全家桶和 Markdown 渲染各自独立 chunk，优化长期缓存。
 - PostDetail 页面使用 `React.lazy` + `Suspense` 懒加载（react-markdown + highlight.js 较重）。
-- `src/config.ts` 中的 `profile` 字段控制首页侧边栏个人名片的显示。
+- `src/config.ts` 中的 `profile` 字段控制首页侧边栏个人名片的显示；`comments` 字段（Giscus，默认 `enabled: false`）控制文章评论。
+- FastAPI 后端**无鉴权**，监听 `127.0.0.1`，只在本机可用；不要改成 `0.0.0.0` 暴露到公网。
+- `review.db` 是 gitignore 的本地文件，`public/review.json` 是提交的公网快照；两者语义不同，别混用。
+- `src/pages/Admin.tsx` 目前**未被路由表挂载**（App.tsx 没有 `/admin` 路由），属于未接入的残留页面；新建文章能力实际通过该页的 `POST /api/posts`，但页面本身需要手动接线才能用。
+- `scripts/check-col1.cjs` 是针对旧内联 Vditor 编辑器的一次性排障脚本，当前前端已无内联编辑入口，属遗留文件。

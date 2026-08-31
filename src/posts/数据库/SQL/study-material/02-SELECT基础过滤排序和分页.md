@@ -5,13 +5,13 @@ description: "基础查询看似简单，但它决定了 SQL 的正确性习惯�
 tags:
   - "数据库"
   - "SQL"
-category: "数据库"
 review:
   created: 2026-06-20
   lastReview: 2026-06-20
   reps: 0
   interval: 0
   ease: 2.5
+noReview: true
 ---
 
 # SQL 学习资料：SELECT基础过滤排序和分页

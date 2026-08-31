@@ -5,13 +5,13 @@ description: "FastAPI 支持同步和异步路由。异步路由适合调用异�
 tags:
   - "开发语言"
   - "FastApi"
-category: "开发语言"
 review:
   created: 2026-06-20
   lastReview: 2026-06-20
   reps: 0
   interval: 0
   ease: 2.5
+noReview: true
 ---
 
 # FastAPI学习资料：异步并发、后台任务和 WebSocket

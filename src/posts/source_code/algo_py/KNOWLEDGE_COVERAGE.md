@@ -5,13 +5,13 @@ description: "本项目根据 算法 目录下全部 Markdown 文档建立。源
 tags:
   - "source_code"
   - "algo_py"
-category: "源码项目"
 review:
   created: 2026-06-20
   lastReview: 2026-06-20
   reps: 0
   interval: 0
   ease: 2.5
+noReview: true
 ---
 
 # 算法文档知识点源码和测试覆盖矩阵

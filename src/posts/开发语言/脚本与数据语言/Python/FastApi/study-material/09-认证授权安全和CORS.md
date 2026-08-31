@@ -5,13 +5,13 @@ description: "认证解决“你是谁”，授权解决“你能做什么”。
 tags:
   - "开发语言"
   - "FastApi"
-category: "开发语言"
 review:
   created: 2026-06-20
   lastReview: 2026-06-20
   reps: 0
   interval: 0
   ease: 2.5
+noReview: true
 ---
 
 # FastAPI学习资料：认证授权、安全和 CORS

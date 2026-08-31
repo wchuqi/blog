@@ -6,13 +6,13 @@ tags:
   - "架构"
   - "分布式锁与事务"
   - "深度解析"
-category: "架构"
 review:
   created: 2026-06-20
   lastReview: 2026-06-20
   reps: 0
   interval: 0
   ease: 2.5
+noReview: true
 ---
 
 # 分布式锁与事务学习资料：ZooKeeper/etcd 会话租约选主和一致性边界深度解析

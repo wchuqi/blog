@@ -5,13 +5,13 @@ description: "Docker 提供隔离，但不是绝对安全边界。容器共享�
 tags:
   - "工具&中间件"
   - "Docker"
-category: "工具&中间件"
 review:
   created: 2026-06-20
   lastReview: 2026-06-20
   reps: 0
   interval: 0
   ease: 2.5
+noReview: true
 ---
 
 # Docker学习资料：安全、权限、Secrets 和镜像供应链

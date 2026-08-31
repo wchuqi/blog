@@ -14,12 +14,11 @@ export const siteConfig = {
   /** 导航栏链接 */
   nav: [
     { label: '首页', to: '/' },
+    { label: '文章', to: '/articles' },
     { label: '归档', to: '/archives' },
     { label: '标签', to: '/tags' },
-    { label: '分类', to: '/categories' },
     { label: '图谱', to: '/graph' },
     { label: '复习', to: '/review' },
-    { label: '关于', to: '/about' },
   ],
 
   /** 社交链接，显示在页脚；留空数组则不显示 */

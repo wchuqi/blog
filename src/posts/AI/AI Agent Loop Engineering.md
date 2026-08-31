@@ -2,10 +2,11 @@
 
 review:
   created: 2026-08-21
-  lastReview: 2026-08-22
+  lastReview: 2026-08-23
   reps: 0
   interval: 0
   ease: 2.5
+noReview: true
 ---
 
 ---

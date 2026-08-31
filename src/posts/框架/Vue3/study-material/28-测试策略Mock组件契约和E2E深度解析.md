@@ -6,13 +6,13 @@ tags:
   - "框架"
   - "Vue3"
   - "深度解析"
-category: "框架"
 review:
   created: 2026-06-20
   lastReview: 2026-06-20
   reps: 0
   interval: 0
   ease: 2.5
+noReview: true
 ---
 
 # Vue3学习资料：测试策略、Mock、组件契约和 E2E 深度解析

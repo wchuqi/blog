@@ -5,13 +5,13 @@ description: 一篇用来测试各种 Markdown 渲染效果的文章，涵盖标
 tags:
   - "Markdown"
   - "教程"
-category: 技术
 review:
   created: 2026-06-08
   lastReview: 2026-06-08
   reps: 0
   interval: 0
   ease: 2.5
+noReview: true
 ---
 
 这篇文章用来演示并测试博客对各种 Markdown 语法的渲染效果。

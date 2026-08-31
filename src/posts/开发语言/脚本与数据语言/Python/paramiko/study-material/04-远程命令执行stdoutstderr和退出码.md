@@ -5,13 +5,13 @@ description: "execcommand 在远程主机上启动一个命令，并返回 stdin
 tags:
   - "开发语言"
   - "paramiko"
-category: "开发语言"
 review:
   created: 2026-06-20
   lastReview: 2026-06-20
   reps: 0
   interval: 0
   ease: 2.5
+noReview: true
 ---
 
 # Paramiko学习资料：远程命令执行、stdout、stderr 和退出码

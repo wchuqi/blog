@@ -17,17 +17,6 @@ export function PostCard({ post }: { post: Post }) {
           </time>
           <span className="dot">·</span>
           <span>{post.readingMinutes} 分钟</span>
-          {post.category && (
-            <>
-              <span className="dot">·</span>
-              <Link
-                to={`/categories/${encodeURIComponent(post.category)}`}
-                className="post-card__category"
-              >
-                {post.category}
-              </Link>
-            </>
-          )}
         </div>
 
         <h2 className="post-card__title">

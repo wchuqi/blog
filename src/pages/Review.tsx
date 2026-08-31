@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { siteConfig } from '../config'
 import { formatDate } from '../lib/format'
-import type { ReviewCard, ReviewData, ReviewHeatmapCell } from '../lib/types'
+import type { ReviewCard, ReviewData, ReviewExcludedItem, ReviewHeatmapCell } from '../lib/types'
 
 const BASE_URL = import.meta.env.BASE_URL
 
@@ -11,6 +11,7 @@ export function Review() {
   const [data, setData] = useState<ReviewData | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [reloadKey, setReloadKey] = useState(0)
 
   useEffect(() => {
     document.title = `复习 · ${siteConfig.title}`
@@ -19,21 +20,36 @@ export function Review() {
     }
   }, [])
 
+  // dev 下点导航栏「更新复习」后，服务端会广播自定义事件触发这里重新拉取
   useEffect(() => {
-    fetch(`${BASE_URL}review.json`)
+    if (!import.meta.env.DEV) return
+    const onSynced = () => setReloadKey((k) => k + 1)
+    window.addEventListener('reviews-synced', onSynced)
+    return () => window.removeEventListener('reviews-synced', onSynced)
+  }, [])
+
+  useEffect(() => {
+    let cancelled = false
+    setLoading(true)
+    fetch(`${BASE_URL}review.json?t=${Date.now()}`)
       .then((res) => {
         if (!res.ok) throw new Error(`HTTP ${res.status}`)
         return res.json()
       })
       .then((d: ReviewData) => {
+        if (cancelled) return
         setData(d)
         setLoading(false)
       })
       .catch((e: Error) => {
+        if (cancelled) return
         setError(e.message)
         setLoading(false)
       })
-  }, [])
+    return () => {
+      cancelled = true
+    }
+  }, [reloadKey])
 
   if (loading) {
     return (
@@ -56,13 +72,11 @@ export function Review() {
     )
   }
 
-  const { stats, cards, heatmap } = data
+  const { stats, cards, heatmap, excluded = [] } = data
   const reviewedCards = cards.filter((c) => c.reps > 0)
-  const neverReviewed = cards.filter((c) => c.reps === 0)
 
-  // 按状态分组
-  const dueToday = cards.filter((c) => c.dueIn <= 0 && c.reps > 0)
-  const overdue = cards.filter((c) => c.dueIn < 0)
+  const overdue = cards.filter((c) => c.dueIn < 0 && c.reps > 0)
+  const dueToday = cards.filter((c) => c.dueIn === 0)
   const upcoming = cards
     .filter((c) => c.dueIn > 0 && c.dueIn <= 7)
     .sort((a, b) => a.dueIn - b.dueIn)
@@ -74,7 +88,7 @@ export function Review() {
     <div className="page review">
       <h1 className="page__title">复习看板</h1>
       <p className="page__subtitle">
-        共 {stats.totalCards} 篇参与复习 · 累计复习 {stats.totalReviews} 次 · 连续 {stats.streakDays} 天
+        共 {stats.totalCards} 篇参与复习 · {excluded.length} 篇不在复习 · 累计复习 {stats.totalReviews} 次 · 连续 {stats.streakDays} 天
       </p>
 
       <ReviewStats stats={stats} />
@@ -103,11 +117,7 @@ export function Review() {
         cards={later}
         empty="所有文章都在 7 天内到期。"
       />
-      <ReviewSection
-        title="尚未开始复习"
-        cards={neverReviewed}
-        empty="所有文章都已开始复习。"
-      />
+      <ExcludedSection items={excluded} />
     </div>
   )
 }
@@ -258,6 +268,35 @@ function ReviewTrend({ cards }: { cards: ReviewCard[] }) {
           <circle key={i} cx={xScale(p.x)} cy={yScale(p.y)} r="2" fill="var(--accent)" opacity="0.6" />
         ))}
       </svg>
+    </section>
+  )
+}
+
+// ---------- 不在复习池的文章 ----------
+
+function ExcludedSection({ items }: { items: ReviewExcludedItem[] }) {
+  return (
+    <section className="review-section review-section--excluded">
+      <h2 className="review-section__title">
+        不在复习里
+        <span className="review-section__count">{items.length}</span>
+      </h2>
+      {items.length === 0 ? (
+        <p className="review-section__empty">所有文章都在复习池中。</p>
+      ) : (
+        <ul className="review-list">
+          {items.map((item) => (
+            <li key={item.slug} className="review-list__item">
+              <Link to={`/posts/${item.slug}`} className="review-list__link">
+                {item.title}
+              </Link>
+              <div className="review-list__meta">
+                <span className="review-list__due">已退出复习</span>
+              </div>
+            </li>
+          ))}
+        </ul>
+      )}
     </section>
   )
 }

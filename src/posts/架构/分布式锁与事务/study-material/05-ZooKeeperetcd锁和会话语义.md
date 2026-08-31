@@ -5,13 +5,13 @@ description: "ZooKeeper 和 etcd 属于一致性协调系统，通常基于共�
 tags:
   - "架构"
   - "分布式锁与事务"
-category: "架构"
 review:
   created: 2026-06-20
   lastReview: 2026-06-20
   reps: 0
   interval: 0
   ease: 2.5
+noReview: true
 ---
 
 # 分布式锁与事务学习资料：ZooKeeper/etcd 锁和会话语义

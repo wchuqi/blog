@@ -5,13 +5,13 @@ description: "Paramiko 是 Python 实现的 SSHv2 协议库，常用于远程命
 tags:
   - "开发语言"
   - "paramiko"
-category: "开发语言"
 review:
   created: 2026-06-20
   lastReview: 2026-06-20
   reps: 0
   interval: 0
   ease: 2.5
+noReview: true
 ---
 
 # Paramiko学习资料：总览与 SSH 心智模型

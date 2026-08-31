@@ -5,13 +5,13 @@ description: "JOIN 的本质是按照条件把两个结果集配对。它不是�
 tags:
   - "数据库"
   - "SQL"
-category: "数据库"
 review:
   created: 2026-06-20
   lastReview: 2026-06-20
   reps: 0
   interval: 0
   ease: 2.5
+noReview: true
 ---
 
 # SQL 学习资料：JOIN连接匹配和半连接反连接

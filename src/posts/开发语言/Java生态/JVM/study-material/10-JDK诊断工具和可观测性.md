@@ -5,13 +5,13 @@ description: "工具不是越多越好，而是要形成证据链。CPU 高先�
 tags:
   - "开发语言"
   - "JVM"
-category: "开发语言"
 review:
   created: 2026-06-20
   lastReview: 2026-06-20
   reps: 0
   interval: 0
   ease: 2.5
+noReview: true
 ---
 
 # JVM 学习资料：JDK 诊断工具和可观测性

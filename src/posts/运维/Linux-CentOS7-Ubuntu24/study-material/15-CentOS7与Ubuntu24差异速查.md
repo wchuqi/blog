@@ -5,13 +5,13 @@ description: "从 CentOS 7 迁移到 Ubuntu 24.04 时重点检查："
 tags:
   - "运维"
   - "Linux-CentOS7-Ubuntu24"
-category: "运维"
 review:
   created: 2026-06-20
   lastReview: 2026-06-20
   reps: 0
   interval: 0
   ease: 2.5
+noReview: true
 ---
 
 # Linux 学习资料：CentOS 7 与 Ubuntu 24.04 差异速查

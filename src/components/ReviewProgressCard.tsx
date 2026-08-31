@@ -62,7 +62,7 @@ export function ReviewProgressCard({ post }: { post: Post }) {
           <div className="review-card__bar">
             <div
               className="review-card__bar-fill"
-              style={{ width: `${Math.round(retention * 100)}%` }}
+              style={{ transform: `scaleX(${retention})` }}
             />
           </div>
           <span className="review-card__percent">

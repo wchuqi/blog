@@ -5,13 +5,13 @@ description: "在 sourcecode/algojava 目录执行："
 tags:
   - "source_code"
   - "algo_java"
-category: "源码项目"
 review:
   created: 2026-06-20
   lastReview: 2026-06-20
   reps: 0
   interval: 0
   ease: 2.5
+noReview: true
 ---
 
 # 测试触发说明

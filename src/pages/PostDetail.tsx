@@ -8,6 +8,7 @@ import {
   extractToc,
   getBacklinks,
   getPost,
+  getPostContent,
   getRelatedPosts,
   renderNoteLinks,
   resolveMarkdownPostHref,
@@ -20,6 +21,8 @@ import { CodeBlock } from '../components/CodeBlock'
 import { PasswordGate } from '../components/PasswordGate'
 import { ReviewProgressCard } from '../components/ReviewProgressCard'
 import { ReviewPanel } from '../components/ReviewPanel'
+import { ReviewToggle } from '../components/ReviewToggle'
+import { DeletePostButton } from '../components/DeletePostButton'
 
 /** 文章详情页：正文渲染 + 目录 + 相关文章 + 评论 */
 export function PostDetail() {
@@ -32,13 +35,70 @@ export function PostDetail() {
   // 加密文章：解锁前的明文，null 表示尚未解锁
   const [decrypted, setDecrypted] = useState<string | null>(null)
 
-  // 切换文章时重置解锁状态（防止上一篇的明文残留）
+  // 正文懒加载：undefined 表示还在加载
+  const [content, setContent] = useState<string | undefined>(undefined)
+
+  // 标签：本地状态，dev only 可删；切换文章时同步
+  const [tags, setTags] = useState<string[]>(post?.tags ?? [])
+  const [removingTag, setRemovingTag] = useState<string | null>(null)
+
+  // 复习开关：本地状态，点击按钮即时切换，不刷新页面
+  const [inReview, setInReview] = useState(!post?.noReview)
+
+  // 切换文章时重置状态与正文（防止上一篇的残留）
   useEffect(() => {
     setDecrypted(null)
+    setContent(undefined)
+    setTags(slug ? (getPost(slug)?.tags ?? []) : [])
+    setRemovingTag(null)
+    setInReview(slug ? !getPost(slug)?.noReview : false)
+    if (!slug) return
+    let cancelled = false
+    getPostContent(slug).then((raw) => {
+      if (!cancelled) setContent(raw)
+    })
+    // dev 模式下从 API 获取实时 noReview（虚拟模块可能过期）
+    if (import.meta.env.DEV) {
+      fetch(`/api/posts/${slug}`)
+        .then((r) => (r.ok ? r.json() : null))
+        .then((d) => {
+          if (cancelled || !d?.frontmatter) return
+          setInReview(!/^noReview:\s*true\s*$/m.test(d.frontmatter))
+        })
+        .catch(() => {})
+    }
+    return () => {
+      cancelled = true
+    }
   }, [slug])
 
+  // 删除标签：写回 frontmatter（dev only，依赖本地 API server）
+  const removeTag = useCallback(
+    async (tag: string) => {
+      if (!slug) return
+      const next = tags.filter((t) => t !== tag)
+      setRemovingTag(tag)
+      try {
+        const res = await fetch(`/api/posts/${slug}/frontmatter`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ tags: next }),
+        })
+        if (!res.ok) throw new Error(`HTTP ${res.status}`)
+        setTags(next)
+        // 清 Vite 服务端缓存，否则刷新页面时虚拟模块仍是旧数据
+        await fetch('/__refresh-posts-index').catch(() => {})
+      } catch (e) {
+        alert(`删除标签失败：${e instanceof Error ? e.message : '未知错误'}（确认本地 API server 已启动）`)
+      } finally {
+        setRemovingTag(null)
+      }
+    },
+    [slug, tags]
+  )
+
   // 实际用于渲染的正文：加密文章用解密后的明文，否则用原文
-  const displayContent = (post?.encrypted ? decrypted : post?.content) ?? ''
+  const displayContent = (post?.encrypted ? decrypted : content) ?? ''
   const renderedContent = useMemo(
     () => renderNoteLinks(displayContent),
     [displayContent]
@@ -99,33 +159,57 @@ export function PostDetail() {
             <span>{post.readingMinutes} 分钟阅读</span>
             <span className="dot">·</span>
             <span>{post.words} 字</span>
-            <span className="dot">·</span>
-            <span>{post.author ?? siteConfig.author}</span>
           </div>
-
-          {post.category && (
-            <div className="post__category">
-              分类：
-              <Link to={`/categories/${encodeURIComponent(post.category)}`}>
-                {post.category}
-              </Link>
-            </div>
-          )}
         </header>
 
         {post.cover && (
           <img className="post__cover" src={post.cover} alt={post.title} />
         )}
 
-        {!post.noReview && !post.encrypted && <ReviewProgressCard post={post} />}
-
-        {import.meta.env.DEV && !post.noReview && !post.encrypted && (
-          <ReviewPanel slug={post.slug} />
+        {import.meta.env.DEV && !post.encrypted && (
+          <div className="post__devops">
+            <ReviewToggle slug={post.slug} inReview={inReview} setInReview={setInReview} />
+            <DeletePostButton slug={post.slug} title={post.title} />
+          </div>
         )}
 
-        {post.encrypted && decrypted === null ? (
+        {inReview && !post.encrypted && (
+          <>
+            <ReviewProgressCard post={post} />
+            {import.meta.env.DEV && <ReviewPanel slug={post.slug} />}
+          </>
+        )}
+
+        {tags.length > 0 && (
+          <div className="post__tags">
+            {tags.map((t) => (
+              <span key={t} className="tag tag--card">
+                <Link to={`/tags/${encodeURIComponent(t)}`} className="tag__link">
+                  # {t}
+                </Link>
+                {import.meta.env.DEV && (
+                  <button
+                    type="button"
+                    className="tag__remove"
+                    onClick={() => removeTag(t)}
+                    disabled={removingTag !== null}
+                    aria-label={`删除标签 ${t}`}
+                    title="删除此标签"
+                  >
+                    {removingTag === t ? '…' : '×'}
+                  </button>
+                )}
+              </span>
+            ))}
+          </div>
+        )}
+
+        {content === undefined ? (
+          // 正文 chunk 加载中
+          <p className="empty">加载中…</p>
+        ) : post.encrypted && decrypted === null ? (
           // 加密文章解锁前：显示密码门，正文不渲染
-          <PasswordGate encryptedBody={post.content} onUnlock={handleUnlock} />
+          <PasswordGate encryptedBody={content} onUnlock={handleUnlock} />
         ) : (
           <div className="markdown-body post__content">
             <ReactMarkdown
@@ -162,16 +246,6 @@ export function PostDetail() {
             >
               {renderedContent}
             </ReactMarkdown>
-          </div>
-        )}
-
-        {post.tags && post.tags.length > 0 && (
-          <div className="post__tags">
-            {post.tags.map((t) => (
-              <Link key={t} to={`/tags/${encodeURIComponent(t)}`} className="tag">
-                # {t}
-              </Link>
-            ))}
           </div>
         )}
       </article>

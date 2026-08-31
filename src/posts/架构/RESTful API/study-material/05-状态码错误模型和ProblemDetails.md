@@ -5,13 +5,13 @@ description: "状态码是协议层结果，告诉通用组件请求大体发生
 tags:
   - "架构"
   - "RESTful API"
-category: "架构"
 review:
   created: 2026-06-20
   lastReview: 2026-06-20
   reps: 0
   interval: 0
   ease: 2.5
+noReview: true
 ---
 
 # RESTful API学习资料：状态码错误模型和ProblemDetails

@@ -7,13 +7,13 @@ tags:
   - "工程实践"
   - "Prompt Engineering"
   - "深度解析"
-category: "AI"
 review:
   created: 2026-06-20
   lastReview: 2026-06-20
   reps: 0
   interval: 0
   ease: 2.5
+noReview: true
 ---
 
 # Prompt Engineering 学习资料：Agent 控制架构、ReAct、规划、反思和工作流编排深度解析

@@ -7,13 +7,13 @@ tags:
   - "工程实践"
   - "AI Context Engineering"
   - "深度解析"
-category: "AI"
 review:
   created: 2026-06-20
   lastReview: 2026-06-20
   reps: 0
   interval: 0
   ease: 2.5
+noReview: true
 ---
 
 # AI Context Engineering 学习资料：生产架构、缓存、成本和 ContextOps 平台化深度解析

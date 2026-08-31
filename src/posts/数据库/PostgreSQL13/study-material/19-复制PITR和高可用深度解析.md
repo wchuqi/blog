@@ -6,13 +6,13 @@ tags:
   - "数据库"
   - "PostgreSQL13"
   - "深度解析"
-category: "数据库"
 review:
   created: 2026-06-20
   lastReview: 2026-06-20
   reps: 0
   interval: 0
   ease: 2.5
+noReview: true
 ---
 
 # PostgreSQL 13 学习资料：复制、PITR 和高可用深度解析

@@ -6,13 +6,13 @@ tags:
   - "工具&中间件"
   - "Redis"
   - "深度解析"
-category: "工具&中间件"
 review:
   created: 2026-06-20
   lastReview: 2026-06-20
   reps: 0
   interval: 0
   ease: 2.5
+noReview: true
 ---
 
 # Redis学习资料：持久化 fork、COW、AOF 重写和恢复深度解析

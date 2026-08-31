@@ -5,13 +5,13 @@ description: "本项目根据 工具&中间件/正则表达式 目录中的所�
 tags:
   - "source_code"
   - "docs"
-category: "源码项目"
 review:
   created: 2026-06-20
   lastReview: 2026-06-20
   reps: 0
   interval: 0
   ease: 2.5
+noReview: true
 ---
 
 # 正则表达式项目知识点覆盖映射

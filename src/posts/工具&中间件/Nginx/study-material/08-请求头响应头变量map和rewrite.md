@@ -5,13 +5,13 @@ description: "Nginx 变量在请求处理过程中求值。map 可以在 http co
 tags:
   - "工具&中间件"
   - "Nginx"
-category: "工具&中间件"
 review:
   created: 2026-06-20
   lastReview: 2026-06-20
   reps: 0
   interval: 0
   ease: 2.5
+noReview: true
 ---
 
 # Nginx学习资料：请求头、响应头、变量、map 和 rewrite

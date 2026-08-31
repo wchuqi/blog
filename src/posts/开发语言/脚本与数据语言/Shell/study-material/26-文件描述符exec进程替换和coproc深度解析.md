@@ -6,13 +6,13 @@ tags:
   - "开发语言"
   - "Shell"
   - "深度解析"
-category: "开发语言"
 review:
   created: 2026-06-20
   lastReview: 2026-06-20
   reps: 0
   interval: 0
   ease: 2.5
+noReview: true
 ---
 
 # Shell学习资料：文件描述符、exec、进程替换和 coproc 深度解析

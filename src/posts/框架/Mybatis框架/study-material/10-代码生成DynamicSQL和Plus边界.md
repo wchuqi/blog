@@ -5,13 +5,13 @@ description: "MyBatis Generator 根据数据库表生成 Mapper、实体和 XML�
 tags:
   - "框架"
   - "Mybatis框架"
-category: "框架"
 review:
   created: 2026-06-20
   lastReview: 2026-06-20
   reps: 0
   interval: 0
   ease: 2.5
+noReview: true
 ---
 
 # MyBatis 学习资料：代码生成、Dynamic SQL 和 MyBatis-Plus 边界

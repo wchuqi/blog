@@ -8,13 +8,13 @@ tags:
   - "AI RAG"
   - "深度解析"
   - "实践练习"
-category: "AI"
 review:
   created: 2026-06-20
   lastReview: 2026-06-20
   reps: 0
   interval: 0
   ease: 2.5
+noReview: true
 ---
 
 # AI RAG 学习资料：RAG 评估实验设计、指标体系和失败归因深度解析

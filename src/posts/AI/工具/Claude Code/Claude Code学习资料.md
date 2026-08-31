@@ -2,18 +2,12 @@
 title: "Claude Code 学习资料"
 date: 2026-06-20
 description: "这是一份面向工程实践、团队落地和面试准备的 Claude Code 中文学习资料。资料目标不是罗列命令，而是帮助你形成“如何让 AI 编码 Agent 安全地理解项目、执行任务、验证结果、扩展能力、进入团队流程”的完整能力。"
+
+noReview: true
 tags:
-  - "AI"
-  - "工具"
-  - "Claude Code"
-  - "学习资料总览"
-category: "AI"
-review:
-  created: 2026-06-20
-  lastReview: 2026-06-20
-  reps: 0
-  interval: 0
-  ease: 2.5
+  - AI
+  - Claude Code
+  - 学习资料总览
 ---
 
 # Claude Code 学习资料

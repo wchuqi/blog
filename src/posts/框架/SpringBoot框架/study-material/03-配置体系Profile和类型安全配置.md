@@ -5,13 +5,13 @@ description: "配置体系解决的是“同一份代码在不同环境中表现
 tags:
   - "框架"
   - "SpringBoot框架"
-category: "框架"
 review:
   created: 2026-06-20
   lastReview: 2026-06-20
   reps: 0
   interval: 0
   ease: 2.5
+noReview: true
 ---
 
 # Spring Boot 学习资料：配置体系、Profile 和类型安全配置

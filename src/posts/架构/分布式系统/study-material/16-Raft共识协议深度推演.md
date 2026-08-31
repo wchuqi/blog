@@ -5,13 +5,13 @@ description: "Raft 把共识问题拆成 Leader 选举、日志复制和安全�
 tags:
   - "架构"
   - "分布式系统"
-category: "架构"
 review:
   created: 2026-06-20
   lastReview: 2026-06-20
   reps: 0
   interval: 0
   ease: 2.5
+noReview: true
 ---
 
 # 分布式系统学习资料：Raft 共识协议深度推演

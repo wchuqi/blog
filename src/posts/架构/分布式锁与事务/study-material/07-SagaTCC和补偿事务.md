@@ -5,13 +5,13 @@ description: "Saga 把一个长事务拆成多个本地事务，每一步成功�
 tags:
   - "架构"
   - "分布式锁与事务"
-category: "架构"
 review:
   created: 2026-06-20
   lastReview: 2026-06-20
   reps: 0
   interval: 0
   ease: 2.5
+noReview: true
 ---
 
 # 分布式锁与事务学习资料：Saga、TCC 和补偿事务

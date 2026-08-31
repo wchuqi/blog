@@ -5,13 +5,13 @@ description: "FastAPI 不内置 ORM。数据库集成通常依赖 SQLAlchemy、S
 tags:
   - "开发语言"
   - "FastApi"
-category: "开发语言"
 review:
   created: 2026-06-20
   lastReview: 2026-06-20
   reps: 0
   interval: 0
   ease: 2.5
+noReview: true
 ---
 
 # FastAPI学习资料：数据库、SQLAlchemy、事务和迁移

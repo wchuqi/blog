@@ -7,13 +7,13 @@ tags:
   - "核心概念"
   - "AI Agent"
   - "深度解析"
-category: "AI"
 review:
   created: 2026-06-20
   lastReview: 2026-06-20
   reps: 0
   interval: 0
   ease: 2.5
+noReview: true
 ---
 
 # AI Agent学习资料：RAG、记忆、检索排序和一致性深度解析

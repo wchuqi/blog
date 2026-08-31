@@ -5,13 +5,13 @@ description: "HTTP 是 RESTful API 最常见的应用层协议。一次 HTTP 交
 tags:
   - "架构"
   - "RESTful API"
-category: "架构"
 review:
   created: 2026-06-20
   lastReview: 2026-06-20
   reps: 0
   interval: 0
   ease: 2.5
+noReview: true
 ---
 
 # RESTful API学习资料：HTTP基础和资源建模

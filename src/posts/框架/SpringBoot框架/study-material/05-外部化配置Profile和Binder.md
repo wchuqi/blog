@@ -5,13 +5,13 @@ description: "Spring Boot 配置系统允许同一个应用包在不同环境中
 tags:
   - "框架"
   - "SpringBoot框架"
-category: "框架"
 review:
   created: 2026-06-20
   lastReview: 2026-06-20
   reps: 0
   interval: 0
   ease: 2.5
+noReview: true
 ---
 
 # Spring Boot 4 学习资料：外部化配置、Profile 和 Binder
