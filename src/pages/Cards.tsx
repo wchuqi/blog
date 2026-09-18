@@ -35,6 +35,8 @@ const TAG_ALL = 'all'
 const SESSION_BATCH = 100
 /** 卡片库首屏渲染条数，之后按页加载 */
 const LIBRARY_PAGE = 300
+/** SM-2 评分 → 文案（0 = 忘了、4 = 模糊、5 = 记得） */
+const GRADE_LABEL: Record<number, string> = { 0: '忘了', 4: '模糊', 5: '记得' }
 
 /** 两个视图共用的筛选器 */
 function matchFilters(post: Post, group: GroupFilter, tag: string): boolean {
@@ -195,26 +197,38 @@ function CardSession({ group, tag, totalDue }: { group: GroupFilter; tag: string
     () => getDueCards().filter((p) => matchFilters(p, group, tag)).slice(0, SESSION_BATCH),
     [group, tag]
   )
-  const [gradedKeys, setGradedKeys] = useState<Set<string>>(() => new Set())
-  const [pos, setPos] = useState(0)
+  /** 本会话给出的评分：slug -> grade。打分过的卡不再作为「新卡」前进 */
+  const [grades, setGrades] = useState<Map<string, number>>(() => new Map())
+  /** 被「跳过」的卡（离开时未打分）。回头再打分的会从中移除，避免重复计数 */
+  const [skipped, setSkipped] = useState<Set<string>>(() => new Set())
+  /** 会话内实际看过的卡（queue 下标），按展示顺序且严格递增；「上一张」就是沿它回看 */
+  const [trail, setTrail] = useState<number[]>(() => (queue.length > 0 ? [0] : []))
+  /** 游标在 trail 中的位置；等于 trail.length - 1 时位于最前沿 */
+  const [trailPos, setTrailPos] = useState(0)
+  /** 前沿已无未看过的卡 */
+  const [finished, setFinished] = useState(false)
   const [revealed, setRevealed] = useState(false)
   const [content, setContent] = useState<string | undefined>(undefined)
   const [submitting, setSubmitting] = useState(false)
   const [msg, setMsg] = useState('')
   const [syncing, setSyncing] = useState(false)
 
-  const remaining = useMemo(
-    () => queue.filter((p) => !gradedKeys.has(p.slug)),
-    [queue, gradedKeys]
-  )
   /**
-   * 进度归属：gradedKeys 里的卡已打分（从 remaining 移除）；游标 pos 之前的卡是被「跳过」的
-   * （仍留在 remaining 里，只是已越过头顶）。两者相加即已处理数，恒不超过 queue.length。
+   * 进度 = 已处理数（打折的 ∪ 跳过的）。注意不能用 trail.length：展示过不等于处理过，
+   * 进入会话时第一张就已经在 trail 里了，那样会一上来就显示 1/100。
    */
-  const graded = gradedKeys.size
-  const skipped = Math.min(pos, remaining.length)
-  const progress = graded + skipped
-  const current: Post | undefined = remaining[pos]
+  const graded = grades.size
+  const skippedCount = skipped.size
+  const progress = graded + skippedCount
+  const atFrontier = trailPos === trail.length - 1
+  const current: Post | undefined = finished ? undefined : queue[trail[trailPos]]
+  /**
+   * 已打分的卡回看时只读：再打一次会给 SQLite 追加一条 review、把 SM-2 间隔推两轮。
+   */
+  const currentGrade = current ? grades.get(current.slug) : undefined
+  const isGraded = currentGrade !== undefined
+  /** 已打分的卡直接展开答案，回看时不必再点一次「显示答案」 */
+  const showAnswer = revealed || isGraded
 
   // 换卡：懒加载正文并重置翻转状态
   useEffect(() => {
@@ -233,9 +247,42 @@ function CardSession({ group, tag, totalDue }: { group: GroupFilter; tag: string
 
   const qa = useMemo(() => (content === undefined ? null : parseCardBody(content)), [content])
 
+  /**
+   * 前进：未到前沿时沿 trail 回放；到了前沿才取下一张没看过的卡。
+   * 只有「从最前沿往前走」才把当前卡记为跳过——回放不应改变任何卡的状态。
+   * asGraded：由 grade() 调用，此时当前卡当作已打分（grades 还是旧值，不能靠它判断）。
+   */
+  const goNext = useCallback(
+    (asGraded = false) => {
+      if (trailPos < trail.length - 1) {
+        setTrailPos((p) => p + 1)
+        return
+      }
+      const leaving = queue[trail[trailPos]]
+      if (leaving && !asGraded && !grades.has(leaving.slug)) {
+        setSkipped((s) => new Set(s).add(leaving.slug))
+      }
+      for (let i = trail[trailPos] + 1; i < queue.length; i++) {
+        if (!grades.has(queue[i].slug)) {
+          setTrail((t) => [...t, i])
+          setTrailPos((p) => p + 1)
+          return
+        }
+      }
+      setFinished(true)
+    },
+    [trail, trailPos, queue, grades]
+  )
+
+  /** 后退：回看上一张（可能是已打分卡，渲染成只读） */
+  const goPrev = useCallback(() => {
+    setFinished(false)
+    setTrailPos((p) => Math.max(0, p - 1))
+  }, [])
+
   const grade = useCallback(
     async (g: number) => {
-      if (!current || submitting) return
+      if (!current || submitting || isGraded) return
       setSubmitting(true)
       setMsg('')
       try {
@@ -245,22 +292,24 @@ function CardSession({ group, tag, totalDue }: { group: GroupFilter; tag: string
           body: JSON.stringify({ grade: g }),
         })
         if (!res.ok) throw new Error(`HTTP ${res.status}`)
-        setGradedKeys((prev) => new Set(prev).add(current.slug))
-        // 当前卡被移出 remaining 后，pos 不变即指向下一张；到尾则停下
+        setGrades((m) => new Map(m).set(current.slug, g))
+        // 之前跳过过这张、现在补打分了：从跳过集合里拿掉，免得进度重复计一次
+        setSkipped((s) => {
+          if (!s.has(current.slug)) return s
+          const next = new Set(s)
+          next.delete(current.slug)
+          return next
+        })
+        // 打分后前进。goNext(true) 表示当前卡已算已处理，别再记成跳过。
+        goNext(true)
       } catch (e) {
         setMsg(`打分失败：${e instanceof Error ? e.message : '未知错误'}（确认本地 API server 已启动）`)
       } finally {
         setSubmitting(false)
       }
     },
-    [current, submitting]
+    [current, submitting, isGraded, goNext]
   )
-
-  // 跳过：游标后移但不打分。clamp 到 remaining.length（而非 length - 1），
-  // 游标越界后 current 为空即进入完成页——否则跳过永远走不到会话结尾。
-  const skip = useCallback(() => {
-    setPos((p) => Math.min(p + 1, remaining.length))
-  }, [remaining.length])
 
   const syncAll = useCallback(() => {
     setSyncing(true)
@@ -271,30 +320,36 @@ function CardSession({ group, tag, totalDue }: { group: GroupFilter; tag: string
       .finally(() => setSyncing(false))
   }, [])
 
-  // 键盘操作：空格翻面；翻面后 1/2/3 = 忘了/模糊/记得（仅 dev）
+  // 键盘：空格翻面；← / → 换卡；翻面后 1/2/3 = 忘了/模糊/记得（仅 dev）
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (!(e.target instanceof HTMLElement)) return
       if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return
-      if (!current) return
+      // 打分请求在飞的时候忽略按键，避免请求回来后 goNext 再往前推一格
+      if (!current || submitting) return
       if (e.code === 'Space' || e.code === 'Enter') {
         e.preventDefault()
-        if (!revealed) setRevealed(true)
+        if (!showAnswer) setRevealed(true)
         return
       }
       if (e.key === 'ArrowRight') {
         e.preventDefault()
-        skip()
+        goNext()
         return
       }
-      if (revealed && import.meta.env.DEV && e.key >= '1' && e.key <= '3') {
+      if (e.key === 'ArrowLeft') {
+        e.preventDefault()
+        goPrev()
+        return
+      }
+      if (showAnswer && !isGraded && import.meta.env.DEV && e.key >= '1' && e.key <= '3') {
         e.preventDefault()
         grade([0, 4, 5][Number(e.key) - 1])
       }
     }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
-  }, [current, revealed, grade, skip])
+  }, [current, submitting, showAnswer, isGraded, grade, goNext, goPrev])
 
   if (queue.length === 0) {
     return (
@@ -313,8 +368,8 @@ function CardSession({ group, tag, totalDue }: { group: GroupFilter; tag: string
       <div className="cards-done">
         <div className="cards-done__emoji">✓</div>
         <p className="cards-done__text">
-          本轮复习完成：处理 {progress} 张，其中打分 {graded} 张、跳过 {skipped} 张。
-          {skipped > 0 && (
+          本轮复习完成：处理 {progress} 张，其中打分 {graded} 张、跳过 {skippedCount} 张。
+          {skippedCount > 0 && (
             <>
               <br />
               跳过的卡片不算复习过，仍计为到期，下一批会再次出现。
@@ -331,6 +386,18 @@ function CardSession({ group, tag, totalDue }: { group: GroupFilter; tag: string
         </p>
         {msg && <p className="card-review__msg">{msg}</p>}
         <div className="cards-done__actions">
+          {trail.length > 0 && (
+            <button
+              type="button"
+              className="btn"
+              onClick={() => {
+                setFinished(false)
+                setTrailPos(trail.length - 1)
+              }}
+            >
+              回看最后一张
+            </button>
+          )}
           {import.meta.env.DEV && (
             <button
               type="button"
@@ -366,8 +433,8 @@ function CardSession({ group, tag, totalDue }: { group: GroupFilter; tag: string
         </span>
         <span className="cards-progress__hint">
           {import.meta.env.DEV
-            ? '空格 显示答案 · 1/2/3 打分 · → 下一张'
-            : '空格 显示答案 · → 下一张'}
+            ? '空格 显示答案 · 1/2/3 打分 · ← → 换卡'
+            : '空格 显示答案 · ← → 换卡'}
         </span>
       </div>
 
@@ -393,9 +460,9 @@ function CardSession({ group, tag, totalDue }: { group: GroupFilter; tag: string
           )}
         </section>
 
-        <section className={`flip-card__face flip-card__face--answer ${revealed ? 'is-revealed' : ''}`}>
+        <section className={`flip-card__face flip-card__face--answer ${showAnswer ? 'is-revealed' : ''}`}>
           <div className="flip-card__label">答案</div>
-          {revealed ? (
+          {showAnswer ? (
             qa &&
             (qa.answer ? (
               <div className="markdown-body">
@@ -421,7 +488,14 @@ function CardSession({ group, tag, totalDue }: { group: GroupFilter; tag: string
         )}
 
         <footer className="flip-card__actions">
-          {revealed && import.meta.env.DEV && (
+          {currentGrade !== undefined && (
+            <p className="flip-card__graded">
+              已打分「{GRADE_LABEL[currentGrade]}」。回看时不可重复打分（再写一条 review
+              会把 SM-2 间隔推两轮）；要改分请去
+              <Link to={`/posts/${current.slug}`}>文章页</Link>用「复习」面板。
+            </p>
+          )}
+          {!isGraded && showAnswer && import.meta.env.DEV && (
             <>
               <button
                 type="button"
@@ -449,15 +523,23 @@ function CardSession({ group, tag, totalDue }: { group: GroupFilter; tag: string
               </button>
             </>
           )}
-          {revealed && !import.meta.env.DEV && (
+          {!isGraded && showAnswer && !import.meta.env.DEV && (
             <p className="flip-card__prod-hint">
               打分需要运行本地写作环境（<code>npm run api</code> + <code>npm run dev</code>），
               公网仅支持翻转查看。
             </p>
           )}
-          {/* 无论是否翻面、是否 DEV，都保留一个前进控件，避免卡死在当前卡上 */}
-          <button type="button" className="btn" onClick={skip} disabled={submitting}>
-            {revealed ? '下一张' : '跳过'}
+          {/* 上一张/下一张在任何状态下都存在：回看与前进都不会卡死 */}
+          <button
+            type="button"
+            className="btn"
+            onClick={goPrev}
+            disabled={trailPos === 0 || submitting}
+          >
+            上一张
+          </button>
+          <button type="button" className="btn" onClick={() => goNext()} disabled={submitting}>
+            {atFrontier && !showAnswer ? '跳过' : '下一张'}
           </button>
         </footer>
 

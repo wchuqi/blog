@@ -3936,6 +3936,17 @@ button.navbar__link--refresh {
   color: var(--text-dim);
 }
 
+.flip-card__graded {
+  flex: 1 1 100%;
+  margin: 0;
+  font-size: 0.85rem;
+  color: var(--text-soft);
+}
+
+.flip-card__graded a {
+  color: var(--accent);
+}
+
 .card-review__msg {
   margin-top: 0.75rem;
   font-size: 0.85rem;
