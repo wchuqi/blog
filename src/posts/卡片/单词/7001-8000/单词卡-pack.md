@@ -1,0 +1,27 @@
+---
+title: pack
+date: 2026-09-11
+type: card
+tags:
+  - 单词
+review:
+  created: 2026-09-11
+  lastReview: 2026-09-11
+  reps: 0
+  interval: 0
+  ease: 2.5
+---
+
+# 问题
+
+**pack**
+
+[pæk] 帕克
+
+pa 怕 ck 口袋
+出门前怕落东西，全塞包里“打包”
+
+# 答案
+
+vt.vi
+打包；包装

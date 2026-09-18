@@ -26,6 +26,7 @@ interface IndexEntry {
   encrypted?: boolean
   author?: string
   noReview?: boolean
+  type?: string
   review?: unknown
   words: number
   readingMinutes: number
@@ -123,13 +124,15 @@ function scanPosts(): { meta: IndexEntry[]; search: { slug: string; text: string
       encrypted: attrs.encrypted as boolean | undefined,
       author: attrs.author as string | undefined,
       noReview: attrs.noReview as boolean | undefined,
+      type: attrs.type as string | undefined,
       review: attrs.review,
       words,
       readingMinutes: Math.max(1, Math.round(words / 400)),
       noteLinks: extractNoteLinks(body),
     })
 
-    if (!attrs.encrypted && !attrs.draft) {
+    // 问答卡片不进全文搜索索引（碎片内容不污染文章搜索）
+    if (!attrs.encrypted && !attrs.draft && attrs.type !== 'card') {
       search.push({ slug, text: plainText(body) })
     }
   }

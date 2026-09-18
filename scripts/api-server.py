@@ -93,6 +93,7 @@ class CreatePostRequest(BaseModel):
     tags: list[str] | None = None
     description: str | None = None
     noReview: bool = False
+    type: str = "article"  # article | card（问答卡片）
 
 
 class UpdateFrontmatterRequest(BaseModel):
@@ -127,20 +128,9 @@ def api_cards() -> list[dict]:
     return [dict(c) for c in db.get_all_cards(conn)]
 
 
-@app.get("/api/cards/{slug}")
-def api_get_card(slug: str) -> dict:
-    conn = db.get_db()
-    card = db.get_card(conn, slug)
-    if card is None:
-        raise HTTPException(404, "卡片不存在")
-    history = db.get_card_history(conn, slug)
-    return {
-        **dict(card),
-        "history": [dict(h) for h in history],
-    }
-
-
-@app.post("/api/cards/{slug}/review")
+# 注意：slug 可含子目录（如 架构/xxx），必须用 {slug:path}；
+# 打分路由先注册，避免被贪婪的 /api/cards/{slug:path} 吞掉。
+@app.post("/api/cards/{slug:path}/review")
 def api_review_card(slug: str, req: ReviewRequest) -> dict:
     conn = db.get_db()
     # 如果卡片不存在，先按文件信息初始化
@@ -158,6 +148,19 @@ def api_review_card(slug: str, req: ReviewRequest) -> dict:
         return db.review_card(conn, slug, req.grade)
     except KeyError as e:
         raise HTTPException(404, str(e))
+
+
+@app.get("/api/cards/{slug:path}")
+def api_get_card(slug: str) -> dict:
+    conn = db.get_db()
+    card = db.get_card(conn, slug)
+    if card is None:
+        raise HTTPException(404, "卡片不存在")
+    history = db.get_card_history(conn, slug)
+    return {
+        **dict(card),
+        "history": [dict(h) for h in history],
+    }
 
 
 # ---------- 文章 CRUD API ----------
@@ -223,11 +226,22 @@ def api_create_post(req: CreatePostRequest) -> dict:
             fm_lines.append(f"  - {t}")
     if req.noReview:
         fm_lines.append("noReview: true")
+    if req.type == "card":
+        fm_lines.append("type: card")
     fm_lines.append("---")
     fm_lines.append("")
-    fm_lines.append(f"# {req.title}")
-    fm_lines.append("")
-    fm_lines.append("开始写点什么吧…")
+    if req.type == "card":
+        fm_lines.append("# 问题")
+        fm_lines.append("")
+        fm_lines.append("写下问题…")
+        fm_lines.append("")
+        fm_lines.append("# 答案")
+        fm_lines.append("")
+        fm_lines.append("写下答案…")
+    else:
+        fm_lines.append(f"# {req.title}")
+        fm_lines.append("")
+        fm_lines.append("开始写点什么吧…")
 
     path.write_text("\n".join(fm_lines) + "\n", encoding="utf-8")
     return {"slug": slug, "path": str(path.relative_to(ROOT))}

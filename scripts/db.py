@@ -149,6 +149,27 @@ def ensure_card(conn: sqlite3.Connection, slug: str, title: str = "",
     return conn.execute("SELECT * FROM cards WHERE slug = ?", (slug,)).fetchone()
 
 
+def bulk_ensure_cards(
+    conn: sqlite3.Connection,
+    rows: list[tuple[str, str, str]],
+) -> int:
+    """
+    批量确保卡片存在（万级卡片专用）：单事务 INSERT 缺失行，不逐条 commit。
+    rows: (slug, title, created)。已存在的行不更新 title/category（ensure_card 才做）。
+    返回新增行数。
+    """
+    existing = {r[0] for r in conn.execute("SELECT slug FROM cards")}
+    missing = [(slug, title, None, created) for slug, title, created in rows if slug not in existing]
+    if missing:
+        with conn:
+            conn.executemany(
+                """INSERT INTO cards (slug, title, category, created)
+                   VALUES (?, ?, ?, ?)""",
+                missing,
+            )
+    return len(missing)
+
+
 def get_card(conn: sqlite3.Connection, slug: str) -> sqlite3.Row | None:
     return conn.execute("SELECT * FROM cards WHERE slug = ?", (slug,)).fetchone()
 

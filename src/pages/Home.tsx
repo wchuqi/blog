@@ -3,101 +3,74 @@ import { allPosts, getTags } from '../lib/posts'
 import { siteConfig } from '../config'
 import { formatShortDate } from '../lib/format'
 
-/** 首页：站点简介 + 统计 + 标签索引 + 最近更新（完整文章树在「文章」页） */
+/** 首页：站点简介 + 最新文章列表（主角） */
 export function Home() {
   const tags = getTags()
   const totalWords = allPosts.reduce((sum, post) => sum + post.words, 0)
-  const latestPosts = allPosts.slice(0, 5)
+  const latestPosts = allPosts.slice(0, 10)
 
   return (
     <div className="home">
-      <section className="home-brief" aria-labelledby="home-title">
-        <div>
-          <h1 id="home-title" className="home-brief__title">
-            {siteConfig.title}
-          </h1>
-          <p className="home-brief__desc">{siteConfig.description}</p>
-        </div>
-
-        <dl className="home-brief__stats" aria-label="站点统计">
-          <div>
-            <dt>文章</dt>
-            <dd>{allPosts.length}</dd>
-          </div>
-          <div>
-            <dt>标签</dt>
-            <dd>{tags.length}</dd>
-          </div>
-          <div>
-            <dt>字数</dt>
-            <dd>
-              {totalWords >= 10000
-                ? `${(totalWords / 10000).toFixed(1)}w`
-                : totalWords >= 1000
-                  ? `${(totalWords / 1000).toFixed(1)}k`
-                  : totalWords}
-            </dd>
-          </div>
-        </dl>
+      <section className="home-hero" aria-labelledby="home-title">
+        <h1 id="home-title" className="home-hero__title">
+          {siteConfig.title}
+        </h1>
+        <p className="home-hero__desc">{siteConfig.description}</p>
+        <p className="home-hero__meta">
+          <span>{allPosts.length} 篇文章</span>
+          <span className="dot">·</span>
+          <span>
+            {totalWords >= 10000
+              ? `${(totalWords / 10000).toFixed(1)} 万字`
+              : totalWords >= 1000
+                ? `${(totalWords / 1000).toFixed(1)} 千字`
+                : `${totalWords} 字`}
+          </span>
+          <span className="dot">·</span>
+          <span>{tags.length} 个标签</span>
+        </p>
       </section>
 
-      <section className="knowledge" aria-labelledby="knowledge-title">
-        <div className="knowledge-grid">
-          <div className="knowledge-panel">
-            <div className="knowledge-panel__head">
-              <h3>标签索引</h3>
-              <Link to="/tags">全部标签</Link>
-            </div>
-            {tags.length === 0 ? (
-              <p className="knowledge-empty">还没有标签。</p>
-            ) : (
-              <div className="knowledge-tags">
-                {tags.map((tag) => (
-                  <Link
-                    key={tag.name}
-                    to={`/tags/${encodeURIComponent(tag.name)}`}
-                    className="knowledge-tag"
-                  >
-                    {tag.name}
-                    <span>{tag.count}</span>
-                  </Link>
-                ))}
-              </div>
-            )}
-          </div>
-
-          <div className="knowledge-panel">
-            <div className="knowledge-panel__head">
-              <h3>最近更新</h3>
-              <Link to="/archives">时间线</Link>
-            </div>
-            {latestPosts.length === 0 ? (
-              <p className="knowledge-empty">还没有文章。</p>
-            ) : (
-              <ol className="recent-list">
-                {latestPosts.map((post) => (
-                  <li key={post.slug}>
-                    <Link to={`/posts/${post.slug}`}>
-                      <span>{post.title}</span>
-                      <time dateTime={post.date}>{formatShortDate(post.date)}</time>
-                    </Link>
-                  </li>
-                ))}
-              </ol>
-            )}
-          </div>
-
-          <div className="knowledge-panel knowledge-panel--wide">
-            <div className="knowledge-panel__head">
-              <h3>全部文章</h3>
-              <Link to="/articles">浏览全部</Link>
-            </div>
-            <p className="knowledge-empty">
-              完整的树形文章列表已移至
-              <Link to="/articles">「文章」页</Link>。
-            </p>
-          </div>
+      <section className="home-latest" aria-labelledby="latest-title">
+        <div className="home-latest__head">
+          <h2 id="latest-title" className="home-latest__heading">
+            最新文章
+          </h2>
+          <Link to="/articles" className="home-latest__link">
+            全部 {allPosts.length} 篇 →
+          </Link>
         </div>
+
+        {latestPosts.length === 0 ? (
+          <p className="home-latest__empty">还没有文章。</p>
+        ) : (
+          <ol className="post-index">
+            {latestPosts.map((post) => (
+              <li key={post.slug} className="post-index__item">
+                <Link to={`/posts/${post.slug}`} className="post-index__link">
+                  <time dateTime={post.date} className="post-index__date">
+                    {formatShortDate(post.date)}
+                  </time>
+                  <div className="post-index__body">
+                    <h3 className="post-index__title">{post.title}</h3>
+                    {post.description && (
+                      <p className="post-index__desc">{post.description}</p>
+                    )}
+                    <p className="post-index__meta">
+                      {post.readingMinutes} 分钟阅读
+                      {post.tags && post.tags.length > 0 && (
+                        <>
+                          <span className="dot">·</span>
+                          <span>{post.tags.slice(0, 3).join(' / ')}</span>
+                        </>
+                      )}
+                    </p>
+                  </div>
+                </Link>
+              </li>
+            ))}
+          </ol>
+        )}
       </section>
     </div>
   )

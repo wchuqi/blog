@@ -1,0 +1,27 @@
+---
+title: broaden
+date: 2026-09-11
+type: card
+tags:
+  - 单词
+review:
+  created: 2026-09-11
+  lastReview: 2026-09-11
+  reps: 0
+  interval: 0
+  ease: 2.5
+---
+
+# 问题
+
+**broaden**
+
+[ˈbrɔ:dn] 布劳登
+
+broad 宽 en 使
+使窄路变宽，就是“变宽;拓宽”
+
+# 答案
+
+v
+变宽;拓宽

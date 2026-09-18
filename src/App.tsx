@@ -15,6 +15,9 @@ const PostDetail = lazy(() =>
   import('./pages/PostDetail').then((m) => ({ default: m.PostDetail }))
 )
 
+// 卡片复习会话同样依赖 react-markdown，懒加载复用同一 chunk
+const Cards = lazy(() => import('./pages/Cards').then((m) => ({ default: m.Cards })))
+
 /** 应用路由表 */
 export function App() {
   return (
@@ -35,6 +38,14 @@ export function App() {
         <Route path="tags/:tag" element={<TagDetail />} />
         <Route path="graph" element={<Graph />} />
         <Route path="review" element={<Review />} />
+        <Route
+          path="cards"
+          element={
+            <Suspense fallback={<div className="empty">加载中…</div>}>
+              <Cards />
+            </Suspense>
+          }
+        />
         <Route path="*" element={<NotFound />} />
       </Route>
     </Routes>

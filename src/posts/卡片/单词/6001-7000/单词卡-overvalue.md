@@ -1,0 +1,27 @@
+---
+title: overvalue
+date: 2026-09-11
+type: card
+tags:
+  - 单词
+review:
+  created: 2026-09-11
+  lastReview: 2026-09-11
+  reps: 0
+  interval: 0
+  ease: 2.5
+---
+
+# 问题
+
+**overvalue**
+
+[ˌəʊvəˈvæljuː] 欧我歪柳
+
+over 欧我(超过) value 歪柳(价值)
+估价超过了价值本身，就是“高估”
+
+# 答案
+
+vt
+高估;对…估价过高

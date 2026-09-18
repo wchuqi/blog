@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { siteConfig } from '../config'
 import { formatDate } from '../lib/format'
-import type { ReviewCard, ReviewData, ReviewExcludedItem, ReviewHeatmapCell } from '../lib/types'
+import type { ReviewCard, ReviewData, ReviewHeatmapCell } from '../lib/types'
 
 const BASE_URL = import.meta.env.BASE_URL
 
@@ -72,15 +72,18 @@ export function Review() {
     )
   }
 
-  const { stats, cards, heatmap, excluded = [] } = data
-  const reviewedCards = cards.filter((c) => c.reps > 0)
+  const { stats, cards, heatmap } = data
+  // 问答卡片（type: card）单独成流：不混入文章分组，聚合为一个「记忆卡片」面板
+  const articleCards = cards.filter((c) => c.type !== 'card')
+  const qaCards = cards.filter((c) => c.type === 'card')
+  const reviewedCards = articleCards.filter((c) => c.reps > 0)
 
-  const overdue = cards.filter((c) => c.dueIn < 0 && c.reps > 0)
-  const dueToday = cards.filter((c) => c.dueIn === 0)
-  const upcoming = cards
+  const overdue = articleCards.filter((c) => c.dueIn < 0 && c.reps > 0)
+  const dueToday = articleCards.filter((c) => c.dueIn === 0)
+  const upcoming = articleCards
     .filter((c) => c.dueIn > 0 && c.dueIn <= 7)
     .sort((a, b) => a.dueIn - b.dueIn)
-  const later = cards
+  const later = articleCards
     .filter((c) => c.dueIn > 7)
     .sort((a, b) => a.dueIn - b.dueIn)
 
@@ -88,10 +91,11 @@ export function Review() {
     <div className="page review">
       <h1 className="page__title">复习看板</h1>
       <p className="page__subtitle">
-        共 {stats.totalCards} 篇参与复习 · {excluded.length} 篇不在复习 · 累计复习 {stats.totalReviews} 次 · 连续 {stats.streakDays} 天
+        共 {stats.totalCards} 篇参与复习 · 累计复习 {stats.totalReviews} 次 · 连续 {stats.streakDays} 天
       </p>
 
       <ReviewStats stats={stats} />
+      {qaCards.length > 0 && <CardSummaryPanel qaCards={qaCards} />}
       <ReviewHeatmap heatmap={heatmap} />
       <ReviewTrend cards={reviewedCards} />
 
@@ -117,8 +121,43 @@ export function Review() {
         cards={later}
         empty="所有文章都在 7 天内到期。"
       />
-      <ExcludedSection items={excluded} />
     </div>
+  )
+}
+
+// ---------- 记忆卡片概览 ----------
+
+function CardSummaryPanel({ qaCards }: { qaCards: ReviewCard[] }) {
+  const due = qaCards.filter((c) => c.dueIn <= 0)
+  const overdue = qaCards.filter((c) => c.dueIn < 0 && c.reps > 0)
+
+  return (
+    <section className="card-summary">
+      <h2 className="review-section__title">
+        记忆卡片
+        <span className="review-section__count">{qaCards.length}</span>
+      </h2>
+      <div className="card-summary__stats">
+        <span>今日到期 {due.length}</span>
+        <span>已逾期 {overdue.length}</span>
+        <Link className="btn card-summary__cta" to="/cards">
+          开始复习卡片 →
+        </Link>
+      </div>
+      {due.length > 0 && (
+        <ul className="card-summary__list">
+          {due.slice(0, 6).map((c) => (
+            <li key={c.slug}>
+              <Link to={`/posts/${c.slug}`}>{c.title}</Link>
+              <span className="card-summary__due">
+                {c.dueIn < 0 ? `逾期 ${-c.dueIn} 天` : '今天'}
+              </span>
+            </li>
+          ))}
+          {due.length > 6 && <li className="card-summary__more">…等 {due.length} 张</li>}
+        </ul>
+      )}
+    </section>
   )
 }
 
@@ -268,35 +307,6 @@ function ReviewTrend({ cards }: { cards: ReviewCard[] }) {
           <circle key={i} cx={xScale(p.x)} cy={yScale(p.y)} r="2" fill="var(--accent)" opacity="0.6" />
         ))}
       </svg>
-    </section>
-  )
-}
-
-// ---------- 不在复习池的文章 ----------
-
-function ExcludedSection({ items }: { items: ReviewExcludedItem[] }) {
-  return (
-    <section className="review-section review-section--excluded">
-      <h2 className="review-section__title">
-        不在复习里
-        <span className="review-section__count">{items.length}</span>
-      </h2>
-      {items.length === 0 ? (
-        <p className="review-section__empty">所有文章都在复习池中。</p>
-      ) : (
-        <ul className="review-list">
-          {items.map((item) => (
-            <li key={item.slug} className="review-list__item">
-              <Link to={`/posts/${item.slug}`} className="review-list__link">
-                {item.title}
-              </Link>
-              <div className="review-list__meta">
-                <span className="review-list__due">已退出复习</span>
-              </div>
-            </li>
-          ))}
-        </ul>
-      )}
     </section>
   )
 }

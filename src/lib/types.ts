@@ -22,6 +22,8 @@ export interface PostFrontmatter {
   encrypted?: boolean
   /** 设为 true 则该文章退出复习系统；缺省即参与遗忘曲线复习 */
   noReview?: boolean
+  /** 内容类型：'card' 表示 Anki 式问答卡片（正文为 `# 问题` / `# 答案` 两段），缺省为普通文章 */
+  type?: 'article' | 'card'
   /** 间隔重复复习快照，由 sync 脚本从本地 SQLite 刷写 */
   review?: ReviewSnapshot
 }
@@ -122,6 +124,8 @@ export interface ReviewLogEntry {
 export interface ReviewCard {
   slug: string
   title: string
+  /** 内容类型：article（文章）或 card（问答卡片）；旧快照缺省视为 article */
+  type?: 'article' | 'card'
   /** 开始记忆的日期 */
   created: string
   /** 最近一次复习日期 */

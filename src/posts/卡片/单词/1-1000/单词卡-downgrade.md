@@ -1,0 +1,27 @@
+---
+title: downgrade
+date: 2026-09-11
+type: card
+tags:
+  - 单词
+review:
+  created: 2026-09-11
+  lastReview: 2026-09-11
+  reps: 0
+  interval: 0
+  ease: 2.5
+---
+
+# 问题
+
+**downgrade**
+
+[ˌdaʊnˈgreɪd] 当格瑞德
+
+down 向下 grade 级别
+级别往下掉，“降级”
+
+# 答案
+
+v
+降级

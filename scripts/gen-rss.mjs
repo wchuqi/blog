@@ -25,12 +25,12 @@ function readSiteConfig() {
   }
 }
 
-/** 极简 frontmatter 解析：取 --- 之间的 key: value */
+/** 极简 frontmatter 解析：取 --- 之间的 key: value（容忍 CRLF，Windows 上手写/脚本生成的文件常见） */
 function parseFrontmatter(raw) {
-  const m = /^---\n([\s\S]*?)\n---\n?([\s\S]*)$/.exec(raw)
+  const m = /^---\r?\n([\s\S]*?)\r?\n---\r?\n?([\s\S]*)$/.exec(raw)
   if (!m) return { data: {}, body: raw }
   const data = {}
-  for (const line of m[1].split('\n')) {
+  for (const line of m[1].split(/\r?\n/)) {
     const idx = line.indexOf(':')
     if (idx === -1) continue
     const key = line.slice(0, idx).trim()
@@ -96,9 +96,11 @@ function main() {
         draft: data.draft === 'true' || data.draft === true,
         // 加密文章不进 RSS/sitemap（body 是密文，且不应对外暴露存在）
         encrypted: data.encrypted === 'true' || data.encrypted === true,
+        // 问答卡片是复习碎片，不是文章，不进 RSS/sitemap
+        isCard: data.type === 'card',
       }
     })
-    .filter((p) => !p.draft && !p.encrypted)
+    .filter((p) => !p.draft && !p.encrypted && !p.isCard)
     .sort((a, b) => new Date(b.date) - new Date(a.date))
 
   const now = new Date().toUTCString()
@@ -131,7 +133,7 @@ ${items}
 `
 
   // ---- sitemap ----
-  const staticPaths = ['', '/archives', '/tags', '/articles', '/graph', '/about']
+  const staticPaths = ['', '/archives', '/tags', '/articles', '/graph', '/review', '/cards', '/about']
   const urls = [
     ...staticPaths.map((p) => `${site.url}${p}`),
     ...posts.map((p) => `${site.url}/posts/${p.slug}`),

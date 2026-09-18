@@ -42,16 +42,16 @@ npm run api         # 启动 FastAPI 后端 localhost:3001（写作 / 复习评�
 src/
   config.ts          站点全局设置（标题、导航、社交、评论、分页、个人名片）
   main.tsx           入口 — BrowserRouter，basename 来自 Vite 的 base
-  App.tsx            路由表（PostDetail 懒加载）
-  posts/             Markdown 文章（含子目录，文件名即 URL slug）
+  App.tsx            路由表（所有路由包在 components/Layout.tsx 里；PostDetail 懒加载）
+  posts/             Markdown 文章（中文多级目录分类，文件全路径即 URL slug）
   lib/
     posts.ts         文章加载（元数据来自 virtual:posts-index，正文来自 ?raw glob 懒加载）、双链解析、复习判定
     types.ts         Post、PostFrontmatter、ReviewSnapshot、ReviewCard、IndexEntry、GraphNode、GraphEdge 等
     crypto.ts        客户端 AES-256-GCM 解密（加密文章用）
     format.ts        格式化辅助函数
-  pages/             Home、Articles、PostDetail、Archives、Tags、TagDetail、Graph、Review、About、NotFound
-  components/        Navbar、Footer、SearchBox、TOC、PostCard、PasswordGate、HomeSidebar、Comments、Review* 等
-  hooks/             useTheme 等
+  pages/             Home、Articles、PostDetail、Archives、Tags、TagDetail、Graph、Review、NotFound（另有 Admin、About 存在但未挂载路由）
+  components/        Layout、Navbar、Footer、SearchBox、TableOfContents、CodeBlock、Pagination、PostCard、PasswordGate、HomeSidebar、Comments、ReviewPanel / ReviewProgressCard / ReviewToggle、DeletePostButton
+  hooks/             useTheme
   styles.css         全局样式 + 明暗主题 CSS 变量
 scripts/
   gen-rss.mjs        构建时生成 RSS/sitemap/404（纯 Node，无依赖）
@@ -78,9 +78,9 @@ dev 模式下插件监听 `src/posts` 的 `add`/`unlink` 事件自动重建索�
 
 - 文件放在 `src/posts/`（或子目录）。文件名即 URL slug。
 - **文档名称必须使用中文**（如 `单词王体系总览.md`），可用短横线 `-` 分隔主副标题；禁止使用英文 slug 或 `#`、空格等特殊字符。双链引用时同样使用中文文件名（去掉 `.md` 后缀）。
-- **子目录文章**：`src/posts/tech/hello.md` → `/posts/tech/hello`，目录前缀保证同名文件不冲突。
+- **子目录文章**：目录可任意多级嵌套（实际以中文分类目录为主，如 `src/posts/架构/分布式系统/study-material/01-xxx.md` → `/posts/架构/分布式系统/study-material/01-xxx`），目录前缀拼进 slug 保证同名文件不冲突。
 - Vite 插件自动发现新文件——无需修改配置。
-- Frontmatter 字段：`title`（必填）、`date`、`description`、`tags`、`cover`、`pinned`、`draft`、`encrypted`、`author`、`noReview`、`review`。
+- Frontmatter 字段：`title`（必填）、`date`、`description`、`tags`、`cover`、`pinned`、`draft`、`encrypted`、`author`、`noReview`、`type`（`card` = 问答卡片）、`review`。
 - `draft: true` 的文章在生产构建中排除，但在开发模式下可见。
 - 文章排序：置顶优先，然后按日期降序。
 
@@ -94,6 +94,19 @@ dev 模式下插件监听 `src/posts` 的 `add`/`unlink` 事件自动重建索�
 ## 间隔重复复习系统
 
 本地 SM-2 算法（`scripts/db.py` 实现），公网只读展示。评分：`5 = 记得`、`4 = 模糊`、`0 = 忘了`；`grade >= 3` 算成功，否则 `reps` 归零、`interval=1`、`ease -0.2`。`ease` 初始 2.5，范围 1.3–3.0。间隔：第 1 次 → 1 天，第 2 次 → 6 天，之后 `round(上次 interval × ease)`。
+
+### 问答卡片（type: card）
+
+除文章外，复习系统支持 Anki 式问答卡片——也是 `.md` 文件，但粒度更小（一文件一卡）：
+
+- frontmatter 标 `type: card`，正文约定两个一级标题段：`# 问题` / `# 答案`（解析器在 `src/lib/cards.ts`，标题名匹配不到时按出现顺序兜底：第一段=问题、第二段=答案）。
+- 卡片**不进**首页/归档/标签/搜索/图谱/RSS/sitemap（`allPosts` 已排除；搜索索引在 vite 插件里跳过），只通过 `/cards` 复习会话和直链 `/posts/<slug>` 访问。
+- SM-2 状态与文章共用同一套机制：`review.db` 按 slug 记卡、sync 刷 frontmatter `review:` 快照、`public/review.json` 条目带 `type` 字段（`article`/`card`）。
+- `/cards`（`src/pages/Cards.tsx`，懒加载）：翻转式复习会话（看问题 → 显示答案 → 打分），队列来自 `getDueCards()`（frontmatter 快照静态计算，无快照的新卡视为到期），打分走 `POST /api/cards/{slug}/review`（仅 dev），会话结束可点「同步复习数据」。键盘：空格翻面，1/2/3 打分。
+- 卡片**分组与标签**：分组 = 文件所在子目录（slug 目录前缀，如 `卡片/记忆方法/xxx.md` → 分组「卡片/记忆方法」，根目录 = 未分组，`cardGroupOf()`）；标签 = frontmatter `tags`（与文章同字段，但独立统计，不进文章 `/tags` 页）。`/cards` 页有「复习 / 卡片库」两个视图，均可按分组/标签筛选（`getCardGroups()` / `getCardTags()`），卡片库按分组浏览、按到期排序。
+- `/review` 看板把 `review.json` 里 `type === 'card'` 的条目拆进「记忆卡片」面板，不混入文章分组。
+- 新建卡片文件：手动写（照 `src/posts/卡片/什么是间隔重复.md` 模板抄），或 dev 时 `POST /api/posts` 带 `"type": "card"` 生成模板。
+- 已知限制：`api-server.py` 的 `/api/cards/*` 已改为 `{slug:path}` 支持子目录 slug，但一天内打过分的卡片不会自动重新到期（同日重复打分是允许的，行为与文章 ReviewPanel 一致）。
 
 ### 数据流
 
@@ -110,7 +123,8 @@ dev 模式下插件监听 `src/posts` 的 `add`/`unlink` 事件自动重建索�
 
 ### 前端入口
 
-- `/review` 页（`src/pages/Review.tsx`）：统计条 + GitHub 风格热力图（近 182 天）+ ease 趋势 + 分组列表（已逾期/今日/即将到期/尚未到期/不在复习里）。数据来自 `public/review.json`，带时间戳防缓存。
+- `/review` 页（`src/pages/Review.tsx`）：统计条 + 热力图（近 182 天）+ ease 趋势 + 分组列表（已逾期/今日/即将到期/尚未到期/不在复习里）+「记忆卡片」概览面板（链接到 /cards）。数据来自 `public/review.json`，带时间戳防缓存。
+- `/cards` 页：问答卡片复习会话（见上文「问答卡片」）。
 - `PostDetail`（`/posts/*`）：
   - `ReviewProgressCard`（静态，所有在复习池的非加密文章）—— 读 `post.review` 快照，展示保留率 / 下次复习。
   - `ReviewPanel`（**仅 dev**）—— `忘了/模糊/记得` 按钮，`POST /api/cards/{slug}/review` 写入 SQLite。
@@ -133,16 +147,16 @@ dev 模式下插件监听 `src/posts` 的 `add`/`unlink` 事件自动重建索�
 
 主要端点：
 
-- 复习：`GET /api/stats`、`GET /api/today`、`GET /api/cards`、`GET /api/cards/{slug}`、`POST /api/cards/{slug}/review`
-- 文章：`GET /api/posts`、`GET /api/posts/{slug:path}`、`POST /api/posts`（新建，含模板）、`PUT /api/posts/{slug:path}/content`（替换正文）、`PUT /api/posts/{slug:path}/frontmatter`（改 title/description/tags/noReview；设 `noReview:true` 会同时删 card/复习记录并剥离 `review:` 块）、`DELETE /api/posts/{slug:path}`
+- 复习：`GET /api/stats`、`GET /api/today`、`GET /api/cards`、`GET /api/cards/{slug:path}`、`POST /api/cards/{slug:path}/review`（`{slug:path}` 支持子目录卡片/文章 slug）
+- 文章：`GET /api/posts`、`GET /api/posts/{slug:path}`、`POST /api/posts`（新建；请求体带 `"type": "card"` 时生成问答卡片模板）、`PUT /api/posts/{slug:path}/content`（替换正文）、`PUT /api/posts/{slug:path}/frontmatter`（改 title/description/tags/noReview；设 `noReview:true` 会同时删 card/复习记录并剥离 `review:` 块）、`DELETE /api/posts/{slug:path}`
 - `POST /api/sync-review`：subprocess 跑 `sync-reviews.py`
 
 前端当前实际用到的写操作：新建文章（`POST /api/posts`，来自 `Admin.tsx`）、删除文章（`DeletePostButton`）、切 `noReview`（`ReviewToggle`）、改 tags（`PostDetail` 的 `removeTag`）、复习评分（`ReviewPanel`）。`PUT .../content` 端点存在但**前端暂未接入**（无内联正文编辑器；`vditor` 在 devDependencies 中但 `src/` 没有引用）。
 
 ### Dev 专用端点（Vite 中间件，非 Python）
 
-- `POST /__refresh-posts-index` —— 重扫 `src/posts`、失效虚拟模块、整页刷新。导航栏"更新双链"按钮和 `DeletePostButton` 调用。
-- `POST /____sync-reviews` —— 跑 `sync-reviews.py`、失效索引、广播 `reviews-synced` WebSocket 事件让 `/review` 页原地刷新。导航栏"更新复习"按钮调用。
+- `POST /__refresh-posts-index` —— 重扫 `src/posts`、失效虚拟模块、整页刷新。导航栏"更新双链"按钮、`DeletePostButton` 和 `PostDetail` 的标签删除都会调用。
+- `POST /__sync-reviews` —— 跑 `sync-reviews.py`、失效索引、广播 `reviews-synced` WebSocket 事件让 `/review` 页原地刷新。导航栏"更新复习"按钮调用。
 
 ## 加密文章
 
@@ -179,11 +193,11 @@ dev 模式下插件监听 `src/posts` 的 `add`/`unlink` 事件自动重建索�
 - `scripts/gen-rss.mjs` 使用正则解析 `src/config.ts`（不是导入 TS）。如果重命名配置键，RSS 脚本会静默失败。
 - `gen-rss.mjs` 也读取 `encrypted` frontmatter 以从 RSS/sitemap 中排除加密文章。
 - `encrypt` CLI 和 `crypto.ts` 必须使用完全相同的加密参数（PBKDF2 迭代次数、密钥长度、IV 长度、格式）。修改其中一个而不修改另一个会导致解密失败。
-- 子目录文章会添加前缀 slug：`src/posts/tech/hello.md` → `/posts/tech/hello`。
+- 子目录文章会添加前缀 slug：`src/posts/架构/分布式系统/study-material/01-xxx.md` → `/posts/架构/分布式系统/study-material/01-xxx`。
 - `vite.config.ts` 配置了 `manualChunks`：React 全家桶和 Markdown 渲染各自独立 chunk，优化长期缓存。
 - PostDetail 页面使用 `React.lazy` + `Suspense` 懒加载（react-markdown + highlight.js 较重）。
 - `src/config.ts` 中的 `profile` 字段控制首页侧边栏个人名片的显示；`comments` 字段（Giscus，默认 `enabled: false`）控制文章评论。
 - FastAPI 后端**无鉴权**，监听 `127.0.0.1`，只在本机可用；不要改成 `0.0.0.0` 暴露到公网。
 - `review.db` 是 gitignore 的本地文件，`public/review.json` 是提交的公网快照；两者语义不同，别混用。
-- `src/pages/Admin.tsx` 目前**未被路由表挂载**（App.tsx 没有 `/admin` 路由），属于未接入的残留页面；新建文章能力实际通过该页的 `POST /api/posts`，但页面本身需要手动接线才能用。
+- `src/pages/Admin.tsx` 和 `src/pages/About.tsx` 目前**均未被路由表挂载**（App.tsx 没有 `/admin`、`/about` 路由），属于未接入的残留页面；新建文章能力实际通过 Admin 页的 `POST /api/posts`，但页面本身需要手动接线才能用。
 - `scripts/check-col1.cjs` 是针对旧内联 Vditor 编辑器的一次性排障脚本，当前前端已无内联编辑入口，属遗留文件。

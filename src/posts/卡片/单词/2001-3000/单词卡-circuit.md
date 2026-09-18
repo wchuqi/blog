@@ -1,0 +1,27 @@
+---
+title: circuit
+date: 2026-09-11
+type: card
+tags:
+  - 单词
+review:
+  created: 2026-09-11
+  lastReview: 2026-09-11
+  reps: 0
+  interval: 0
+  ease: 2.5
+---
+
+# 问题
+
+**circuit**
+
+[ˈsɜ:kɪt] 瑟克特
+
+circu 圆 it 走
+电流沿圆圈走一圈，就是“电路”
+
+# 答案
+
+n
+电路

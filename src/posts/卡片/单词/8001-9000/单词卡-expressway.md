@@ -1,0 +1,27 @@
+---
+title: expressway
+date: 2026-09-11
+type: card
+tags:
+  - 单词
+review:
+  created: 2026-09-11
+  lastReview: 2026-09-11
+  reps: 0
+  interval: 0
+  ease: 2.5
+---
+
+# 问题
+
+**expressway**
+
+[ɪkˈspresweɪ] 依克斯普瑞斯喂
+
+express 快速 way 路
+让车“快”跑的专用路，就是“高速公路”
+
+# 答案
+
+n
+高速公路

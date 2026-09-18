@@ -1,0 +1,27 @@
+---
+title: jellyfish
+date: 2026-09-11
+type: card
+tags:
+  - 单词
+review:
+  created: 2026-09-11
+  lastReview: 2026-09-11
+  reps: 0
+  interval: 0
+  ease: 2.5
+---
+
+# 问题
+
+**jellyfish**
+
+[ˈdʒelifɪʃ] 杰诶里菲什
+
+jelly 果冻 fish 鱼
+软得像果冻一样的“水母”
+
+# 答案
+
+n
+水母

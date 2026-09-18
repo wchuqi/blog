@@ -103,11 +103,15 @@ const parsedPosts: Post[] = resolveNoteLinks(indexData.map(entryToPost))
   })
 
 /**
- * 对外暴露的文章集合：排除加密文章。
+ * 对外暴露的文章集合：排除加密文章与问答卡片。
  * 这样首页/归档/标签/分类/搜索侧边栏等所有消费者都不需要单独判断，
- * 加密文章自然不会出现在任何列表里，只能通过直链 /posts/xxx 访问。
+ * 加密文章与卡片自然不会出现在任何列表里；卡片有自己的复习入口 /cards，
+ * 两者均可通过直链 /posts/xxx 访问。
  */
-export const allPosts: Post[] = parsedPosts.filter((p) => !p.encrypted)
+export const allPosts: Post[] = parsedPosts.filter((p) => !p.encrypted && p.type !== 'card')
+
+/** 全部问答卡片（排除加密），不混入文章列表 */
+export const allCards: Post[] = parsedPosts.filter((p) => !p.encrypted && p.type === 'card')
 
 /** 按 slug 取单篇（从完整集合查，所以直链能命中加密文章） */
 export function getPost(slug: string): Post | undefined {
@@ -380,4 +384,63 @@ export function getDueToday(): Post[] {
     const due = daysUntilDue(p.review)
     return due !== null && due <= 0
   })
+}
+
+// ---------------------------------------------------------------------------
+// 问答卡片（type: card）的复习池：算法与文章一致，只是独立成流
+// ---------------------------------------------------------------------------
+
+/** 卡片复习池：按下次复习日升序 */
+export function getCardPool(): Post[] {
+  return allCards
+    .filter(isInReviewPool)
+    .filter((p) => reviewCreatedDate(p) !== null)
+    .sort((a, b) => {
+      const da = daysUntilDue(a.review) ?? Infinity
+      const db = daysUntilDue(b.review) ?? Infinity
+      return da - db
+    })
+}
+
+/**
+ * 今日到期的卡片（含从未 sync 过的新卡：没有 review 快照即视为新卡，直接到期）。
+ * 与文章的 getDueToday 不同——卡片生命周期短，新卡应当立刻进复习队列。
+ */
+export function getDueCards(): Post[] {
+  return getCardPool().filter((p) => {
+    if (!p.review) return true
+    const due = daysUntilDue(p.review)
+    return due === null || due <= 0
+  })
+}
+
+/** 卡片的分组 = 文件所在子目录（slug 的目录前缀）；根目录卡片为 null（未分组） */
+export function cardGroupOf(card: Post): string | null {
+  const idx = card.slug.lastIndexOf('/')
+  return idx === -1 ? null : card.slug.slice(0, idx)
+}
+
+/** 卡片分组聚合（null = 未分组），按名称排序 */
+export function getCardGroups(): { name: string | null; count: number }[] {
+  const map = new Map<string | null, number>()
+  for (const c of allCards) {
+    const g = cardGroupOf(c)
+    map.set(g, (map.get(g) ?? 0) + 1)
+  }
+  return [...map.entries()]
+    .map(([name, count]) => ({ name, count }))
+    .sort((a, b) => (a.name ?? '').localeCompare(b.name ?? ''))
+}
+
+/** 卡片标签聚合（与文章 tags 字段同一来源，但独立统计，不进文章 /tags 页） */
+export function getCardTags(): { name: string; count: number }[] {
+  const map = new Map<string, number>()
+  for (const c of allCards) {
+    for (const t of c.tags ?? []) {
+      map.set(t, (map.get(t) ?? 0) + 1)
+    }
+  }
+  return [...map.entries()]
+    .map(([name, count]) => ({ name, count }))
+    .sort((a, b) => b.count - a.count)
 }

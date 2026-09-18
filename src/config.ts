@@ -19,6 +19,7 @@ export const siteConfig = {
     { label: '标签', to: '/tags' },
     { label: '图谱', to: '/graph' },
     { label: '复习', to: '/review' },
+    { label: '卡片', to: '/cards' },
   ],
 
   /** 社交链接，显示在页脚；留空数组则不显示 */

@@ -1,8 +1,20 @@
-import { useRef } from 'react'
+import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { allPosts } from '../lib/posts'
 import { siteConfig } from '../config'
 import { formatShortDate } from '../lib/format'
+
+/** localStorage 键：记住用户手动展开的目录分支，下次进入保持一致 */
+const TREE_STATE_KEY = 'articles-tree-open'
+
+const loadOpenKeys = (): Set<string> => {
+  try {
+    const raw = localStorage.getItem(TREE_STATE_KEY)
+    return raw ? new Set(JSON.parse(raw) as string[]) : new Set()
+  } catch {
+    return new Set()
+  }
+}
 
 interface DirectoryNode {
   name: string
@@ -21,9 +33,9 @@ const collectPosts = (map: Map<string, DirectoryNode>): typeof allPosts => {
   return out
 }
 
-/** 文章总览页：按磁盘目录（slug 的目录段）组织的树形列表 */
+/** 文章总览页：按磁盘目录（slug 的目录段）组织的树形列表，默认全部收起 */
 export function Articles() {
-  const treeRef = useRef<HTMLDivElement>(null)
+  const [openKeys, setOpenKeys] = useState<Set<string>>(loadOpenKeys)
 
   const buildDirectoryTree = () => {
     const root: Map<string, DirectoryNode> = new Map()
@@ -78,52 +90,100 @@ export function Articles() {
     .sort((a, b) => (b.date || '').localeCompare(a.date || ''))
 
   const setAll = (open: boolean) => {
-    treeRef.current?.querySelectorAll('details').forEach((el) => {
-      ;(el as HTMLDetailsElement).open = open
+    const keys = new Set<string>()
+    if (open) {
+      const collect = (map: Map<string, DirectoryNode>) => {
+        for (const node of map.values()) {
+          keys.add(node.fullPath)
+          collect(node.children)
+        }
+      }
+      collect(directoryTree)
+      if (uncategorizedPosts.length > 0) keys.add('root')
+    }
+    setOpenKeys(keys)
+    try {
+      localStorage.setItem(TREE_STATE_KEY, JSON.stringify([...keys]))
+    } catch {
+      /* localStorage 不可用时仅本次会话生效 */
+    }
+  }
+
+  const handleToggle = (key: string, open: boolean) => {
+    setOpenKeys((prev) => {
+      if (prev.has(key) === open) return prev
+      const next = new Set(prev)
+      if (open) next.add(key)
+      else next.delete(key)
+      try {
+        localStorage.setItem(TREE_STATE_KEY, JSON.stringify([...next]))
+      } catch {
+        /* localStorage 不可用时仅本次会话生效 */
+      }
+      return next
     })
   }
+
+  const renderDetails = (
+    key: string,
+    summaryClass: string,
+    summary: React.ReactNode,
+    children: React.ReactNode
+  ) => (
+    <details
+      className="knowledge-tree__details"
+      open={openKeys.has(key)}
+      onToggle={(e) => handleToggle(key, e.currentTarget.open)}
+    >
+      <summary className={summaryClass}>{summary}</summary>
+      {children}
+    </details>
+  )
 
   const renderDirectoryNode = (node: DirectoryNode, level = 0) => {
     const depthClass = `knowledge-tree__summary--l${Math.min(level, 3)}`
     return (
       <li className="knowledge-tree__branch" key={node.fullPath}>
-        <details className="knowledge-tree__details" open={level < 1}>
-          <summary className={`knowledge-tree__summary ${depthClass}`}>
+        {renderDetails(
+          node.fullPath,
+          `knowledge-tree__summary ${depthClass}`,
+          <>
             <span className="knowledge-tree__category-name">{node.name}</span>
             {node.latest && (
               <span className="knowledge-tree__latest">{node.latest.title}</span>
             )}
             <strong>{node.count}</strong>
-          </summary>
+          </>,
+          <>
+            {node.children.size > 0 && (
+              <ul className="knowledge-tree__subcategories">
+                {[...node.children.values()].map((child) => renderDirectoryNode(child, level + 1))}
+              </ul>
+            )}
 
-          {node.children.size > 0 && (
-            <ul className="knowledge-tree__subcategories">
-              {[...node.children.values()].map((child) => renderDirectoryNode(child, level + 1))}
-            </ul>
-          )}
-
-          {node.directPosts.length > 0 && (
-            <ul className="knowledge-tree__posts">
-              {node.directPosts.map((post) => (
-                <li key={post.slug}>
-                  <Link to={`/posts/${post.slug}`} className="knowledge-tree__post">
-                    <span>{post.title}</span>
-                    <time dateTime={post.date}>{formatShortDate(post.date)}</time>
-                  </Link>
-                  {post.tags && post.tags.length > 0 && (
-                    <div className="knowledge-tree__tags">
-                      {post.tags.map((tag) => (
-                        <Link key={tag} to={`/tags/${encodeURIComponent(tag)}`}>
-                          {tag}
-                        </Link>
-                      ))}
-                    </div>
-                  )}
-                </li>
-              ))}
-            </ul>
-          )}
-        </details>
+            {node.directPosts.length > 0 && (
+              <ul className="knowledge-tree__posts">
+                {node.directPosts.map((post) => (
+                  <li key={post.slug}>
+                    <Link to={`/posts/${post.slug}`} className="knowledge-tree__post">
+                      <span>{post.title}</span>
+                      <time dateTime={post.date}>{formatShortDate(post.date)}</time>
+                    </Link>
+                    {post.tags && post.tags.length > 0 && (
+                      <div className="knowledge-tree__tags">
+                        {post.tags.map((tag) => (
+                          <Link key={tag} to={`/tags/${encodeURIComponent(tag)}`}>
+                            {tag}
+                          </Link>
+                        ))}
+                      </div>
+                    )}
+                  </li>
+                ))}
+              </ul>
+            )}
+          </>
+        )}
       </li>
     )
   }
@@ -146,7 +206,7 @@ export function Articles() {
         {directoryTree.size === 0 && uncategorizedPosts.length === 0 ? (
           <p className="knowledge-empty">还没有文章。</p>
         ) : (
-          <div className="knowledge-tree" role="tree" ref={treeRef}>
+          <div className="knowledge-tree" role="tree">
             <div className="knowledge-tree__root">
               <span>{siteConfig.title}</span>
               <strong>{allPosts.length} 篇</strong>
@@ -155,14 +215,16 @@ export function Articles() {
               {[...directoryTree.values()].map((node) => renderDirectoryNode(node))}
               {uncategorizedPosts.length > 0 && (
                 <li className="knowledge-tree__branch" key="root">
-                  <details className="knowledge-tree__details">
-                    <summary className="knowledge-tree__summary knowledge-tree__summary--l0">
+                  {renderDetails(
+                    'root',
+                    'knowledge-tree__summary knowledge-tree__summary--l0',
+                    <>
                       <span className="knowledge-tree__category-name">根目录</span>
                       {uncategorizedPosts[0] && (
                         <span className="knowledge-tree__latest">{uncategorizedPosts[0].title}</span>
                       )}
                       <strong>{uncategorizedPosts.length}</strong>
-                    </summary>
+                    </>,
                     <ul className="knowledge-tree__posts">
                       {uncategorizedPosts.map((post) => (
                         <li key={post.slug}>
@@ -182,7 +244,7 @@ export function Articles() {
                         </li>
                       ))}
                     </ul>
-                  </details>
+                  )}
                 </li>
               )}
             </ul>

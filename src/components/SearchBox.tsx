@@ -119,7 +119,8 @@ export function SearchBox() {
         aria-label="搜索文章"
         title="搜索 (Ctrl/Cmd + K)"
       >
-        🔍 <span className="search-trigger__hint">搜索</span>
+        <span className="search-trigger__icon" aria-hidden="true">🔍</span>{' '}
+        <span className="search-trigger__hint">搜索</span>
       </button>
 
       {open && (

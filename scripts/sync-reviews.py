@@ -107,11 +107,11 @@ def replace_or_insert_review(fm_text: str, review: dict, nl: str = "\n") -> str:
         re.MULTILINE,
     )
     cleaned = pattern.sub("", fm_text)
-    # 修复删除后可能产生的多余空行
-    cleaned = re.sub(r"\n{3,}", "\n\n", cleaned).rstrip()
+    # 修复删除后可能产生的多余空行（按文件原有换行符处理，避免混入 LF）
+    cleaned = re.sub(rf"(?:{re.escape(nl)}){{3,}}", nl + nl, cleaned).rstrip()
     new_block = format_review_block(review, nl)
     # 末尾保留一个换行，避免 sync_frontmatter 拼装时与 `---` 粘连
-    return f"{cleaned}\n{new_block}\n"
+    return f"{cleaned}{nl}{new_block}{nl}"
 
 
 # ---------- 扫描文章 ----------
@@ -141,6 +141,7 @@ def scan_posts() -> list[dict]:
         no_review = parse_frontmatter_value(fm_text, "noReview")
         is_encrypted = parse_frontmatter_value(fm_text, "encrypted")
         is_draft = parse_frontmatter_value(fm_text, "draft")
+        post_type = parse_frontmatter_value(fm_text, "type")
         posts.append({
             "path": md_file,
             "slug": slug_from_path(md_file),
@@ -150,6 +151,7 @@ def scan_posts() -> list[dict]:
             "nl": nl,
             "title": title.strip("'\""),
             "date": post_date.strip("'\"") if post_date else None,
+            "type": (post_type.strip("'\"") if post_type else None) or "article",
             "no_review": no_review == "true" if no_review else False,
             "encrypted": is_encrypted == "true" if is_encrypted else False,
             "draft": is_draft == "true" if is_draft else False,
@@ -159,14 +161,15 @@ def scan_posts() -> list[dict]:
 
 # ---------- 刷写 frontmatter ----------
 
-def sync_frontmatter(conn: sqlite3.Connection, posts: list[dict]) -> int:
+def sync_frontmatter(conn: sqlite3.Connection, posts: list[dict],
+                     card_by_slug: dict[str, sqlite3.Row]) -> int:
     """把 SQLite 里每张卡片的状态刷回对应文章的 frontmatter。返回更新文件数。"""
     updated = 0
     for post in posts:
         if post["encrypted"] or post["draft"] or post["no_review"]:
             continue
         slug = post["slug"]
-        card = db.get_card(conn, slug)
+        card = card_by_slug.get(slug)
         if card is None:
             continue
 
@@ -197,32 +200,28 @@ def sync_frontmatter(conn: sqlite3.Connection, posts: list[dict]) -> int:
 
 # ---------- 生成 review.json ----------
 
-def build_review_json(conn: sqlite3.Connection, posts: list[dict]) -> dict:
-    """聚合全量数据生成 review.json 结构"""
+def build_review_json(conn: sqlite3.Connection, posts: list[dict],
+                      card_by_slug: dict[str, sqlite3.Row]) -> dict:
+    """聚合全量数据生成 review.json 结构（万级卡片：一次性预加载，避免逐条查询）"""
     today = date.today()
+
+    # 一次性预加载：cards 全表 + reviews 全表
+    card_by_slug = {row["slug"]: row for row in conn.execute("SELECT * FROM cards")}
+    history_by_slug: dict[str, list[dict]] = {}
+    for row in conn.execute("SELECT slug, review_date, grade, ease, interval FROM reviews ORDER BY id"):
+        history_by_slug.setdefault(row["slug"], []).append({
+            "date": row["review_date"],
+            "grade": row["grade"],
+            "ease": round(row["ease"], 2),
+            "interval": row["interval"],
+        })
+
     cards_data = []
-    history_by_slug = {}
-
-    # 预加载所有复习历史
-    for post in posts:
-        if post["encrypted"] or post["draft"] or post["no_review"]:
-            continue
-        hist = db.get_card_history(conn, post["slug"])
-        history_by_slug[post["slug"]] = [
-            {
-                "date": row["review_date"],
-                "grade": row["grade"],
-                "ease": round(row["ease"], 2),
-                "interval": row["interval"],
-            }
-            for row in hist
-        ]
-
     for post in posts:
         if post["encrypted"] or post["draft"] or post["no_review"]:
             continue
         slug = post["slug"]
-        card = db.get_card(conn, slug)
+        card = card_by_slug.get(slug)
         if card is None:
             # 在 SQLite 中没有记录，但文章参与复习：用 created 初始化一个"未复习"卡片
             created = post["date"] or today.isoformat()
@@ -261,6 +260,7 @@ def build_review_json(conn: sqlite3.Connection, posts: list[dict]) -> dict:
         cards_data.append({
             "slug": slug,
             "title": post["title"],
+            "type": post["type"],
             "created": created,
             "lastReview": last_review or created,
             "reps": reps,
@@ -309,17 +309,21 @@ def main():
             conn.execute("DELETE FROM cards WHERE slug = ?", (post["slug"],))
     conn.commit()
 
-    # 确保所有参与复习的文章在 SQLite 中有卡片记录
-    for post in posts:
-        if post["encrypted"] or post["draft"] or post["no_review"]:
-            continue
-        created = post["date"] or date.today().isoformat()
-        db.ensure_card(conn, post["slug"], post["title"], None, created)
+    # 批量确保所有参与复习的文章在 SQLite 中有卡片记录（万级卡片：单事务，避免逐条 commit）
+    pool = [p for p in posts if not (p["encrypted"] or p["draft"] or p["no_review"])]
+    added = db.bulk_ensure_cards(
+        conn,
+        [(p["slug"], p["title"], p["date"] or date.today().isoformat()) for p in pool],
+    )
+    print(f"[sync] 新增卡片记录 {added} 条（池共 {len(pool)} 张）")
 
-    updated = sync_frontmatter(conn, posts)
+    # 一次性预加载 cards 全表，frontmatter 刷写与 review.json 聚合共用
+    card_by_slug = {row["slug"]: row for row in conn.execute("SELECT * FROM cards")}
+
+    updated = sync_frontmatter(conn, posts, card_by_slug)
     print(f"[sync] 已更新 {updated} 篇文章的 frontmatter 快照")
 
-    data = build_review_json(conn, posts)
+    data = build_review_json(conn, posts, card_by_slug)
     PUBLIC_JSON.parent.mkdir(parents=True, exist_ok=True)
     PUBLIC_JSON.write_text(
         json.dumps(data, ensure_ascii=False, indent=2),

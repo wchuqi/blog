@@ -15,6 +15,7 @@ import {
 } from '../lib/posts'
 import { siteConfig } from '../config'
 import { formatDate } from '../lib/format'
+import { parseCardBody } from '../lib/cards'
 import { TableOfContents } from '../components/TableOfContents'
 import { Comments } from '../components/Comments'
 import { CodeBlock } from '../components/CodeBlock'
@@ -110,12 +111,19 @@ export function PostDetail() {
     [post, decrypted, displayContent]
   )
   const hasOutline = toc.some((item) => item.depth >= 1 && item.depth <= 3)
-  const showOutline = !!displayContent && !(post?.encrypted && decrypted === null)
+  const showOutline = !!displayContent && !(post?.encrypted && decrypted === null) && post?.type !== 'card'
   const related = useMemo(
     () => (post ? getRelatedPosts(post) : []),
     [post]
   )
   const backlinks = useMemo(() => (post ? getBacklinks(post) : []), [post])
+
+  // 问答卡片（type: card）：正文按「# 问题 / # 答案」两段解析，不走普通文章渲染
+  const isCard = !!post && post.type === 'card'
+  const cardQA = useMemo(
+    () => (isCard && content !== undefined ? parseCardBody(content) : null),
+    [isCard, content]
+  )
 
   // 设置页面标题；卸载时还原
   useEffect(() => {
@@ -152,7 +160,10 @@ export function PostDetail() {
     <div className="post-detail">
       <article className="post">
         <header className="post__header">
-          <h1 className="post__title">{post.title}</h1>
+          <h1 className="post__title">
+            {post.title}
+            {isCard && <span className="cardqa__badge">问答卡片</span>}
+          </h1>
           <div className="post__meta">
             <time dateTime={post.date}>{formatDate(post.date)}</time>
             <span className="dot">·</span>
@@ -210,6 +221,21 @@ export function PostDetail() {
         ) : post.encrypted && decrypted === null ? (
           // 加密文章解锁前：显示密码门，正文不渲染
           <PasswordGate encryptedBody={content} onUnlock={handleUnlock} />
+        ) : isCard ? (
+          <div className="cardqa">
+            <section className="cardqa__face">
+              <div className="cardqa__label">问题</div>
+              <div className="markdown-body cardqa__text">
+                <ReactMarkdown remarkPlugins={[remarkGfm]}>{cardQA?.question ?? ''}</ReactMarkdown>
+              </div>
+            </section>
+            <section className="cardqa__face cardqa__face--answer">
+              <div className="cardqa__label">答案</div>
+              <div className="markdown-body cardqa__text">
+                <ReactMarkdown remarkPlugins={[remarkGfm]}>{cardQA?.answer ?? ''}</ReactMarkdown>
+              </div>
+            </section>
+          </div>
         ) : (
           <div className="markdown-body post__content">
             <ReactMarkdown
@@ -253,6 +279,9 @@ export function PostDetail() {
       {showOutline && (
         <aside className="post-outline-flyout" aria-label="笔记大纲">
           <div className="post-outline-flyout__edge" aria-hidden="true" />
+          <div className="post-outline-flyout__icon" aria-hidden="true">
+            «
+          </div>
           <div className="post-outline-flyout__panel">
             {hasOutline ? (
               <TableOfContents items={toc} title="笔记大纲" />
@@ -268,7 +297,7 @@ export function PostDetail() {
         </aside>
       )}
 
-      {related.length > 0 && (
+      {!isCard && related.length > 0 && (
         <section className="related">
           <h2 className="related__title">相关文章</h2>
           <ul className="related__list">
@@ -282,7 +311,7 @@ export function PostDetail() {
         </section>
       )}
 
-      {backlinks.length > 0 && (
+      {!isCard && backlinks.length > 0 && (
         <section className="backlinks">
           <h2 className="backlinks__title">反向链接</h2>
           <ul className="backlinks__list">
@@ -296,7 +325,7 @@ export function PostDetail() {
         </section>
       )}
 
-      <Comments />
+      {!isCard && <Comments />}
     </div>
   )
 }
