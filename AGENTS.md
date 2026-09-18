@@ -104,14 +104,14 @@ dev 模式下插件监听 `src/posts` 的 `add`/`unlink` 事件自动重建索�
 - SM-2 状态与文章共用同一套机制：`review.db` 按 slug 记卡、sync 刷 frontmatter `review:` 快照、`public/review.json` 条目带 `type` 字段（`article`/`card`）。
 - `/cards`（`src/pages/Cards.tsx`，懒加载）：翻转式复习会话（看问题 → 显示答案 → 打分），队列来自 `getDueCards()`（frontmatter 快照静态计算，无快照的新卡视为到期），打分走 `POST /api/cards/{slug}/review`（仅 dev），会话结束可点「同步复习数据」。
 
-  换卡只有两个动作：**打分**（`忘了/模糊/记得`，该卡移出前进队列，游标不动即自动指向下一张）和**跳过**（游标后移、不打分，卡仍算到期）。`上一张`/`下一张`/`跳过` 按钮与 <kbd>←</kbd>/<kbd>→</kbd> 在翻面前后、dev/生产**都**存在（生产无打分按钮）。键盘：空格/回车翻面，1/2/3 打分（仅 dev），←/→ 换卡。
+  换卡只有两个动作：**打分**（`忘了/模糊/记得`，该卡移出前进队列，游标不动即自动指向下一张）和**下一张**（游标后移、不打分，卡仍算到期）。导航按钮统一为 `上一张` / `下一张`（不再有单独的「跳过」，两者本来就是同一个动作），配 <kbd>←</kbd>/<kbd>→</kbd>，在翻面前后、dev/生产**都**存在（生产无打分按钮）。键盘：空格/回车翻面，1/2/3 打分（仅 dev），←/→ 换卡。
 
   会话状态是 `grades`（slug→评分）+ `skipped`（Set）+ `trail`（看过的 queue 下标，严格递增）+ `trailPos`：
 
   - **「上一张」= 沿 `trail` 回看**。`trailPos` 未到 `trail.length - 1` 时 `goNext` 只是回放，**不会**把跳过的卡重新计入，也不会重新落库。
+  - **进度条/标签是「第几张」（`position = trailPos + 1`），所以「上一张」会回退**，如 `11/100 → 10/100`。别把它和「已处理数」（`processedCount = graded + skippedCount`）搞混：后者只用于完成页统计，回看时不变。两者都不是 `trail.length`——展示过不等于处理过。
   - **已打分卡回看时只读**：`grades.has(slug)` 则自动展开答案并隐藏评分按钮。这是刻意的——回看时再打一次会给 SQLite 再追一条 review、把一个 SM-2 间隔推两轮；要改分请到文章页用 `ReviewPanel`。
-  - **进度 = `grades.size + skipped.size`，绝不能用 `trail.length`**：展示过不等于处理过，进入会话时第一张就已在 `trail` 里，用 `trail.length` 会一上来就显示 `1/100`。
-  - **只有「从最前沿往前走」才记跳过**（`goNext(asGraded)`）：`grade()` 传 `true`，否则会把自己刚打分的卡又记成跳过，进度翻倍；曾跳过又回头补打分的卡会从 `skipped` 中移除，避免重复计数。
+  - **只有「从最前沿往前走」才记跳过**（`goNext(asGraded)`）：`grade()` 传 `true`，否则会把自己刚打分的卡又记成跳过，`processedCount` 翻倍；曾跳过又回头补打分的卡会从 `skipped` 中移除，避免重复计数。
   - 前沿扫不到未处理的卡 → `finished`，完成页可点「回看最后一张」返回。
 
   每批 `SESSION_BATCH`（100）张：打分的卡要 sync 后才不再到期，跳过的卡下一批会再次出现。

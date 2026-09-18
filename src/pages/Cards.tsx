@@ -213,14 +213,15 @@ function CardSession({ group, tag, totalDue }: { group: GroupFilter; tag: string
   const [msg, setMsg] = useState('')
   const [syncing, setSyncing] = useState(false)
 
-  /**
-   * 进度 = 已处理数（打折的 ∪ 跳过的）。注意不能用 trail.length：展示过不等于处理过，
-   * 进入会话时第一张就已经在 trail 里了，那样会一上来就显示 1/100。
-   */
   const graded = grades.size
   const skippedCount = skipped.size
-  const progress = graded + skippedCount
-  const atFrontier = trailPos === trail.length - 1
+  /**
+   * 进度条/标签显示「当前是第几张」，所以点「上一张」会回退（11/100 → 10/100）。
+   * 注意不能拿 processedCount 当进度：展示过不等于处理过，而且回看时它不会变。
+   */
+  const position = trailPos + 1
+  /** 真正处理过的数量（打分 ∪ 跳过），只用于完成页统计 */
+  const processedCount = graded + skippedCount
   const current: Post | undefined = finished ? undefined : queue[trail[trailPos]]
   /**
    * 已打分的卡回看时只读：再打一次会给 SQLite 追加一条 review、把 SM-2 间隔推两轮。
@@ -368,7 +369,7 @@ function CardSession({ group, tag, totalDue }: { group: GroupFilter; tag: string
       <div className="cards-done">
         <div className="cards-done__emoji">✓</div>
         <p className="cards-done__text">
-          本轮复习完成：处理 {progress} 张，其中打分 {graded} 张、跳过 {skippedCount} 张。
+          本轮复习完成：处理 {processedCount} 张，其中打分 {graded} 张、跳过 {skippedCount} 张。
           {skippedCount > 0 && (
             <>
               <br />
@@ -425,11 +426,11 @@ function CardSession({ group, tag, totalDue }: { group: GroupFilter; tag: string
         <div className="cards-progress__bar">
           <div
             className="cards-progress__fill"
-            style={{ transform: `scaleX(${progress / queue.length})` }}
+            style={{ transform: `scaleX(${position / queue.length})` }}
           />
         </div>
         <span className="cards-progress__label">
-          {progress} / {queue.length}
+          {position} / {queue.length}
         </span>
         <span className="cards-progress__hint">
           {import.meta.env.DEV
@@ -539,7 +540,7 @@ function CardSession({ group, tag, totalDue }: { group: GroupFilter; tag: string
             上一张
           </button>
           <button type="button" className="btn" onClick={() => goNext()} disabled={submitting}>
-            {atFrontier && !showAnswer ? '跳过' : '下一张'}
+            下一张
           </button>
         </footer>
 
