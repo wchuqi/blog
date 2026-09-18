@@ -102,7 +102,11 @@ dev 模式下插件监听 `src/posts` 的 `add`/`unlink` 事件自动重建索�
 - frontmatter 标 `type: card`，正文约定两个一级标题段：`# 问题` / `# 答案`（解析器在 `src/lib/cards.ts`，标题名匹配不到时按出现顺序兜底：第一段=问题、第二段=答案）。
 - 卡片**不进**首页/归档/标签/搜索/图谱/RSS/sitemap（`allPosts` 已排除；搜索索引在 vite 插件里跳过），只通过 `/cards` 复习会话和直链 `/posts/<slug>` 访问。
 - SM-2 状态与文章共用同一套机制：`review.db` 按 slug 记卡、sync 刷 frontmatter `review:` 快照、`public/review.json` 条目带 `type` 字段（`article`/`card`）。
-- `/cards`（`src/pages/Cards.tsx`，懒加载）：翻转式复习会话（看问题 → 显示答案 → 打分），队列来自 `getDueCards()`（frontmatter 快照静态计算，无快照的新卡视为到期），打分走 `POST /api/cards/{slug}/review`（仅 dev），会话结束可点「同步复习数据」。键盘：空格翻面，1/2/3 打分。
+- `/cards`（`src/pages/Cards.tsx`，懒加载）：翻转式复习会话（看问题 → 显示答案 → 打分），队列来自 `getDueCards()`（frontmatter 快照静态计算，无快照的新卡视为到期），打分走 `POST /api/cards/{slug}/review`（仅 dev），会话结束可点「同步复习数据」。
+
+  换卡只有两个动作：**打分**（`忘了/模糊/记得`，该卡移出队列，游标不动即自动指向下一张）和**跳过**（游标后移、不打分，卡仍算到期）。`跳过`/`下一张` 按钮与 <kbd>→</kbd> 在翻面前后、dev/生产**都**存在（生产无打分按钮，只有 `下一张`）。键盘：空格/回车翻面，1/2/3 打分（仅 dev），→ 下一张。
+
+  进度 = `打分张数 + 跳过张数`；跳过恒不超过队列长度，游标越过队尾即进入完成页（`skip` 的 clamp 上限是 `remaining.length` 而非 `length - 1`，否则会永久卡在最后一张）。每批 `SESSION_BATCH`（100）张：打分的卡要 sync 后才不再到期，跳过的卡下一批会再次出现。
 - 卡片**分组与标签**：分组 = 文件所在子目录（slug 目录前缀，如 `卡片/记忆方法/xxx.md` → 分组「卡片/记忆方法」，根目录 = 未分组，`cardGroupOf()`）；标签 = frontmatter `tags`（与文章同字段，但独立统计，不进文章 `/tags` 页）。`/cards` 页有「复习 / 卡片库」两个视图，均可按分组/标签筛选（`getCardGroups()` / `getCardTags()`），卡片库按分组浏览、按到期排序。
 - `/review` 看板把 `review.json` 里 `type === 'card'` 的条目拆进「记忆卡片」面板，不混入文章分组。
 - 新建卡片文件：手动写（照 `src/posts/卡片/什么是间隔重复.md` 模板抄），或 dev 时 `POST /api/posts` 带 `"type": "card"` 生成模板。

@@ -3929,6 +3929,9 @@ button.navbar__link--refresh {
 }
 
 .flip-card__prod-hint {
+  /* 独占一行，避免与「下一张」按钮挤在一起 */
+  flex: 1 1 100%;
+  margin: 0;
   font-size: 0.85rem;
   color: var(--text-dim);
 }

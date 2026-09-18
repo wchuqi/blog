@@ -207,7 +207,13 @@ function CardSession({ group, tag, totalDue }: { group: GroupFilter; tag: string
     () => queue.filter((p) => !gradedKeys.has(p.slug)),
     [queue, gradedKeys]
   )
-  const done = gradedKeys.size
+  /**
+   * 进度归属：gradedKeys 里的卡已打分（从 remaining 移除）；游标 pos 之前的卡是被「跳过」的
+   * （仍留在 remaining 里，只是已越过头顶）。两者相加即已处理数，恒不超过 queue.length。
+   */
+  const graded = gradedKeys.size
+  const skipped = Math.min(pos, remaining.length)
+  const progress = graded + skipped
   const current: Post | undefined = remaining[pos]
 
   // 换卡：懒加载正文并重置翻转状态
@@ -250,8 +256,10 @@ function CardSession({ group, tag, totalDue }: { group: GroupFilter; tag: string
     [current, submitting]
   )
 
+  // 跳过：游标后移但不打分。clamp 到 remaining.length（而非 length - 1），
+  // 游标越界后 current 为空即进入完成页——否则跳过永远走不到会话结尾。
   const skip = useCallback(() => {
-    setPos((p) => Math.min(p + 1, Math.max(0, remaining.length - 1)))
+    setPos((p) => Math.min(p + 1, remaining.length))
   }, [remaining.length])
 
   const syncAll = useCallback(() => {
@@ -274,6 +282,11 @@ function CardSession({ group, tag, totalDue }: { group: GroupFilter; tag: string
         if (!revealed) setRevealed(true)
         return
       }
+      if (e.key === 'ArrowRight') {
+        e.preventDefault()
+        skip()
+        return
+      }
       if (revealed && import.meta.env.DEV && e.key >= '1' && e.key <= '3') {
         e.preventDefault()
         grade([0, 4, 5][Number(e.key) - 1])
@@ -281,7 +294,7 @@ function CardSession({ group, tag, totalDue }: { group: GroupFilter; tag: string
     }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
-  }, [current, revealed, grade])
+  }, [current, revealed, grade, skip])
 
   if (queue.length === 0) {
     return (
@@ -295,16 +308,24 @@ function CardSession({ group, tag, totalDue }: { group: GroupFilter; tag: string
 
   // 会话完成
   if (!current) {
-    const remainingDue = Math.max(0, totalDue - done)
+    const remainingDue = Math.max(0, totalDue - graded)
     return (
       <div className="cards-done">
         <div className="cards-done__emoji">✓</div>
         <p className="cards-done__text">
-          本轮复习完成，共打分 {done} 张卡片。
+          本轮复习完成：处理 {progress} 张，其中打分 {graded} 张、跳过 {skipped} 张。
+          {skipped > 0 && (
+            <>
+              <br />
+              跳过的卡片不算复习过，仍计为到期，下一批会再次出现。
+            </>
+          )}
           {remainingDue > 0 && (
             <>
               <br />
-              还有 {remainingDue} 张到期：点下方「同步复习数据」，同步完成后重新进入本页即可继续下一批。
+              {import.meta.env.DEV
+                ? `还有 ${remainingDue} 张到期：点下方「同步复习数据」，同步完成后重新进入本页即可继续下一批。`
+                : `还有 ${remainingDue} 张到期。公网环境不计分，队列不会推进；想看其它卡片请切到「卡片库」。`}
             </>
           )}
         </p>
@@ -337,13 +358,17 @@ function CardSession({ group, tag, totalDue }: { group: GroupFilter; tag: string
         <div className="cards-progress__bar">
           <div
             className="cards-progress__fill"
-            style={{ transform: `scaleX(${done / queue.length})` }}
+            style={{ transform: `scaleX(${progress / queue.length})` }}
           />
         </div>
         <span className="cards-progress__label">
-          {done} / {queue.length}
+          {progress} / {queue.length}
         </span>
-        <span className="cards-progress__hint">空格 显示答案 · 1/2/3 打分</span>
+        <span className="cards-progress__hint">
+          {import.meta.env.DEV
+            ? '空格 显示答案 · 1/2/3 打分 · → 下一张'
+            : '空格 显示答案 · → 下一张'}
+        </span>
       </div>
 
       <article className="flip-card">
@@ -396,48 +421,44 @@ function CardSession({ group, tag, totalDue }: { group: GroupFilter; tag: string
         )}
 
         <footer className="flip-card__actions">
-          {revealed ? (
-            import.meta.env.DEV ? (
-              <>
-                <button
-                  type="button"
-                  className="review-panel__btn review-panel__btn--forgot"
-                  onClick={() => grade(0)}
-                  disabled={submitting}
-                >
-                  忘了
-                </button>
-                <button
-                  type="button"
-                  className="review-panel__btn review-panel__btn--vague"
-                  onClick={() => grade(4)}
-                  disabled={submitting}
-                >
-                  模糊
-                </button>
-                <button
-                  type="button"
-                  className="review-panel__btn review-panel__btn--remember"
-                  onClick={() => grade(5)}
-                  disabled={submitting}
-                >
-                  记得
-                </button>
-                <button type="button" className="btn" onClick={skip} disabled={submitting}>
-                  跳过
-                </button>
-              </>
-            ) : (
-              <p className="flip-card__prod-hint">
-                打分需要运行本地写作环境（<code>npm run api</code> + <code>npm run dev</code>），
-                公网仅支持翻转查看。
-              </p>
-            )
-          ) : (
-            <button type="button" className="btn" onClick={skip}>
-              跳过
-            </button>
+          {revealed && import.meta.env.DEV && (
+            <>
+              <button
+                type="button"
+                className="review-panel__btn review-panel__btn--forgot"
+                onClick={() => grade(0)}
+                disabled={submitting}
+              >
+                忘了
+              </button>
+              <button
+                type="button"
+                className="review-panel__btn review-panel__btn--vague"
+                onClick={() => grade(4)}
+                disabled={submitting}
+              >
+                模糊
+              </button>
+              <button
+                type="button"
+                className="review-panel__btn review-panel__btn--remember"
+                onClick={() => grade(5)}
+                disabled={submitting}
+              >
+                记得
+              </button>
+            </>
           )}
+          {revealed && !import.meta.env.DEV && (
+            <p className="flip-card__prod-hint">
+              打分需要运行本地写作环境（<code>npm run api</code> + <code>npm run dev</code>），
+              公网仅支持翻转查看。
+            </p>
+          )}
+          {/* 无论是否翻面、是否 DEV，都保留一个前进控件，避免卡死在当前卡上 */}
+          <button type="button" className="btn" onClick={skip} disabled={submitting}>
+            {revealed ? '下一张' : '跳过'}
+          </button>
         </footer>
 
         {msg && <p className="card-review__msg card-review__msg--error">{msg}</p>}
