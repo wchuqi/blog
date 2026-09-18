@@ -60,8 +60,8 @@ scripts/
   db.py              SQLite 访问层（cards / reviews 两张表，review.db 在仓库根，gitignore）
   sync-reviews.py    从 review.db 刷写 frontmatter review 快照 + 生成 public/review.json
   gen-word-cards.py  一次性导入：把 10000 单词源文件切成 1 词 1 卡，写到
-                     src/posts/卡片/单词/单词卡-<word>.md（平铺，不再按区间分子目录；
-                     分组 = 文件所在子目录，分区间只会把分组拆成 10 个无意义的桶）
+                     src/posts/卡片/单词/<word>.md（平铺、无前缀。分组 = 文件所在子目录，
+                     按区间分子目录只会把分组拆成 10 个无意义的桶）
   dev-monitor.ps1    dev.bat 的就绪监视器（轮询 5173，就绪后开浏览器）
   check-col1.cjs     一次性 Playwright 排障脚本（手动跑，非构建链路）
 public/
@@ -81,6 +81,7 @@ dev 模式下插件监听 `src/posts` 的 `add`/`unlink` 事件自动重建索�
 
 - 文件放在 `src/posts/`（或子目录）。文件名即 URL slug。
 - **文档名称必须使用中文**（如 `单词王体系总览.md`），可用短横线 `-` 分隔主副标题；禁止使用英文 slug 或 `#`、空格等特殊字符。双链引用时同样使用中文文件名（去掉 `.md` 后缀）。
+  - **已知例外**：`src/posts/卡片/单词/` 下 10000 张生成的单词卡直接拿单词作文件名（`abandon.md`），不遵守本条。它们是机器生成的批量数据，加 `单词卡-` 前缀只会让 10000 个文件同前缀、目录里完全排不了序。
 - **子目录文章**：目录可任意多级嵌套（实际以中文分类目录为主，如 `src/posts/架构/分布式系统/study-material/01-xxx.md` → `/posts/架构/分布式系统/study-material/01-xxx`），目录前缀拼进 slug 保证同名文件不冲突。
 - Vite 插件自动发现新文件——无需修改配置。
 - Frontmatter 字段：`title`（必填）、`date`、`description`、`tags`、`cover`、`pinned`、`draft`、`encrypted`、`author`、`noReview`、`type`（`card` = 问答卡片）、`review`。
