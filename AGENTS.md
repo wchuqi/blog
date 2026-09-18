@@ -59,6 +59,9 @@ scripts/
   api-server.py      FastAPI 后端（仅本地 dev）：文章 CRUD + 复习评分（localhost:3001）
   db.py              SQLite 访问层（cards / reviews 两张表，review.db 在仓库根，gitignore）
   sync-reviews.py    从 review.db 刷写 frontmatter review 快照 + 生成 public/review.json
+  gen-word-cards.py  一次性导入：把 10000 单词源文件切成 1 词 1 卡，写到
+                     src/posts/卡片/单词/单词卡-<word>.md（平铺，不再按区间分子目录；
+                     分组 = 文件所在子目录，分区间只会把分组拆成 10 个无意义的桶）
   dev-monitor.ps1    dev.bat 的就绪监视器（轮询 5173，就绪后开浏览器）
   check-col1.cjs     一次性 Playwright 排障脚本（手动跑，非构建链路）
 public/

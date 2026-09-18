@@ -3,7 +3,10 @@
 
 源：D:\\tmp\\10000个英语单词，3个月200节课全记牢\\{1-1000 .. 9001-10000}.md
     条目格式：`N、word` + 围栏代码块（音标/谐音、词性、释义、空行、拆解联想句）
-出：src/posts/卡片/单词/<区间>/单词卡-<word>.md （1 词 1 卡，frontmatter type: card）
+出：src/posts/卡片/单词/单词卡-<word>.md （1 词 1 卡，frontmatter type: card）
+
+注：文件名已全局去重（见 `used`），所以不再按 1-1000 / 1001-2000 分子目录——
+那层目录只会把卡片分组拆成 10 个无意义的桶（分组 = 文件所在子目录）。
 
 卡片布局（谐音联想记忆法）：
   # 问题   -> 单词 + 音标/谐音 + 拆解联想句（提示）
@@ -110,6 +113,9 @@ def main() -> None:
     total = 0
     skipped = 0
 
+    if not dry:
+        OUT_DIR.mkdir(parents=True, exist_ok=True)
+
     for rng in RANGES:
         src = SRC_DIR / f"{rng}.md"
         if not src.exists():
@@ -124,10 +130,6 @@ def main() -> None:
             m = ENTRY_RE.match(ln)
             if m:
                 entries.append((m.group(1), i))
-
-        out_dir = OUT_DIR / rng
-        if not dry:
-            out_dir.mkdir(parents=True, exist_ok=True)
 
         count = 0
         for idx, (word, start) in enumerate(entries):
@@ -145,7 +147,7 @@ def main() -> None:
             used.add(slug.lower())
 
             if not dry:
-                path = out_dir / f"单词卡-{slug}.md"
+                path = OUT_DIR / f"单词卡-{slug}.md"
                 if path.exists():
                     skipped += 1
                 else:
