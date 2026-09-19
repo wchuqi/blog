@@ -91,10 +91,14 @@ export function Review() {
     <div className="page review">
       <h1 className="page__title">复习看板</h1>
       <p className="page__subtitle">
-        共 {stats.totalCards} 篇参与复习 · 累计复习 {stats.totalReviews} 次 · 连续 {stats.streakDays} 天
+        {articleCards.length} 篇文章 + {qaCards.length} 张卡片参与复习
+        {stats.totalReviews > 0 && ` · 累计复习 ${stats.totalReviews} 次`}
+        {stats.streakDays > 0 && ` · 连续 ${stats.streakDays} 天`}
       </p>
 
-      <ReviewStats stats={stats} />
+      {/* 统计条只算文章：卡片有 10000 张，混在一起会把文章的数字淹没，
+          下面的四个分组列表也只列文章，数字与列表口径必须一致。 */}
+      <ReviewStats stats={stats} articleCards={articleCards} />
       {qaCards.length > 0 && <CardSummaryPanel qaCards={qaCards} />}
       <ReviewHeatmap heatmap={heatmap} />
       <ReviewTrend cards={reviewedCards} />
@@ -121,6 +125,8 @@ export function Review() {
         cards={later}
         empty="所有文章都在 7 天内到期。"
       />
+
+      <ExcludedPanel excluded={data.excluded ?? []} />
     </div>
   )
 }
@@ -163,12 +169,34 @@ function CardSummaryPanel({ qaCards }: { qaCards: ReviewCard[] }) {
 
 // ---------- 统计条 ----------
 
-function ReviewStats({ stats }: { stats: ReviewData['stats'] }) {
+/**
+ * 统计条。
+ *
+ * 注意：review.json 的 stats 是「文章 + 卡片」的全局值，而本页四个分组列表
+ * 只列文章（卡片有 10002 张，混进来就没法看了）。所以这里以文章口径重新算，
+ * 卡片数量只在「记忆卡片」面板里单独展示——避免出现「参与复习 10004」
+ * 紧跟着「今日待复习 2」这种读者无法理解的口径跳跃。
+ */
+function ReviewStats({
+  stats,
+  articleCards,
+}: {
+  stats: ReviewData['stats']
+  articleCards: ReviewCard[]
+}) {
+  const dueToday = articleCards.filter((c) => c.dueIn <= 0).length
+  const overdue = articleCards.filter((c) => c.dueIn < 0 && c.reps > 0).length
+  const started = articleCards.filter((c) => c.reps > 0).length
+
   return (
     <section className="review-stats">
       <div className="review-stat">
-        <div className="review-stat__value">{stats.totalCards}</div>
-        <div className="review-stat__label">参与复习</div>
+        <div className="review-stat__value">{articleCards.length}</div>
+        <div className="review-stat__label">在复习池</div>
+      </div>
+      <div className="review-stat">
+        <div className="review-stat__value">{started}</div>
+        <div className="review-stat__label">已开始复习</div>
       </div>
       <div className="review-stat">
         <div className="review-stat__value">{stats.totalReviews}</div>
@@ -179,17 +207,67 @@ function ReviewStats({ stats }: { stats: ReviewData['stats'] }) {
         <div className="review-stat__label">连续天数</div>
       </div>
       <div className="review-stat">
-        <div className="review-stat__value">{stats.dueToday}</div>
+        <div className="review-stat__value">{dueToday}</div>
         <div className="review-stat__label">今日待复习</div>
       </div>
       <div className="review-stat">
-        <div className="review-stat__value">{stats.overdue}</div>
+        <div className="review-stat__value">{overdue}</div>
         <div className="review-stat__label">已逾期</div>
       </div>
       <div className="review-stat">
         <div className="review-stat__value">{stats.avgEase.toFixed(2)}</div>
         <div className="review-stat__label">平均难度</div>
       </div>
+    </section>
+  )
+}
+
+// ---------- 不在复习里的文章 ----------
+
+/**
+ * 被排除的文章（frontmatter 标了 noReview）。
+ *
+ * 数量很大（全库 1352 篇），但之前只在统计里提一句、没有任何入口，
+ * 读者既不知道是哪些、也不知道怎么把它们加回复习。这里按目录聚合并给出样例。
+ */
+function ExcludedPanel({ excluded }: { excluded: { slug: string; title: string }[] }) {
+  const byDir = useMemo(() => {
+    const map = new Map<string, { title: string; slug: string }[]>()
+    for (const item of excluded) {
+      const i = item.slug.lastIndexOf('/')
+      const dir = i === -1 ? '根目录' : item.slug.slice(0, i)
+      const list = map.get(dir)
+      if (list) list.push(item)
+      else map.set(dir, [item])
+    }
+    return [...map.entries()].sort((a, b) => b[1].length - a[1].length)
+  }, [excluded])
+
+  if (excluded.length === 0) return null
+
+  return (
+    <section className="review-section">
+      <h2 className="review-section__title">
+        不在复习里
+        <span className="review-section__count">{excluded.length}</span>
+      </h2>
+      <p className="review-section__empty">
+        这些文章在 frontmatter 标了 <code>noReview: true</code>，不参与遗忘曲线复习。
+        在 dev 模式下打开任意一篇，用页面上的开关即可重新加入。
+      </p>
+      <ul className="review-list">
+        {byDir.slice(0, 12).map(([dir, items]) => (
+          <li className="review-list__item" key={dir}>
+            <Link className="review-list__link" to={`/search?q=&scope=article&path=${encodeURIComponent(dir)}`}>
+              {dir}
+            </Link>
+            <span className="review-list__meta">{items.length} 篇</span>
+          </li>
+        ))}
+      </ul>
+      {byDir.length > 12 && (
+        <p className="review-section__empty">…另有 {byDir.length - 12} 个目录</p>
+      )}
     </section>
   )
 }

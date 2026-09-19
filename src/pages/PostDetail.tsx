@@ -7,6 +7,7 @@ import rehypeHighlight from 'rehype-highlight'
 import {
   extractToc,
   getBacklinks,
+  getOutgoingLinks,
   getPost,
   getPostContent,
   getRelatedPosts,
@@ -14,8 +15,10 @@ import {
   resolveMarkdownPostHref,
 } from '../lib/posts'
 import { siteConfig } from '../config'
+import { apiUrl } from '../lib/api'
 import { formatDate } from '../lib/format'
 import { parseCardBody } from '../lib/cards'
+import { getTopicOf } from '../lib/topics'
 import { TableOfContents } from '../components/TableOfContents'
 import { Comments } from '../components/Comments'
 import { CodeBlock } from '../components/CodeBlock'
@@ -24,6 +27,7 @@ import { ReviewProgressCard } from '../components/ReviewProgressCard'
 import { ReviewPanel } from '../components/ReviewPanel'
 import { ReviewToggle } from '../components/ReviewToggle'
 import { DeletePostButton } from '../components/DeletePostButton'
+import { BackToTop } from '../components/BackToTop'
 
 /** 文章详情页：正文渲染 + 目录 + 相关文章 + 评论 */
 export function PostDetail() {
@@ -60,7 +64,7 @@ export function PostDetail() {
     })
     // dev 模式下从 API 获取实时 noReview（虚拟模块可能过期）
     if (import.meta.env.DEV) {
-      fetch(`/api/posts/${slug}`)
+      fetch(apiUrl('posts', slug))
         .then((r) => (r.ok ? r.json() : null))
         .then((d) => {
           if (cancelled || !d?.frontmatter) return
@@ -80,7 +84,7 @@ export function PostDetail() {
       const next = tags.filter((t) => t !== tag)
       setRemovingTag(tag)
       try {
-        const res = await fetch(`/api/posts/${slug}/frontmatter`, {
+        const res = await fetch(apiUrl('posts', slug, 'frontmatter'), {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ tags: next }),
@@ -117,6 +121,10 @@ export function PostDetail() {
     [post]
   )
   const backlinks = useMemo(() => (post ? getBacklinks(post) : []), [post])
+  // 出链：本文引用/链接了哪些笔记。与反向链接互补，但此前只有反向链接有 UI。
+  const outgoing = useMemo(() => (post ? getOutgoingLinks(post) : []), [post])
+  // 所属主题（目录约定见 lib/topics.ts）：把文章挂回知识库的一级导航
+  const topic = useMemo(() => (post ? getTopicOf(post.slug) : undefined), [post])
 
   // 问答卡片（type: card）：正文按「# 问题 / # 答案」两段解析，不走普通文章渲染
   const isCard = !!post && post.type === 'card'
@@ -134,6 +142,58 @@ export function PostDetail() {
       document.title = siteConfig.title
     }
   }, [post])
+
+  // 笔记大纲默认展开，点 ‹ / › 切换。
+  // state 放在这里只会被“点击”触发（不是悬停），不会因为鼠标划过而重渲染正文。
+  const [outlineOpen, setOutlineOpen] = useState(true)
+
+  /**
+   * 切换大纲。
+   *
+   * 展开/收起会改变正文宽度，文字随之重排，页面高度会变（实测同一篇文档
+   * 宽 1104 与 1392 之间差 673px）。`scrollY` 数值不变，但视口上方的内容变短了，
+   * 阅读位置就会漂移——表现就是“内容往下跳”。
+   *
+   * 所以这里在切换前选一个贴近视口顶部的正文块当锚点，在过渡期间每帧把它
+   * 钉回原来的视口位置。选正文块而不是选 .post：文章自身的 top 不受内部重排影响，
+   * 当不了锚点。
+   */
+  const toggleOutline = useCallback(() => {
+    // 锚点用正文的直接子元素（段落/标题/列表/代码块…），而不是只挑标题：
+    // 标题在小节内部很稀疏，落点可能离阅读位置几千像素，
+    // 而重排引起的位移并非均匀，锚点离得越远补偿越不准（实测能差 30px）。
+    const blocks = document.querySelectorAll<HTMLElement>('.markdown-body > *')
+    let anchor: HTMLElement | null = null
+    let bestDist = Infinity
+    for (const el of blocks) {
+      const dist = Math.abs(el.getBoundingClientRect().top)
+      if (dist < bestDist) {
+        bestDist = dist
+        anchor = el
+      }
+    }
+
+    setOutlineOpen((o) => !o)
+
+    // 没有标题可当锚点（短文章 / 纯卡片）就不补偿：此时页面通常还没法滚动
+    if (!anchor) return
+    const pinned = anchor
+    const offset = pinned.getBoundingClientRect().top
+    const t0 = performance.now()
+
+    const hold = () => {
+      if (!pinned.isConnected) return
+      const delta = pinned.getBoundingClientRect().top - offset
+      if (Math.abs(delta) > 0.5) {
+        // 必须显式 instant：全局 `html { scroll-behavior: smooth }` 会把 scrollBy 变成动画，
+        // 那样每帧的修正会互相打断、反而拖出一段滑动
+        window.scrollBy({ top: delta, behavior: 'instant' })
+      }
+      // 过渡是 260ms，多跟一点确保末帧也修正到位
+      if (performance.now() - t0 < 420) requestAnimationFrame(hold)
+    }
+    requestAnimationFrame(hold)
+  }, [])
 
   // 切换文章时回到顶部
   useEffect(() => {
@@ -170,6 +230,14 @@ export function PostDetail() {
             <span>{post.readingMinutes} 分钟阅读</span>
             <span className="dot">·</span>
             <span>{post.words} 字</span>
+            {topic && (
+              <>
+                <span className="dot">·</span>
+                <Link to={`/topics/${topic.slug}`} className="post__topic">
+                  {topic.name}
+                </Link>
+              </>
+            )}
           </div>
         </header>
 
@@ -277,12 +345,24 @@ export function PostDetail() {
       </article>
 
       {showOutline && (
-        <aside className="post-outline-flyout" aria-label="笔记大纲">
-          <div className="post-outline-flyout__edge" aria-hidden="true" />
-          <div className="post-outline-flyout__icon" aria-hidden="true">
-            «
-          </div>
-          <div className="post-outline-flyout__panel">
+        <aside
+          className={
+            'post-outline-flyout' + (outlineOpen ? ' post-outline-flyout--open' : '')
+          }
+          aria-label="笔记大纲"
+        >
+          <button
+            type="button"
+            className="post-outline-flyout__toggle"
+            onClick={toggleOutline}
+            aria-expanded={outlineOpen}
+            aria-controls="post-outline-panel"
+            aria-label={outlineOpen ? '收起笔记大纲' : '展开笔记大纲'}
+            title={outlineOpen ? '收起笔记大纲' : '展开笔记大纲'}
+          >
+            <span aria-hidden="true">{outlineOpen ? '‹' : '›'}</span>
+          </button>
+          <div className="post-outline-flyout__panel" id="post-outline-panel">
             {hasOutline ? (
               <TableOfContents items={toc} title="笔记大纲" />
             ) : (
@@ -311,21 +391,49 @@ export function PostDetail() {
         </section>
       )}
 
-      {!isCard && backlinks.length > 0 && (
+      {/* 出链与反向链接成对展示：知识库的导航就是“从这里能去哪”＋“什么会带你来这”。
+          两者合并到一个区块里，避免两个结构完全相同的列表各占一段。 */}
+      {!isCard && (outgoing.length > 0 || backlinks.length > 0) && (
         <section className="backlinks">
-          <h2 className="backlinks__title">反向链接</h2>
-          <ul className="backlinks__list">
-            {backlinks.map((p) => (
-              <li key={p.slug}>
-                <Link to={`/posts/${p.slug}`}>{p.title}</Link>
-                <span className="backlinks__date">{formatDate(p.date)}</span>
-              </li>
-            ))}
-          </ul>
+          {outgoing.length > 0 && (
+            <>
+              <h2 className="backlinks__title">
+                指向的笔记
+                <span className="backlinks__count">{outgoing.length}</span>
+              </h2>
+              <ul className="backlinks__list">
+                {outgoing.map((p) => (
+                  <li key={p.slug}>
+                    <Link to={`/posts/${p.slug}`}>{p.title}</Link>
+                    <span className="backlinks__date">{formatDate(p.date)}</span>
+                  </li>
+                ))}
+              </ul>
+            </>
+          )}
+
+          {backlinks.length > 0 && (
+            <>
+              <h2 className="backlinks__title">
+                引用它的笔记
+                <span className="backlinks__count">{backlinks.length}</span>
+              </h2>
+              <ul className="backlinks__list">
+                {backlinks.map((p) => (
+                  <li key={p.slug}>
+                    <Link to={`/posts/${p.slug}`}>{p.title}</Link>
+                    <span className="backlinks__date">{formatDate(p.date)}</span>
+                  </li>
+                ))}
+              </ul>
+            </>
+          )}
         </section>
       )}
 
       {!isCard && <Comments />}
+
+      <BackToTop />
     </div>
   )
 }

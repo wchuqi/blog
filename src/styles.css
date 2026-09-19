@@ -62,6 +62,11 @@
   --maxw: 760px;
   --maxw-wide: 1200px;
 
+  /* 左侧笔记大纲展开后的占位宽度。
+     面板宽度与 .post-detail 展开时的 padding-left 都用它，两者必须一致，
+     否则面板会盖住正文或留出一道缝。 */
+  --outline-w: 18rem;
+
   --font: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'SF Pro Display',
     'Helvetica Neue', 'PingFang SC', 'Noto Sans SC', 'Microsoft YaHei',
     'Segoe UI', Roboto, Arial, sans-serif;
@@ -875,50 +880,76 @@ button.navbar__link--refresh {
   margin-top: 0.75rem;
   margin-bottom: 2.5rem;
 }
-/* 左侧隐藏式笔记大纲：全高触发窄条，悬停展开；面板宽度自适应最长标题（max-content），设上下限兜底 */
+/* 左侧笔记大纲。
+
+   默认展开，点右侧的 ‹ / › 切换。三个不直观但必须的约束：
+
+   1. 容器宽度就是 --outline-w，与 .post-detail 的常驻留白同宽，面板正好填满留白。
+   2. 留白是**常驻**的（不展开时也保留），不能只在展开时加 —— 否则正文宽度
+      一变，文字重排会让页面高度跟着变（实测差 673px），滚到中部时切换
+      就会出现“内容往下跳”。
+   3. 容器本身 pointer-events: none，只让面板与切换按钮可点，
+      避免固定层遮住底下的内容。 */
 .post-outline-flyout {
   position: fixed;
   top: 0;
   left: 0;
   bottom: 0;
   z-index: 45;
-  width: 10vw;
-  min-width: 56px;
+  width: var(--outline-w);
   overflow: visible;
+  pointer-events: none;
 }
-.post-outline-flyout__edge {
-  position: absolute;
-  inset: 0;
-  border: 0;
-  background: transparent;
-  cursor: pointer;
-}
-/* 收起时显示的"向左收起"图标 */
-.post-outline-flyout__icon {
+
+/* 展开/收起按钮：抽屉把手的样式，跨在面板右边缘上；收起后退回最左侧。
+   宽度必须 ≤ 父级的 24px 内边距（即 .post-detail 的左边距）——
+   收起时按钮停在 left: 0，超过 24px 就会压在正文上。 */
+.post-outline-flyout__toggle {
   position: absolute;
   top: 50%;
-  left: 0.35rem;
+  left: calc(var(--outline-w) - 0.65rem);
   transform: translateY(-50%);
+  width: 1.3rem;
+  height: 3.2rem;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  border: 1px solid var(--border);
+  border-left: 0;
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+  background: color-mix(in srgb, var(--panel-strong) 92%, transparent);
+  color: var(--text-soft);
+  font: inherit;
   font-size: 1.05rem;
   line-height: 1;
-  color: var(--text-dim);
-  opacity: 0.55;
-  pointer-events: none;
-  transition: opacity 0.2s ease;
+  cursor: pointer;
+  pointer-events: auto;
+  /* 必须高于面板：按钮横跨留白右边缘（left = --outline-w - 0.8rem），
+     与面板有重叠，而面板在 DOM 里排在后面，不抬 z-index 就会被盖住而点不动。 */
+  z-index: 1;
+  transition: left 0.26s cubic-bezier(0.22, 1, 0.36, 1),
+    border-color 0.18s ease, color 0.18s ease, background 0.18s ease;
 }
-.post-outline-flyout:hover .post-outline-flyout__icon,
-.post-outline-flyout:focus-within .post-outline-flyout__icon {
-  opacity: 0;
+.post-outline-flyout:not(.post-outline-flyout--open) .post-outline-flyout__toggle {
+  left: 0;
+  border-left: 1px solid var(--border);
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
 }
+.post-outline-flyout__toggle:hover {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+
+/* 面板宽度固定为 --outline-w，与常驻留白对齐 */
 .post-outline-flyout__panel {
   position: absolute;
   /* 顶部对齐文档内容：避开 64px 高的 sticky 导航栏，标题不再被遮挡 */
   top: 64px;
   left: 0;
   bottom: 0;
-  width: max-content;
-  min-width: 14rem;
-  max-width: min(30rem, calc(100vw - 4rem));
+  width: var(--outline-w);
+  max-width: calc(100vw - 2rem);
   overflow-y: auto;
   overscroll-behavior: contain;
   padding: 1rem 1.1rem;
@@ -934,11 +965,25 @@ button.navbar__link--refresh {
   transition: transform 0.26s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.16s ease;
   will-change: transform, opacity;
 }
-.post-outline-flyout:hover .post-outline-flyout__panel,
-.post-outline-flyout:focus-within .post-outline-flyout__panel {
+.post-outline-flyout--open .post-outline-flyout__panel {
   opacity: 1;
   pointer-events: auto;
   transform: translate3d(0, 0, 0);
+}
+
+/* 正文让位：只在展开时留白，收起后正文回到原来的宽度与位置。
+   宽度变化会让文字重排（实测页面高度差 673px），所以切换时要配合 JS
+   把阅读位置钉住（见 PostDetail 的 toggleOutline）。
+   窄屏（≤1000px）不留白——18rem 会把正文挤得没法读。
+   用 :has() 而不是给 .post-detail 挂类：大纲是否展开已经写在 aside 的类上。 */
+@media (min-width: 1001px) {
+  .post-detail {
+    transition: padding-left 0.26s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  .post-detail:has(.post-outline-flyout--open) {
+    padding-left: var(--outline-w);
+  }
 }
 
 /* 目录 TOC */
@@ -1027,7 +1072,7 @@ button.navbar__link--refresh {
   padding-left: 2.4rem;
   font-size: 0.82rem;
 }
-.toc__item--active > a {
+.toc__item--active a {
   color: var(--accent);
   border-left-color: var(--accent);
   font-weight: 600;
@@ -4181,4 +4226,635 @@ button.navbar__link--refresh {
 .card-library__more {
   justify-self: center;
   margin-top: 0.5rem;
+}
+
+/* ============================================================
+   主题（Topic / MOC）—— /topics 与 /topics/*
+   设计原则同全站：少卡片、靠留白和分隔线拉层级，
+   强调色只在 hover / 计数徽标上出现。
+   ============================================================ */
+.topic-group {
+  margin-bottom: 3rem;
+}
+
+.topic-group--muted {
+  margin-bottom: 1rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--border-soft);
+}
+
+.topic-group__title {
+  display: flex;
+  align-items: baseline;
+  gap: 0.6rem;
+  margin: 0 0 1.1rem;
+  font-size: 1.15rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+.topic-group__count {
+  color: var(--text-dim);
+  font-size: 0.82rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.topic-group__hint {
+  margin: 0 0 1rem;
+  max-width: 62ch;
+  color: var(--text-soft);
+  font-size: 0.9rem;
+  line-height: 1.8;
+}
+
+.topic-group__hint code {
+  padding: 0.1rem 0.35rem;
+  border-radius: 5px;
+  background: var(--panel-muted);
+  font-size: 0.85em;
+}
+
+.topic-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 260px), 1fr));
+  gap: 0.9rem;
+}
+
+.topic-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 1rem 1.1rem;
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius-sm);
+  background: var(--panel-strong);
+  color: var(--text);
+  box-shadow: var(--shadow-rest);
+}
+
+.topic-card:hover {
+  color: var(--text);
+  border-color: var(--accent);
+  transform: translateY(-2px);
+}
+
+.topic-card__head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.topic-card__name {
+  font-family: var(--font-serif);
+  font-size: 1.08rem;
+  font-weight: 700;
+  line-height: 1.4;
+  transition: color 0.15s;
+}
+
+.topic-card:hover .topic-card__name {
+  color: var(--accent);
+}
+
+.topic-card__count {
+  color: var(--text-dim);
+  font-size: 0.85rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.topic-card__desc {
+  margin: 0;
+  color: var(--text-soft);
+  font-size: 0.86rem;
+  line-height: 1.7;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.topic-card__meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.45rem;
+  margin-top: auto;
+  padding-top: 0.35rem;
+  color: var(--text-dim);
+  font-size: 0.76rem;
+}
+
+.topic-card__path {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.topic-card__pill {
+  padding: 0.1rem 0.45rem;
+  border: 1px solid var(--border-soft);
+  border-radius: 5px;
+  background: var(--bg-soft);
+}
+
+.topic-card__date {
+  margin-left: auto;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---- 主题详情页 ---- */
+.topic-breadcrumb {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.4rem;
+  margin-bottom: 0.9rem;
+  color: var(--text-dim);
+  font-size: 0.85rem;
+}
+
+.topic-breadcrumb__seg {
+  display: inline-flex;
+  gap: 0.4rem;
+}
+
+.topic-breadcrumb__sep {
+  color: var(--border);
+}
+
+.topic-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  margin-bottom: 2rem;
+}
+
+.topic-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
+  gap: 0.75rem;
+  margin-bottom: 2.5rem;
+}
+
+.topic-stat {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  padding: 0.9rem 1rem;
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius-sm);
+  background: var(--panel-strong);
+}
+
+.topic-stat__value {
+  font-family: var(--font-serif);
+  font-size: 1.35rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.topic-stat__label {
+  color: var(--text-dim);
+  font-size: 0.78rem;
+}
+
+.topic-section {
+  margin-bottom: 2.5rem;
+}
+
+.topic-section__title {
+  display: flex;
+  align-items: baseline;
+  gap: 0.6rem;
+  margin: 0 0 0.5rem;
+  padding-bottom: 0.6rem;
+  border-bottom: 1px solid var(--border-soft);
+  font-size: 1.05rem;
+  font-weight: 700;
+}
+
+.topic-section__count {
+  color: var(--text-dim);
+  font-size: 0.8rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .topic-card {
+    transition: transform var(--duration-ui) var(--ease-out),
+      border-color var(--duration-ui) ease, box-shadow var(--duration-ui) ease;
+  }
+
+  .topic-card:hover {
+    box-shadow: var(--shadow);
+  }
+
+  .topic-card:active {
+    transform: scale(0.99);
+    transition-duration: 100ms;
+  }
+}
+
+/* 文章头部里的"所属主题"链接：跟随 meta 的弱化色，hover 才亮 */
+.post__topic {
+  color: var(--text-soft);
+  border-bottom: 1px solid transparent;
+}
+
+.post__topic:hover {
+  color: var(--accent);
+  border-bottom-color: currentColor;
+}
+
+/* ============================================================
+   搜索结果页（/search）与模态升级（高亮 / 摘要 / 范围切换）
+   ============================================================ */
+.search-page__form {
+  display: flex;
+  gap: 0.6rem;
+  margin-bottom: 1.25rem;
+}
+
+.search-page__input {
+  flex: 1;
+  min-width: 0;
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--panel-strong);
+  color: var(--text);
+  font-size: 1rem;
+  outline: none;
+}
+
+.search-page__input:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-soft);
+}
+
+.search-page__filters {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--border-soft);
+}
+
+.search-page__tabs {
+  display: inline-flex;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-pill);
+  overflow: hidden;
+}
+
+.search-page__tab {
+  border: none;
+  background: transparent;
+  color: var(--text-soft);
+  padding: 0.35rem 0.9rem;
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+
+.search-page__tab--active {
+  background: var(--accent);
+  color: #fff;
+}
+
+.search-page__select {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  color: var(--text-soft);
+  font-size: 0.82rem;
+}
+
+.search-page__select select {
+  max-width: 15rem;
+  padding: 0.35rem 0.5rem;
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  background: var(--panel-strong);
+  color: var(--text);
+  font-size: 0.82rem;
+}
+
+.search-page__count {
+  margin: 0 0 0.75rem;
+  color: var(--text-soft);
+  font-size: 0.85rem;
+}
+
+.search-page__hint {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 2rem;
+  color: var(--text-dim);
+  font-size: 0.82rem;
+}
+
+.search-page__hint kbd,
+.search-modal__footer kbd {
+  padding: 0.05rem 0.35rem;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: var(--bg-soft);
+  font-size: 0.75rem;
+}
+
+/* ---- 结果列表 ---- */
+.search-results {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.search-result {
+  border-bottom: 1px solid var(--border-soft);
+}
+
+.search-result__link {
+  display: block;
+  padding: 1.1rem 0.5rem;
+  color: var(--text);
+}
+
+.search-result__link:hover {
+  background: var(--accent-soft);
+  color: var(--text);
+}
+
+.search-result__head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.search-result__title {
+  margin: 0;
+  font-family: var(--font-serif);
+  font-size: 1.12rem;
+  font-weight: 700;
+  line-height: 1.45;
+}
+
+.search-result__date {
+  color: var(--text-dim);
+  font-size: 0.78rem;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+.search-result__snippet {
+  margin: 0.45rem 0 0;
+  color: var(--text-soft);
+  font-size: 0.88rem;
+  line-height: 1.75;
+}
+
+.search-result__meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+  color: var(--text-dim);
+  font-size: 0.76rem;
+}
+
+.search-result__badge {
+  padding: 0.05rem 0.4rem;
+  border: 1px solid var(--accent);
+  border-radius: 999px;
+  color: var(--accent);
+  background: var(--accent-soft);
+  font-size: 0.72rem;
+}
+
+.search-result__tag {
+  color: var(--text-soft);
+}
+
+/* 命中高亮：用底色 + 字重，不用荧光黄，避免和豆沙绿主题打架 */
+.search-hit {
+  padding: 0 0.1em;
+  border-radius: 3px;
+  background: var(--accent-soft);
+  color: var(--accent-strong);
+  font-weight: 600;
+}
+
+[data-theme='dark'] .search-hit {
+  color: var(--accent-2);
+}
+
+/* ---- 模态里的范围切换与摘要 ---- */
+.search-modal__scopes {
+  display: flex;
+  gap: 0.35rem;
+  padding: 0.6rem 1.35rem 0;
+}
+
+.search-modal__scope {
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius-pill);
+  background: transparent;
+  color: var(--text-soft);
+  padding: 0.2rem 0.7rem;
+  font-size: 0.78rem;
+  cursor: pointer;
+}
+
+.search-modal__scope--active {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-weight: 600;
+}
+
+.search-modal__item {
+  align-items: flex-start;
+}
+
+.search-modal__item-body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  min-width: 0;
+}
+
+.search-modal__item-snippet {
+  color: var(--text-soft);
+  font-size: 0.8rem;
+  line-height: 1.6;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.search-modal__all {
+  display: block;
+  width: 100%;
+  padding: 0.6rem 1.35rem;
+  border: none;
+  border-top: 1px solid var(--border-soft);
+  background: transparent;
+  color: var(--accent);
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-align: center;
+  cursor: pointer;
+}
+
+.search-modal__all:hover {
+  background: var(--accent-soft);
+}
+
+.search-modal__footer-hint {
+  margin-left: auto;
+  color: var(--text-dim);
+}
+
+@media (max-width: 640px) {
+  .search-page__form {
+    flex-direction: column;
+  }
+
+  .search-page__select select {
+    max-width: 100%;
+  }
+
+  .search-result__head {
+    flex-direction: column;
+    gap: 0.2rem;
+  }
+}
+
+/* 移动端：筛选行标签不换行、下拉占满剩余宽度 */
+@media (max-width: 640px) {
+  .search-page__filters {
+    gap: 0.5rem;
+  }
+
+  .search-page__select {
+    flex: 1;
+    min-width: 8rem;
+  }
+
+  .search-page__select > span {
+    white-space: nowrap;
+  }
+
+  .search-page__select select {
+    flex: 1;
+    min-width: 0;
+    max-width: none;
+  }
+}
+
+/* 「不在复习里」面板：说明文字里的 code 需要和正文一致的可读性 */
+.review-section__empty code {
+  padding: 0.05rem 0.3rem;
+  border-radius: 4px;
+  background: var(--panel-muted);
+  font-size: 0.88em;
+}
+
+/* 复习看板的分组列表在窄屏下收紧间距 */
+@media (max-width: 640px) {
+  .review-stats {
+    grid-template-columns: repeat(auto-fit, minmax(88px, 1fr));
+    gap: 0.5rem;
+  }
+
+  .review-stat {
+    padding: 0.7rem 0.6rem;
+  }
+
+  .review-stat__value {
+    font-size: 1.2rem;
+  }
+}
+
+/* 出链/入链成对展示：第二个标题与前一个列表之间留白，避免两块贴在一起 */
+.backlinks__title + .backlinks__list + .backlinks__title {
+  margin-top: 2rem;
+}
+
+/* 列表长度计数：弱化，跟在标题后面 */
+.backlinks__count {
+  margin-left: 0.5rem;
+  color: var(--text-dim);
+  font-size: 0.8rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ============================================================
+   回到顶部（文档右下角）
+   ============================================================ */
+.back-to-top {
+  position: fixed;
+  right: 1.25rem;
+  bottom: 1.25rem;
+  z-index: 40;
+  width: 2.75rem;
+  height: 2.75rem;
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--border);
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--panel-strong) 92%, transparent);
+  box-shadow: var(--shadow);
+  backdrop-filter: blur(10px);
+  font-size: 1.15rem;
+  line-height: 1;
+  cursor: pointer;
+  /* 默认隐藏并下移，出现时上浮淡入 */
+  opacity: 0;
+  pointer-events: none;
+  transform: translate3d(0, 0.6rem, 0);
+}
+
+.back-to-top--visible {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translate3d(0, 0, 0);
+}
+
+.back-to-top:hover {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .back-to-top {
+    transition: opacity 0.2s ease, transform 0.24s var(--ease-out),
+      border-color 0.18s ease, background 0.18s ease;
+  }
+
+  .back-to-top--visible:active {
+    transform: scale(0.94);
+    transition-duration: 100ms;
+  }
+}
+
+@media (max-width: 640px) {
+  .back-to-top {
+    right: 0.85rem;
+    bottom: 0.85rem;
+    width: 2.5rem;
+    height: 2.5rem;
+    font-size: 1.05rem;
+  }
 }

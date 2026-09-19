@@ -1,6 +1,7 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { memo, useCallback, useEffect, useMemo, useState } from 'react'
 import type { ReactNode } from 'react'
 import { Link } from 'react-router-dom'
+import { apiUrl } from '../lib/api'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import {
@@ -56,7 +57,13 @@ export function Cards() {
 
   const groups = useMemo(() => getCardGroups(), [])
   const tags = useMemo(() => getCardTags(), [])
-  const totalDue = useMemo(() => getDueCards().length, [])
+  /** 当前筛选下的到期数。筛选后的会话必须用这个数，否则完成页会报全局数字 */
+  const dueCount = useMemo(
+    () => getDueCards().filter((c) => matchFilters(c, group, tag)).length,
+    [group, tag]
+  )
+  /** 全局到期数（仅未筛选时与 dueCount 相等，用于完成页提示“还有多少要复习”） */
+  const globalDue = useMemo(() => getDueCards().length, [])
 
   useEffect(() => {
     document.title = `卡片复习 · ${siteConfig.title}`
@@ -88,7 +95,7 @@ export function Cards() {
           className={'cards-tabs__btn' + (mode === 'review' ? ' cards-tabs__btn--active' : '')}
           onClick={() => setMode('review')}
         >
-          复习<span className="cards-tabs__count">{totalDue}</span>
+          复习<span className="cards-tabs__count">{dueCount}</span>
         </button>
         <button
           type="button"
@@ -110,7 +117,13 @@ export function Cards() {
 
       {mode === 'review' ? (
         // key：切换筛选后重开会话（已打分的卡已写库，进度重置无碍）
-        <CardSession key={`${group}|${tag}`} group={group} tag={tag} totalDue={totalDue} />
+        <CardSession
+          key={`${group}|${tag}`}
+          group={group}
+          tag={tag}
+          dueCount={dueCount}
+          globalDue={globalDue}
+        />
       ) : (
         <CardLibrary key={`${group}|${tag}`} group={group} tag={tag} onTag={setTag} />
       )}
@@ -191,7 +204,19 @@ function Chip({
 
 // ---------- 复习会话 ----------
 
-function CardSession({ group, tag, totalDue }: { group: GroupFilter; tag: string; totalDue: number }) {
+function CardSession({
+  group,
+  tag,
+  dueCount,
+  globalDue,
+}: {
+  group: GroupFilter
+  tag: string
+  /** 当前筛选下的到期数（本会话队列的上限） */
+  dueCount: number
+  /** 全局到期数（含其他分组/标签），用于完成页提示还有多少总量 */
+  globalDue: number
+}) {
   // 会话开始时的到期队列（每批最多 SESSION_BATCH 张）；本会话内打过分的卡片不再出现
   const queue = useMemo(
     () => getDueCards().filter((p) => matchFilters(p, group, tag)).slice(0, SESSION_BATCH),
@@ -287,7 +312,7 @@ function CardSession({ group, tag, totalDue }: { group: GroupFilter; tag: string
       setSubmitting(true)
       setMsg('')
       try {
-        const res = await fetch(`/api/cards/${current.slug}/review`, {
+        const res = await fetch(apiUrl('cards', current.slug, 'review'), {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ grade: g }),
@@ -355,7 +380,7 @@ function CardSession({ group, tag, totalDue }: { group: GroupFilter; tag: string
   if (queue.length === 0) {
     return (
       <p className="empty">
-        {totalDue === 0
+        {dueCount === 0
           ? '没有到期的问答卡片，复习完成。'
           : '当前筛选下没有到期卡片，可切到「卡片库」查看全部，或换个分组/标签。'}
       </p>
@@ -364,7 +389,10 @@ function CardSession({ group, tag, totalDue }: { group: GroupFilter; tag: string
 
   // 会话完成
   if (!current) {
-    const remainingDue = Math.max(0, totalDue - graded)
+    // 本会话还能继续的：本筛选下到期、但不在本批队列里的卡
+    const remainingInScope = Math.max(0, dueCount - graded - skippedCount)
+    // 其他分组/标签下还有多少到期
+    const otherDue = Math.max(0, globalDue - dueCount)
     return (
       <div className="cards-done">
         <div className="cards-done__emoji">✓</div>
@@ -376,12 +404,18 @@ function CardSession({ group, tag, totalDue }: { group: GroupFilter; tag: string
               跳过的卡片不算复习过，仍计为到期，下一批会再次出现。
             </>
           )}
-          {remainingDue > 0 && (
+          {remainingInScope > 0 && (
             <>
               <br />
               {import.meta.env.DEV
-                ? `还有 ${remainingDue} 张到期：点下方「同步复习数据」，同步完成后重新进入本页即可继续下一批。`
-                : `还有 ${remainingDue} 张到期。公网环境不计分，队列不会推进；想看其它卡片请切到「卡片库」。`}
+                ? `当前筛选下还有 ${remainingInScope} 张到期：点下方「同步复习数据」，同步完成后重新进入本页即可继续下一批。`
+                : `当前筛选下还有 ${remainingInScope} 张到期。公网环境不计分，队列不会推进；想看其它卡片请切到「卡片库」。`}
+            </>
+          )}
+          {otherDue > 0 && (
+            <>
+              <br />
+              其他分组/标签下还有 {otherDue} 张到期。
             </>
           )}
         </p>
@@ -552,6 +586,63 @@ function CardSession({ group, tag, totalDue }: { group: GroupFilter; tag: string
 
 // ---------- 卡片库 ----------
 
+/**
+ * 卡片库单条。
+ *
+ * 抽成 memo 组件是必要的：卡片库可以一直“加载更多”到 10000 张，
+ * 如果条目直接写在父组件里，每次 `setVisible` 都会让 React 重新生成全部
+ * 已渲染条目（实测单帧阻塞从 84ms 线性涨到 760ms，越点越卡）。
+ * memo 后旧条目的 props 不变，直接跳过重渲染。
+ */
+const LibraryItem = memo(function LibraryItem({
+  card,
+  tag,
+  onTag,
+}: {
+  card: Post
+  tag: string
+  onTag: (t: string) => void
+}) {
+  const due = daysUntilDue(card.review)
+  return (
+    <li className="card-library__item">
+      <Link className="card-library__title" to={`/posts/${card.slug}`}>
+        {card.title}
+      </Link>
+      <div className="card-library__meta">
+        {(card.tags ?? []).map((t) => (
+          <button
+            key={t}
+            type="button"
+            className={'chip chip--tag' + (tag === t ? ' chip--active' : '')}
+            onClick={() => onTag(t)}
+            title={`筛选标签「${t}」`}
+          >
+            {t}
+          </button>
+        ))}
+        <span>复习 {card.review?.reps ?? 0} 次</span>
+        <span
+          className={
+            'card-library__due' +
+            (due !== null && due <= 0 ? ' card-library__due--now' : '')
+          }
+        >
+          {card.review
+            ? due === null
+              ? '待同步'
+              : due < 0
+                ? `逾期 ${-due} 天`
+                : due === 0
+                  ? '今天到期'
+                  : `${due} 天后`
+            : '新卡'}
+        </span>
+      </div>
+    </li>
+  )
+})
+
 function CardLibrary({
   group,
   tag,
@@ -563,22 +654,32 @@ function CardLibrary({
 }) {
   const [visible, setVisible] = useState(LIBRARY_PAGE)
 
-  const filtered = useMemo(
-    () => allCards.filter((p) => matchFilters(p, group, tag)),
-    [group, tag]
-  )
-
+  /**
+   * 按分组归集 + 组内按到期日排序。
+   * 排序放在 useMemo 里：之前是在每次渲染时对切出来的片段重新 `slice().sort()`，
+   * 配合“加载更多”会变成每点一次都对全文重排。
+   */
   const byGroup = useMemo(() => {
     const m = new Map<string | null, Post[]>()
-    for (const c of filtered) {
+    for (const c of allCards) {
+      if (!matchFilters(c, group, tag)) continue
       const g = cardGroupOf(c)
       if (!m.has(g)) m.set(g, [])
       m.get(g)!.push(c)
     }
+    for (const cards of m.values()) {
+      cards.sort((a, b) => {
+        const da = daysUntilDue(a.review) ?? Infinity
+        const db = daysUntilDue(b.review) ?? Infinity
+        return da - db
+      })
+    }
     return [...m.entries()].sort((a, b) => (a[0] ?? '').localeCompare(b[0] ?? ''))
-  }, [filtered])
+  }, [group, tag])
 
-  if (filtered.length === 0) {
+  const total = useMemo(() => byGroup.reduce((n, [, c]) => n + c.length, 0), [byGroup])
+
+  if (total === 0) {
     return <p className="empty">当前筛选下没有卡片。</p>
   }
 
@@ -591,66 +692,22 @@ function CardLibrary({
     shownCount += take.length
     return { g, take, total: cards.length }
   })
-  const hasMore = shownCount < filtered.length
+  const hasMore = shownCount < total
 
   return (
     <div className="card-library">
-      {shown.map(({ g, take, total }) => take.length > 0 && (
+      {shown.map(({ g, take, total: groupTotal }) => take.length > 0 && (
         <section key={g ?? 'root'} className="card-library__group">
           <h2 className="card-library__group-title">
             {g ?? '未分组'}
             <span className="review-section__count">
-              {take.length === total ? total : `${take.length} / ${total}`}
+              {take.length === groupTotal ? groupTotal : `${take.length} / ${groupTotal}`}
             </span>
           </h2>
           <ul className="card-library__list">
-            {take
-              .slice()
-              .sort((a, b) => {
-                const da = daysUntilDue(a.review) ?? Infinity
-                const db = daysUntilDue(b.review) ?? Infinity
-                return da - db
-              })
-              .map((c) => {
-                const due = daysUntilDue(c.review)
-                return (
-                  <li key={c.slug} className="card-library__item">
-                    <Link className="card-library__title" to={`/posts/${c.slug}`}>
-                      {c.title}
-                    </Link>
-                    <div className="card-library__meta">
-                      {(c.tags ?? []).map((t) => (
-                        <button
-                          key={t}
-                          type="button"
-                          className={'chip chip--tag' + (tag === t ? ' chip--active' : '')}
-                          onClick={() => onTag(t)}
-                          title={`筛选标签「${t}」`}
-                        >
-                          {t}
-                        </button>
-                      ))}
-                      <span>复习 {c.review?.reps ?? 0} 次</span>
-                      <span
-                        className={
-                          'card-library__due' +
-                          (due !== null && due <= 0 ? ' card-library__due--now' : '')
-                        }
-                      >
-                        {c.review
-                          ? due === null
-                            ? '待同步'
-                            : due < 0
-                              ? `逾期 ${-due} 天`
-                              : due === 0
-                                ? '今天到期'
-                                : `${due} 天后`
-                          : '新卡'}
-                      </span>
-                    </div>
-                  </li>
-                )
-              })}
+            {take.map((c) => (
+              <LibraryItem key={c.slug} card={c} tag={tag} onTag={onTag} />
+            ))}
           </ul>
         </section>
       ))}
@@ -660,7 +717,7 @@ function CardLibrary({
           className="btn card-library__more"
           onClick={() => setVisible((v) => v + LIBRARY_PAGE)}
         >
-          加载更多（已显示 {shownCount} / {filtered.length}）
+          加载更多（已显示 {shownCount} / {total}）
         </button>
       )}
     </div>

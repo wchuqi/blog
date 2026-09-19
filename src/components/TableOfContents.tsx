@@ -69,28 +69,52 @@ export function TableOfContents({
     return ids
   }
 
+  /**
+   * 滚动联动：高亮当前正在阅读的章节。
+   *
+   * 不用 IntersectionObserver：它只在“相交状态发生变化”时回调，
+   * 而且只会给出状态变了的那几条。当一个标题向上离开观测带时，
+   * 回调里拿到的是一条 isIntersecting: false，上面那个标题并不在 entries 里，
+   * 于是 visibleEntries 为空、不更新——**往上滚动时高亮会停在原地**。
+   *
+   * 改成每次滚动直接算：当前章节 = 最后一个已滚过命中线的标题；
+   * 都没有滚过（页顶）时取第一个。这样上下滚动都准，也不依赖回调时机。
+   */
   useEffect(() => {
     if (visible.length === 0) return
 
+    // 保持文档顺序，下面才能用 break 提前退出
     const headings = visible
       .map((i) => document.getElementById(i.id))
       .filter((el): el is HTMLElement => el !== null)
+    if (headings.length === 0) return
 
-    const observer = new IntersectionObserver(
-      (entries) => {
-        // 取当前在视口顶部区域内最靠上的标题
-        const visibleEntries = entries
-          .filter((e) => e.isIntersecting)
-          .sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top)
-        if (visibleEntries.length > 0) {
-          setActiveId(visibleEntries[0].target.id)
-        }
-      },
-      { rootMargin: '-80px 0px -70% 0px', threshold: 0 }
-    )
+    /** 命中线：sticky 导航栏（64px）下方一点 */
+    const LINE = 88
+    let frame = 0
 
-    headings.forEach((h) => observer.observe(h))
-    return () => observer.disconnect()
+    const compute = () => {
+      frame = 0
+      let current = headings[0]
+      for (const h of headings) {
+        if (h.getBoundingClientRect().top <= LINE) current = h
+        else break
+      }
+      setActiveId((prev) => (prev === current.id ? prev : current.id))
+    }
+
+    const schedule = () => {
+      if (!frame) frame = requestAnimationFrame(compute)
+    }
+
+    compute()
+    window.addEventListener('scroll', schedule, { passive: true })
+    window.addEventListener('resize', schedule, { passive: true })
+    return () => {
+      if (frame) cancelAnimationFrame(frame)
+      window.removeEventListener('scroll', schedule)
+      window.removeEventListener('resize', schedule)
+    }
   }, [visible])
 
   // 滚动到某章节时自动展开其祖先，避免高亮项被折叠藏住
@@ -107,6 +131,32 @@ export function TableOfContents({
     })
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeId, visible, parentIndex])
+
+  /**
+   * 把高亮项滚进可见范围。
+   * 大纲面板可滚动（长文档下装不下），高亮项在可视区外的话用户根本看不到选中状态。
+   * 只滚面板这个滚动容器，不动页面。
+   */
+  useEffect(() => {
+    if (!activeId) return
+    const item = document.querySelector<HTMLElement>('.toc__item--active')
+    if (!item) return
+
+    let box: HTMLElement | null = item.parentElement
+    while (box && !/(auto|scroll)/.test(getComputedStyle(box).overflowY)) {
+      box = box.parentElement
+    }
+    if (!box) return
+
+    const PAD = 16
+    const boxRect = box.getBoundingClientRect()
+    const itemRect = item.getBoundingClientRect()
+    if (itemRect.top < boxRect.top + PAD) {
+      box.scrollTop -= boxRect.top + PAD - itemRect.top
+    } else if (itemRect.bottom > boxRect.bottom - PAD) {
+      box.scrollTop += itemRect.bottom - (boxRect.bottom - PAD)
+    }
+  }, [activeId, expanded])
 
   if (visible.length === 0) return null
 
