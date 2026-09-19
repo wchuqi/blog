@@ -80,8 +80,20 @@ function fmBool(fmText, key) {
 }
 
 /** 在 frontmatter 末尾追加 encrypted: true（若不存在） */
+/**
+ * 确保 frontmatter 文本以换行结尾。
+ *
+ * 不能省：FM_RE 的捕获组不含结尾换行（`\r?\n---` 把换行吃掉了），
+ * 所以 fmText 拼回 `---\n${fmText}---` 时会粘成 `...true---`，
+ * 整个 frontmatter 解析失败（front-matter 返回空 attributes），
+ * 文章既不被识别为加密、正文也全部丢失。
+ */
+function ensureTrailingNewline(fmText) {
+  return fmText.replace(/\s+$/, '') + '\n'
+}
+
 function setEncryptedFlag(fmText) {
-  if (/^encrypted:/m.test(fmText)) return fmText
+  if (/^encrypted:/m.test(fmText)) return ensureTrailingNewline(fmText)
   return `${fmText.replace(/\s+$/, '')}\nencrypted: true\n`
 }
 

@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { apiUrl } from '../lib/api'
 
 /**
  * 本地 dev 模式下的复习打分面板。
@@ -11,7 +12,7 @@ export function ReviewPanel({ slug }: { slug: string }) {
   async function submitReview(grade: number) {
     setStatus('submitting')
     try {
-      const res = await fetch(`/api/cards/${slug}/review`, {
+      const res = await fetch(apiUrl('cards', slug, 'review'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ grade }),

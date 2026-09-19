@@ -173,9 +173,15 @@ def sync_frontmatter(conn: sqlite3.Connection, posts: list[dict],
         if card is None:
             continue
 
-        created = post["date"] or date.today().isoformat()
+        # 回退顺序：卡片已有 created > frontmatter 的 date > 今天。
+        #
+        # 不能用 date.today() 当 lastReview 的兵底：没有 date 字段的文章
+        # （例如从卡片系统里生成的文章）每次 sync 都会把 lastReview 写成当天，
+        # 于是 sync 永不幂等，git 里每天都多出一条无意义的 diff。
+        # 实测「英语/单词记忆法」就是这么反复被改的。
+        created = card["created"] or post["date"] or date.today().isoformat()
         review = {
-            "created": card["created"] or created,
+            "created": created,
             "lastReview": card["last_review"] or created,
             "reps": card["reps"],
             "interval": card["interval"],

@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { apiUrl } from '../lib/api'
 
 /**
  * 文章详情页的「删除」按钮（dev only，依赖本地 API server）。
@@ -21,7 +22,7 @@ export function DeletePostButton({
     setBusy(true)
     setMsg('')
     try {
-      const res = await fetch(`/api/posts/${slug}`, { method: 'DELETE' })
+      const res = await fetch(apiUrl('posts', slug), { method: 'DELETE' })
       if (!res.ok) throw new Error(`HTTP ${res.status}`)
       // 强制刷新文章索引，使其他文章的反向链接 / 相关推荐 / 图谱立即反映删除
       await fetch('/__refresh-posts-index').catch(() => {})

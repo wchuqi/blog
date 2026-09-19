@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { apiUrl } from '../lib/api'
 
 /**
  * 文章详情页的「复习」开关。
@@ -22,7 +23,7 @@ export function ReviewToggle({
     setBusy(true)
     setMsg('')
     try {
-      const res = await fetch(`/api/posts/${slug}/frontmatter`, {
+      const res = await fetch(apiUrl('posts', slug, 'frontmatter'), {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ noReview: inReview }),

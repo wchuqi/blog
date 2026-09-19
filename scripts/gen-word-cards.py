@@ -87,10 +87,22 @@ def parse_entry(chunk: str) -> tuple[str | None, list[str], list[str]]:
     return phon, tail, head
 
 
+def yaml_str(value: str) -> str:
+    """把值写成 YAML 字符串。
+
+    不能直接拼接：`title: false` / `title: none` 会被 YAML 解析成布尔值与 null，
+    而不是字符串。front-matter 解析出来的 title 就成了 false / None，
+    前端一调 `.toLowerCase()` 就崩（搜索、排序都会挂）。
+    单词表里恰好有 false / none / no / yes 这类词，所以必须引号包住。
+    """
+    escaped = value.replace('\\', '\\\\').replace('"', '\\"')
+    return f'"{escaped}"'
+
+
 def card_md(word: str, phon: str | None, hints: list[str], answers: list[str]) -> str:
     parts = [
         "---",
-        f"title: {word}",
+        f"title: {yaml_str(word)}",
         f"date: {DATE}",
         "type: card",
         "tags:",

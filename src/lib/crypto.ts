@@ -26,9 +26,9 @@ function fromBase64(b64: string): ArrayBuffer {
   return buffer
 }
 
-/** 判断一段正文是否为加密密文 */
+/** 判断一段正文是否为加密密文（容忍 frontmatter 后残留的前导空白） */
 export function isEncrypted(body: string): boolean {
-  return body.startsWith(ENCRYPTED_PREFIX)
+  return body.trimStart().startsWith(ENCRYPTED_PREFIX)
 }
 
 /**
@@ -82,7 +82,12 @@ export async function decryptBody(
   encStr: string,
   password: string
 ): Promise<string> {
-  const parts = encStr.split('::')
+  // 必须先 trim：调用方传进来的是 getPostContent 去掉 frontmatter 后的正文，
+  // 它保留了 frontmatter 后的那个换行（`\nENC::v1::...`）。
+  // 不 trim 的话 split('::')[0] 是 "\nENC"，不等于 'ENC'，
+  // 会抛“无法识别的密文格式”，而调用方 catch 后统一提示“密码错误”，
+  // 于是正确的密码也永远解不开。
+  const parts = encStr.trim().split('::')
   // ENC::v1::salt::iv::ciphertext
   if (parts.length !== 5 || parts[0] !== 'ENC' || parts[1] !== 'v1') {
     throw new Error('无法识别的密文格式')

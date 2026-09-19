@@ -64,6 +64,22 @@ def parse_md(raw: str) -> tuple[str, str, bool]:
     return m.group(1), m.group(2), True
 
 
+def compose_md(fm_text: str, body: str) -> str:
+    """把 frontmatter 文本与正文拼成完整 .md 文件。
+
+    `fm_text` 来自 FM_RE 的捕获组，**不含结尾换行**（正则里的 `\r?\n---` 把换行吃掉了）。
+    直接 f"---\\n{fm_text}---\\n..." 会粘成 `noReview: true---`，
+    整个 frontmatter 解析失败（front-matter 返回空 attributes），
+    文章既不被识别为加密、正文也全部丢失。
+
+    加密脚本（scripts/encrypt.mjs）曾因同样的原因把加密文章写坏，
+    所以这里抽成共用函数，任何写回 .md 的路径都必须走它。
+    """
+    fm = fm_text.rstrip()
+    head = f"---\n{fm}\n---\n" if fm else "---\n---\n"
+    return f"{head}\n{body}"
+
+
 def fm_value(fm_text: str, key: str) -> str | None:
     m = re.search(rf"^{re.escape(key)}:\s*(.+)$", fm_text, re.MULTILINE)
     if not m:
@@ -202,6 +218,18 @@ def api_get_post(slug: str) -> dict:
     }
 
 
+def yaml_str(value: str) -> str:
+    """把值写成 YAML 字符串（双引号 + 转义）。
+
+    不能直接拼接：`title: false` / `title: 123` / `description: a: b` 都会被 YAML
+    解析成布尔值 / 数字 / 嵌套结构，而不是字符串。
+    前端一旦对 title 调 .toLowerCase() 就崩（搜索、排序都挂），
+    卡片单词表里的 `false` / `none` 就是这么把搜索搞崩的。
+    """
+    escaped = value.replace("\\", "\\\\").replace('"', '\\"').replace("\n", "\\n")
+    return f'"{escaped}"'
+
+
 @app.post("/api/posts")
 def api_create_post(req: CreatePostRequest) -> dict:
     """新增文章：生成带模板的 .md 文件"""
@@ -215,15 +243,15 @@ def api_create_post(req: CreatePostRequest) -> dict:
 
     fm_lines = [
         "---",
-        f"title: {req.title}",
+        f"title: {yaml_str(req.title)}",
         f"date: {date.today().isoformat()}",
     ]
     if req.description:
-        fm_lines.append(f"description: {req.description}")
+        fm_lines.append(f"description: {yaml_str(req.description)}")
     if req.tags:
         fm_lines.append("tags:")
         for t in req.tags:
-            fm_lines.append(f"  - {t}")
+            fm_lines.append(f"  - {yaml_str(t)}")
     if req.noReview:
         fm_lines.append("noReview: true")
     if req.type == "card":
@@ -255,10 +283,7 @@ def api_update_content(slug: str, req: UpdateContentRequest) -> dict:
         raise HTTPException(404, f"文章不存在: {slug}")
     raw = path.read_text(encoding="utf-8")
     fm_text, _, has_fm = parse_md(raw)
-    if not has_fm:
-        new_raw = f"---\n---\n\n{req.content}"
-    else:
-        new_raw = f"---\n{fm_text}---\n{req.content}"
+    new_raw = compose_md(fm_text if has_fm else "", req.content)
     write_md(path, new_raw)
     return {"ok": True}
 
@@ -280,10 +305,13 @@ def api_update_frontmatter(slug: str, req: UpdateFrontmatterRequest) -> dict:
         pattern = re.compile(rf"^{re.escape(key)}:.*$", re.MULTILINE)
         if value is None:
             fm_text = pattern.sub("", fm_text).rstrip() + "\n"
-        elif pattern.search(fm_text):
-            fm_text = pattern.sub(f"{key}: {value}", fm_text)
         else:
-            fm_text = fm_text.rstrip() + f"\n{key}: {value}\n"
+            # 必须转义：标题为 `false` / `123` 时裸写会被 YAML 解析成布尔值 / 数字
+            line = f"{key}: {yaml_str(value)}"
+            if pattern.search(fm_text):
+                fm_text = pattern.sub(line, fm_text)
+            else:
+                fm_text = fm_text.rstrip() + f"\n{line}\n"
 
     if req.title is not None:
         set_field("title", req.title)
@@ -306,7 +334,12 @@ def api_update_frontmatter(slug: str, req: UpdateFrontmatterRequest) -> dict:
         if pattern.search(fm_text):
             fm_text = pattern.sub("", fm_text).rstrip() + "\n"
         if req.tags:
-            fm_text = fm_text.rstrip() + "\ntags:\n" + "\n".join(f"  - {t}" for t in req.tags) + "\n"
+            fm_text = (
+                fm_text.rstrip()
+                + "\ntags:\n"
+                + "\n".join(f"  - {yaml_str(t)}" for t in req.tags)
+                + "\n"
+            )
 
     new_raw = f"---\n{fm_text.rstrip()}\n---\n{body}"
     write_md(path, new_raw)
@@ -341,6 +374,57 @@ def api_sync_review() -> dict:
     return {"ok": True}
 
 
+# 启动自检：确认路由表与预期一致（包括每个路径挂的是哪个函数）。
+#
+# 为什么需要：编辑这个文件时很容易把新函数插到 `@app.post(...)` 装饰器和它原本的
+# 函数之间，导致装饰器挂到了错函数上——原端点静默变成 422/404，而 Python 语法完全正常、
+# 服务能启动、日志也不报错。这种错误只有真的发请求才会发现。
+#
+# 所以断言必须包含函数名：只查“路径是否存在”是抽不到这个 bug 的，
+# 因为装饰器错位后路径依旧在，只是挂到了另一个函数上。
+EXPECTED_ROUTES = {
+    ("GET", "/api/stats", "api_stats"),
+    ("GET", "/api/today", "api_today"),
+    ("GET", "/api/cards", "api_cards"),
+    ("POST", "/api/cards/{slug:path}/review", "api_review_card"),
+    ("GET", "/api/cards/{slug:path}", "api_get_card"),
+    ("GET", "/api/posts", "api_list_posts"),
+    ("GET", "/api/posts/{slug:path}", "api_get_post"),
+    ("POST", "/api/posts", "api_create_post"),
+    ("PUT", "/api/posts/{slug:path}/content", "api_update_content"),
+    ("PUT", "/api/posts/{slug:path}/frontmatter", "api_update_frontmatter"),
+    ("DELETE", "/api/posts/{slug:path}", "api_delete_post"),
+    ("POST", "/api/sync-review", "api_sync_review"),
+}
+
+
+def check_routes() -> None:
+    actual = {
+        (m, r.path, getattr(r, "endpoint", None).__name__)
+        for r in app.routes
+        if hasattr(r, "methods") and hasattr(r, "endpoint")
+        for m in r.methods
+    }
+    missing = EXPECTED_ROUTES - actual
+    wrong = {
+        (m, p, fn)
+        for (m, p, fn) in EXPECTED_ROUTES
+        if (m, p, fn) not in actual and any(a[0] == m and a[1] == p for a in actual)
+    }
+    if missing:
+        raise RuntimeError(f"路由表与预期不符，缺失: {sorted(missing)}")
+    if wrong:
+        # 典型的装饰器错位：路径还在，但挂到了别的函数上
+        actual_by_path = {(a[0], a[1]): a[2] for a in actual}
+        detail = ", ".join(
+            f"{m} {p} 期望 {fn} 实际 {actual_by_path.get((m, p))}" for m, p, fn in sorted(wrong)
+        )
+        raise RuntimeError(f"路由挂错了函数（检查装饰器是否被新函数隔开）: {detail}")
+    print(f"[api] 路由自检通过（{len(EXPECTED_ROUTES)} 个端点，函数名已校验）")
+
+
 if __name__ == "__main__":
     import uvicorn
+
+    check_routes()
     uvicorn.run(app, host="127.0.0.1", port=3001, log_level="info")
