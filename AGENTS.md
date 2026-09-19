@@ -45,16 +45,22 @@ src/
   App.tsx            路由表（所有路由包在 components/Layout.tsx 里；PostDetail 懒加载）
   posts/             Markdown 文章（中文多级目录分类，文件全路径即 URL slug）
   lib/
-    posts.ts         文章加载（元数据来自 virtual:posts-index，正文来自 ?raw glob 懒加载）、双链解析、复习判定
+    posts.ts         文章加载（元数据来自 virtual:posts-index，正文来自 ?raw glob 懒加载）、链接解析、复习判定
+    search.ts        搜索纯逻辑（索引构建/AND 检索/打分/摘要/高亮区间），无 React 依赖
+    topics.ts        主题（MOC）识别：从目录结构 + `X学习资料.md` 入口页派生知识地图
+    link-path.ts     站内链接路径规则（归一/URL 解码/相对路径展开），构建期与运行时共用
+    api.ts           本地 API 的 URL 构造（`apiUrl()` / `encodeSlug()`，统一做 slug 编码）
     types.ts         Post、PostFrontmatter、ReviewSnapshot、ReviewCard、IndexEntry、GraphNode、GraphEdge 等
     crypto.ts        客户端 AES-256-GCM 解密（加密文章用）
     format.ts        格式化辅助函数
-  pages/             Home、Articles、PostDetail、Archives、Tags、TagDetail、Graph、Review、NotFound（另有 Admin、About 存在但未挂载路由）
+  pages/             Home、Topics、TopicDetail、Search、Articles、PostDetail、Archives、Tags、TagDetail、Graph、Review、Cards、NotFound（另有 Admin、About 存在但未挂载路由）
   components/        Layout、Navbar、Footer、SearchBox、TableOfContents、CodeBlock、Pagination、PostCard、PasswordGate、HomeSidebar、Comments、ReviewPanel / ReviewProgressCard / ReviewToggle、DeletePostButton
   hooks/             useTheme
   styles.css         全局样式 + 明暗主题 CSS 变量
 scripts/
   gen-rss.mjs        构建时生成 RSS/sitemap/404（纯 Node，无依赖）
+  fix-space-links.py 一次性批量修复：把含空格的裸 Markdown 链接目标包上尖括号（幂等，默认 dry-run）
+  check-links.py     体检：列出所有指向不存在文章的站内链接
   encrypt.mjs        文章加解密 CLI
   api-server.py      FastAPI 后端（仅本地 dev）：文章 CRUD + 复习评分（localhost:3001）
   db.py              SQLite 访问层（cards / reviews 两张表，review.db 在仓库根，gitignore）
@@ -88,12 +94,132 @@ dev 模式下插件监听 `src/posts` 的 `add`/`unlink` 事件自动重建索�
 - `draft: true` 的文章在生产构建中排除，但在开发模式下可见。
 - 文章排序：置顶优先，然后按日期降序。
 
-## 双链 & 知识图谱
+### 文档粒度与标题结构
 
-- 正文中使用 Obsidian 风格双链语法引用其他文章：`[[slug]]` 或 `[[slug|显示文本]]`。
-- `vite.config.ts` 的 `extractNoteLinks` 在构建时解析双链（跳过代码块和行内代码），结果随元数据索引暴露。
-- `/graph` 页面使用 D3 force-directed 布局（Canvas 渲染）可视化文章之间的关联关系。
-- 未匹配到现有文章的双链仍会显示文本，但不会产生图谱边。
+写学习/参考类文档时：
+
+- **不要为了拆分而拆分**。一篇能讲完的主题就写一篇（如 `src/posts/AI/工具/Pi-Agent.md`）。拆成十几份 `study-material/NN-xxx.md` 只在主题确实大到单文件难以维护时才值得，而早期批量拆出的目录（如 `AI/工具/Claude Code/`）多半是过度拆分。
+- **标题按内容自然走**，不要套固定骨架。不要每篇都重复「学习目标 / 理论导读 / 核心心智模型 / 知识点详解 / 例子 / 练习 / 验收 / 重点 / 难点 / 易错」——同一套骨架重复十几次会让文档读起来像填表。用能描述该段内容的标题，形式随内容变。
+- **不要同时写 frontmatter 的 `title` 和正文的 `# 同名标题`**。页面已经把 frontmatter 的 title 渲染成大标题了，正文再写一遍就是重复。（历史上有 1288 篇这么写，那是拆分文档时代的遗留，不代表这是对的。）
+
+### 笔记大纲浮层与回到顶部
+
+`PostDetail` 左侧的笔记大纲（`.post-outline-flyout`）默认展开，点 `‹` / `›` 切换。
+
+#### 滚动联动（`TableOfContents`）
+
+- **不要用 `IntersectionObserver` 做滚动高亮**。它只在“相交状态发生变化”时回调，而且只给出状态变了的那几条。当一个标题向上离开观测带时，回调里只能拿到一条 `isIntersecting: false`，它上面那个标题并不在 `entries` 里，于是候选集为空、不更新——**向上滚动时高亮会停在原地**。
+  - 正确做法：改成 `requestAnimationFrame` 节流的 scroll 监听，每次直接算“当前章节 = 最后一个已滚过命中线（88px，即导航栏下方）的标题”；都没有滚过时取第一个。上下滚动都准，一次 60 帧滚动实测平均 16.4ms、无长任务。
+- **高亮选择器是 `.toc__item--active a`，不是 `> a`**。目录已经改成树形结构（`li.toc__item > div.toc__row > a`），`a` 是孙元素，用 `>` 会静默失效——类名加上了、颜色却不变，很难发现。
+- **高亮项要自动滚进可视区**：面板可滚动（长文档装不下），高亮项在区外等于没高亮。只调面板的 `scrollTop`，不要用 `scrollIntoView`（会连带滚动页面）。
+- 滚动到某章节时还要自动展开它的祖先，否则高亮项被折叠藏住。
+
+#### 展开/收起的滚动锚定（`toggleOutline`）
+
+展开/收起会改变正文宽度 → 文字重排 → 页面高度变化（实测同一篇文档宽 1104 与 1392 之间差 **673px**）。`scrollY` 数值不变，但视口上方的内容变短了，阅读位置就会漂移——表现就是“内容往下跳”。
+
+- 做法：切换前选一个**贴近视口顶部的正文块**当锚点，在过渡期间（`requestAnimationFrame`，420ms）每帧把它钉回原来的视口位置。
+- **锚点用 `.markdown-body > *`，不要只挑标题**。标题在小节内部很稀疏，落点可能离阅读位置几千像素，而重排位移并非均匀，锚点越远补偿越不准（实测差 30px）。改用正文块后降到 0.2px。
+- `scrollBy` **必须显式传 `behavior: 'instant'`**：全局 `html { scroll-behavior: smooth }` 会把每帧的修正变成动画，互相打断反而拖出一段滑动。
+- 验证方法：在不同 `scrollY` 下切换，用同一套锚点选法测 `getBoundingClientRect().top` 的变化，应在 1px 内。
+
+#### 其他约束
+
+1. **切换按钮 `z-index` 必须高于面板**，且**宽度 ≤ 24px**。按钮跨在留白右边缘（`left: calc(var(--outline-w) - 0.65rem)`）与面板重叠，面板在 DOM 里排在后面，不抬 z-index 就会被盖住而点不动；收起时按钮回到 `left: 0`，宽度超过 24px（`.post-detail` 的父级内边距）就会压在正文上。
+2. **容器本身 `pointer-events: none`**，只给面板和按钮开 `auto`，避免固定层遮住内容。
+3. **state 可以放在 `PostDetail`**（不像悬停那样需要 `:has()`）：切换是**点击**触发，不会因鼠标划过而重渲染正文。
+4. **窄屏（≤1000px）不留白**：18rem 会把正文挤得没法读，且触屏没有抽屉式大纲的交互习惯。此时面板降级为覆盖在正文上。
+5. **回到顶部（`components/BackToTop.tsx`）必须独立成组件**：滚动监听会频繁 setState，state 挂在 `PostDetail` 上同样会重渲染正文。平滑滚动交给全局 CSS，代码里**不传 `behavior`**，否则会绕过 `prefers-reduced-motion`。未显示时记得 `tabIndex={-1}`。
+
+## 链接、主题 & 知识图谱
+
+### 两种站内链接写法
+
+正文里两种写法都能产生图谱边和反向链接，由 `NoteLink.kind` 区分：
+
+| 写法 | kind | 解析规则 |
+|---|---|---|
+| `[[slug]]` / `[[slug\|显示名]]` | `wiki` | 宽松：完整 slug → frontmatter 标题 → slug 后缀匹配 |
+| `[显示名](相对路径.md)` | `md` | 严格：按来源文章所在目录展开相对路径，必须精确命中 slug |
+
+**`md` 链接为什么不能后缀匹配**：41 个主题各有一个 `study-material/00-总览与心智模型.md`，后缀匹配会命中任意一个（通常不是当前主题的）。宁可断链也不连错边。
+
+路径规则集中在 `src/lib/link-path.ts`，被两端共用：
+
+- 构建期 `vite.config.ts` 的 `extractNoteLinks` 抽边
+- 运行时 `src/lib/posts.ts` 解析 `targetSlug` 并改写渲染链接（`resolveMarkdownPostHref`）
+
+两处规则不一致就会出现"图上有边但点不动"或"点得动但图上没边"。改一处必须改另一处（同一个文件，所以改不岔）。
+
+**运行时 href 必须 URL 解码**：react-markdown 交给 `a` 组件的 href 是 percent-encoded 的（`00-总览与心智模型.md` → `00-%E6%80%BB...md`），而 slug 是原始 UTF-8 中文。不解码就永远匹配不上，站内链接会原样渲染成 `<a href="xx.md">`，在 SPA 里被当相对路径解析 → 全部 404。
+
+**CommonMark 的尖括号语法**：链接目标含空格时必须写成 `[文本](<../AI RAG学习资料.md>)`。裸写（`](../AI RAG学习资料.md)`）在任何 CommonMark 解析器里都**不是链接**，GitHub 与站内一致地不认。
+
+仓库里原有 222 处裸写（全部是 `../X学习资料.md` 形式，因为目录名 `AI RAG` / `Claude Code` 带空格），已用 `scripts/fix-space-links.py` 批量包上尖括号。抽边正则同时认两种写法，所以作者写不写尖括号不影响图上有几条边。
+
+### 主题（MOC）
+
+约定：**一个目录只要含 `<任意名>学习资料.md`，它就是一个主题**。`src/lib/topics.ts` 据此派生：
+
+- 主题可嵌套（`Python` 与 `Python/FastApi` 都是主题）；一篇文章只归属**最深**的包含它的主题，父子主题不重复计数。
+- `/topics` 总览（按顶层分类分组，末尾列出"未归主题"的目录）、`/topics/*` 目录页（入口页 + 子主题 + 按子路径分段的文章清单）。
+- `study-material` 在展示层映射为「学习材料」（`SECTION_ALIASES`），`面试知识点` 显示为「学习材料 / 面试知识点」。
+- PostDetail 的 meta 行有「所属主题」链接。
+- 新增一个主题 = 在目录下放一个 `X学习资料.md`，无需改配置。
+
+### 图谱
+
+`/graph` 用 D3 force-directed（Canvas 渲染）可视化。边来自 `noteLinks` 中 `targetSlug` 解析成功的部分（wiki + md 两种写法都算）。未解析成功的链接仍显示文本，但不产生边。
+
+2650 条边实测无性能问题（6x CPU 降速下 goto 480ms，无长任务）。
+
+### 出链与反向链接
+
+文章页底部成对展示：
+
+- **指向的笔记**（出链，`getOutgoingLinks`）：本文引用了谁
+- **引用它的笔记**（入链，`getBacklinks`）：谁引用了本文
+
+`noteLinks` 里的 `targetSlug` 解析成功后两者都能拿到。卡片不显示这两个区块。
+
+### 相关文章（`getRelatedPosts`）
+
+按共享标签的 **IDF 加权**得分排序，两个坑都是被实际数据教出来的：
+
+1. **不能等权计数**。标签是层级路径式的（`AI / 核心概念 / AI RAG`），等权时共享「开发语言」（368 篇）与共享「AI RAG」（30 篇）得分相同，`Python学习资料` 会推荐 Java / Java设计模式 / JVM。用 `log(N/df)` 加权后才收敛。
+2. **必须剔除「页面类型」标签**（`PAGE_TYPE_TAGS`）。`学习资料总览` 只出现在 41 篇索引页上，IDF 权重最高（3.50），于是 Redis 索引页的“相关文章”变成 Docker / Git / Maven 的索引页——同为“索引页”但主题无关。同理还有 `学习路线图`、`深度解析`（247 篇）、`面试`（278 篇）。
+
+另加同目录（同主题）加成。实测 top3 与源文章同目录的比例：**53.9% → 94.0%**，无推荐的文章 9 篇 → 2 篇。
+
+新增页面类型标签时，记得同步 `PAGE_TYPE_TAGS`。
+
+## 搜索
+
+两处入口共用同一套纯逻辑（`src/lib/search.ts`）：
+
+- **模态**（`components/SearchBox.tsx`，Ctrl/Cmd+K）：快速跳转，最多 8 条，带高亮摘要
+- **结果页**（`pages/Search.tsx`，`/search?q=&scope=&tag=&path=&page=`）：全量结果、分页、按标签/主题/分组筛选
+
+### 索引拆分
+
+全文索引按类型拆成两个虚拟模块，各自按需加载：
+
+| 模块 | 体积 | 何时加载 |
+|---|---|---|
+| `virtual:posts-search-index` | 4.1MB raw / 1.4MB gzip（1353 篇） | 搜索范围为「文章」或「全部」时 |
+| `virtual:cards-search-index` | 1.8MB raw / 0.6MB gzip（10002 张） | 搜索范围为「卡片」或「全部」时 |
+
+默认范围是「文章」，所以搜文章不会付卡片索引的代价。合成一份会让每次搜索都多付 0.6MB gzip，而 10000 张单词卡对多数搜索是噪声。
+
+### 检索语义
+
+- **AND**：所有词都必须在「标题 + 标签 + 摘要 + 正文」里出现才算命中。旧实现是 OR，在 11353 篇的语料上会把结果淹掉。
+- 权重：标题 12（开头再加 4）、标签 6、摘要 3、正文 1 + 词频（上限 6 次）。
+- **浏览模式**：无关键词但带了 `tag` 或 `path` 筛选时，`runSearch` 返回所有符合条件的项（按日期倒序）。`/review` 的「不在复习里」面板就用这个当目录入口（`/search?scope=article&path=<目录>`）。
+- `lower` 在 `buildSearchIndex` 里只算一次——每次按键都对 6MB 文本调 `toLowerCase()` 会卡死。
+- **下划线不能被索引侧剔除**。`plainText`（vite.config.ts）原本把 `_` 也当成 Markdown 强调符替成空格，而 `parseTerms` 只按空白切分、不替换下划线——两侧归一化不对称，导致搜 `tool_call` 永远 0 条（搜 `tool call` 却能中）。本站内容是编程主题，`tool_call`、`ctx.hasUI`、`session_before_compact` 这类标识符很多，所以索引保留下划线，并用 `termVariants()` 让含下划线的词同时用「原形」与「下划线当空格」两种形式匹配，两种写法互相都能搜到。改 `plainText` 的替换集时注意别再把 `_` 加回去。
+- 高亮返回**结构化区间**（`splitByRanges`）而不是 HTML 字符串，避免正文里的 `<` 被当标签。
+- 摘要以命中词为中心开窗（前 24 / 后 90 字符），并尽量对齐词边界。
 
 ## 间隔重复复习系统
 
@@ -109,6 +235,8 @@ dev 模式下插件监听 `src/posts` 的 `add`/`unlink` 事件自动重建索�
 - `/cards`（`src/pages/Cards.tsx`，懒加载）：翻转式复习会话（看问题 → 显示答案 → 打分），队列来自 `getDueCards()`（frontmatter 快照静态计算，无快照的新卡视为到期），打分走 `POST /api/cards/{slug}/review`（仅 dev），会话结束可点「同步复习数据」。
 
   换卡只有两个动作：**打分**（`忘了/模糊/记得`，该卡移出前进队列，游标不动即自动指向下一张）和**下一张**（游标后移、不打分，卡仍算到期）。导航按钮统一为 `上一张` / `下一张`（不再有单独的「跳过」，两者本来就是同一个动作），配 <kbd>←</kbd>/<kbd>→</kbd>，在翻面前后、dev/生产**都**存在（生产无打分按钮）。键盘：空格/回车翻面，1/2/3 打分（仅 dev），←/→ 换卡。
+
+**到期数有两个口径，别混**：`dueCount`（当前筛选下的到期数，用作 tab 计数与队列上限）与 `globalDue`（全库到期数）。完成页两者都要提：“当前筛选下还有 N 张”+“其他分组/标签下还有 M 张”。曾经只有一个全局 `totalDue` 且未过筛选就传给会话，导致筛到 1 张卡的分组却报“还有 10001 张到期”。
 
   会话状态是 `grades`（slug→评分）+ `skipped`（Set）+ `trail`（看过的 queue 下标，严格递增）+ `trailPos`：
 
@@ -189,6 +317,27 @@ dev 模式下插件监听 `src/posts` 的 `add`/`unlink` 事件自动重建索�
 
 **重要**：`scripts/encrypt.mjs` 和 `src/lib/crypto.ts` 必须保持同步（相同的 PBKDF2 迭代次数、相同的加密算法、相同的格式）。
 
+### 两个已修的坑（都让加密功能完全不可用）
+
+全库长期是 0 篇加密文章，所以这条路径从未被真正跑通。实测发现两个 bug：
+
+1. **加密后 frontmatter 与密文之间缺换行**（`noReview: true---`）。`FM_RE` 的捕获组不含结尾换行（`\r?\n---` 把换行吃掉了），`setEncryptedFlag` 直接返回 `fmText` 就会粘住。后果：`front-matter` 返回空 `attributes`，文章既不被识别为加密、正文也全部丢失。已加 `ensureTrailingNewline()`。
+2. **正确密码也报“密码错误”**。`getPostContent` 剥掉 frontmatter 后正文以 `\n` 开头，而 `decryptBody` 没 `trim`，于是 `split('::')[0]` 是 `"\nENC"` 不等于 `'ENC'`，抛“无法识别的密文格式”后被调用方 catch 成“密码错误”。已在 `decryptBody` 和 `isEncrypted` 里 trim。
+
+（`encrypt.mjs` 的 `isAlreadyEncrypted` 一直用了 `.trim()`——加密端意识到了空白问题，解密端漏了。）
+
+### 验证方式
+
+加密是少走的路径，改动 `crypto.ts` / `encrypt.mjs` 后必须端到端验一次：
+
+```bash
+# 造一篇临时加密文章（须先手动写 encrypted: true，脚本会拒绝未标记的文件）
+BLOG_ENCRYPT_KEY=pw node scripts/encrypt.mjs src/posts/<临时>.md
+# 然后浏览器验证：锁定态不泄露密文 / 错误密码被拒 / 正确密码能渲染 / 不在 RSS+sitemap
+```
+
+也可用 Node 的 `webcrypto` 解密同一份密文来隔离“算法不一致”与“调用方 bug”。
+
 ## 部署
 
 这是一个使用 `BrowserRouter`（无 hash URL）的 SPA。托管平台必须将未匹配的路由重写为 `index.html`。已预配置：
@@ -214,6 +363,24 @@ dev 模式下插件监听 `src/posts` 的 `add`/`unlink` 事件自动重建索�
 - PostDetail 页面使用 `React.lazy` + `Suspense` 懒加载（react-markdown + highlight.js 较重）。
 - `src/config.ts` 中的 `profile` 字段控制首页侧边栏个人名片的显示；`comments` 字段（Giscus，默认 `enabled: false`）控制文章评论。
 - FastAPI 后端**无鉴权**，监听 `127.0.0.1`，只在本机可用；不要改成 `0.0.0.0` 暴露到公网。
+- **`api-server.py` 启动时会跑 `check_routes()` 自检**（路径 + 函数名）。往这个文件里加新函数时，**不要插到 `@app.xxx(...)` 装饰器和它原本的函数之间**——装饰器会挂到错函数上，原端点静默变成 422，而语法/启动/日志全正常。自检就是为了抽这个（只查路径存在是抽不到的，因为路径依旧在）。
+- **所有写回 .md 的路径必须走 `compose_md()`**（api-server.py）或等价的“确保 frontmatter 结尾有换行”逻辑。`FM_RE` 的捕获组不含结尾换行，直接 `f"---\\n{fm_text}---"` 会粘成 `noReview: true---`，让 front-matter 返回空 attributes（文章既不被识别为加密、正文也全丢）。这个坑在仓库里出现过三次：`encrypt.mjs`、`api-server.py` 的 content 端点、以及 `sync-reviews.py`（它修了，注释里写了“避免 ease: 2.5--- 粘连”）。
+- **往 frontmatter 写字符串值必须转义**（api-server.py 的 `yaml_str()`）。`title: false` / `title: 123` / `description: a: b` 都会被 YAML 解析成布尔值 / 数字 / 嵌套结构，前端一调 `.toLowerCase()` 就崩。
+- **`title` 与 `date` 缺失会造成一串连锁问题**：标题退化成 slug、日期变成 1970-01-01（进而影响首页排序）、且 `sync-reviews.py` 会用「今天」兜底 `lastReview`，导致每次 sync 都改一次文件、git 里每天多一条无意义 diff（sync 就不再幂等）。全库曾有四篇这种文件（`AI/AI Agent Loop Engineering`、`AI/工程实践/AI Agent Loop Engineering`、`英语/1-7`、`英语/单词记忆法`），已修。`scripts/sync-reviews.py` 的回退顺序已改为「卡片 created > frontmatter date > 今天」，新增文章时仍要记得写齐 `title` 和 `date`。
+- **双 frontmatter 会让整个 frontmatter 当作正文渲染**。`git log` 里的 `70450dc fix: 修复 sync-reviews 的 frontmatter 写入 bug（重复 review 块 / --- 粘连 / 行尾符污染）` 修了写入逻辑，但没清理已被写坏的历史文件。仓库里曾有四篇带双 frontmatter 的文章，已修。修改 `sync_frontmatter` / `compose_md` 这类拼接逻辑时，记得用 `git show HEAD:<file>` 抽查历史文件而不是只看代码。
+- 调本地 API 必须用 `apiUrl()`（`src/lib/api.ts`），不要手写 `fetch(`/api/posts/${slug}`)`。slug 是中文文件路径，含空格（`AI RAG`，224 篇）与 `&`（`工具&中间件`，231 篇）。实测浏览器会自动百分号编码中文与空格，但**不编码 `&`**，会直接把它发出去；当前语料里 `&` 后面总是“中”字所以侥幸能过（FastAPI 容忍），但目录名一旦出现 `A&B=C` 形式就会被当成查询串截断。所有调用点已统一走 `apiUrl()`。
+- 用 curl 测本地 API 时，**slug 必须先 URL 编码**（`curl` 发裸 UTF-8 会得到 “Invalid HTTP request” 或 HTTP 000），否则会误判成产品 bug。用浏览器 `fetch` 测时，注意它会自动编码中文/空格但不编码 `&`。
+- **卡片库的条目必须走 `LibraryItem`（`React.memo`）**，不要把它内联回父组件。卡片库可以“加载更多”到 10000 张，内联时每次 `setVisible` 都会让 React 重建全部已渲染条目，实测单帧阻塞从 84ms 线性涨到 **760ms**（CPU 4x，越点越卡）。memo 后旧条目跳过重渲染，10000 张时降到 **47ms**，从 O(n) 变成 O(增量)。同理，归集与排序要放在 `useMemo` 里，不要在渲染时对片段 `slice().sort()`。
+- 用 `git checkout` 恢复 `src/posts` 下的文件前想清楚：那些文件同时带着链接修复（尖括号）等真实改动，checkout 会把修复一起还原。恢复后必须用 `git diff --stat src/posts` 核对总数（当前应为 218 files / 1507 与 1507 对称）。
+- 在 `src/posts` 里做测试（新建/删除临时文章、打分、切 `noReview`）会留下持久副作用：SQLite 记录、`public/review.json`、frontmatter 的 `review:` 快照。测完必须：清 `reviews` 表、把 `cards` 表里被测卡的 `reps/interval/ease/last_review` 恢复、`git checkout -- public/review.json`。**删掉 SQLite 记录后再 sync 会按 `date` 重建 `created`**，从而改掉 frontmatter（`英语/1-7` 就这么被改过）—— 要么避免删记录，要么把 `created`/`last_review` 手工对齐回已提交值。
 - `review.db` 是 gitignore 的本地文件，`public/review.json` 是提交的公网快照；两者语义不同，别混用。
 - `src/pages/Admin.tsx` 和 `src/pages/About.tsx` 目前**均未被路由表挂载**（App.tsx 没有 `/admin`、`/about` 路由），属于未接入的残留页面；新建文章能力实际通过 Admin 页的 `POST /api/posts`，但页面本身需要手动接线才能用。
 - `scripts/check-col1.cjs` 是针对旧内联 Vditor 编辑器的一次性排障脚本，当前前端已无内联编辑入口，属遗留文件。
+- 站内链接路径规则只有一份（`src/lib/link-path.ts`），`vite.config.ts`（构建期抽边）与 `src/lib/posts.ts`（运行时解析）共用；别在任一侧另写一套正则。
+- 主题识别靠文件名后缀 `学习资料` / `学习路线图`（`src/lib/topics.ts` 的 `INDEX_SUFFIXES`），没有额外的配置表；重命名入口页会直接让该目录从 `/topics` 消失。
+- `gen-rss.mjs` 的 `collectMd` 必须继续跳过点目录（`.solomd`、`.pytest_cache`），否则 RSS/sitemap 会多出站点上不存在的 URL（已修过一次）。
+- `gen-rss.mjs` 的 `staticPaths` 手写维护，新增页面路由时记得同步（否则 sitemap 缺 URL）；列表里不能再出现未挂载路由（`/about` 已移除）。
+- 写含空格的链接目标必须用尖括号：`[文本](<../AI RAG学习资料.md>)`。裸写在 CommonMark 里不是链接，会静默变成纯文本（不报错）。新增这类链接后可以跑 `python scripts/check-links.py` 体检。
+- **frontmatter 的 `title` 未必是字符串**：YAML 会把 `title: false` / `title: none` 解析成布尔值 / null（单词表里恰好有 `false`、`none` 两个词）。生成脚本用 `yaml_str()` 加引号，vite 插件也有 `String()` 兜底——否则前端一调 `.toLowerCase()` 就崩。新增批量生成的卡片/文章时注意同样问题。
+- 主包（`index-*.js`）约 4.3MB raw / 0.49MB gzip，其中 2.7MB 是 10000 张卡片的元数据（`virtual:posts-index` 全量进主包）。**已实测（4x CPU 降速）：首屏脚本解析+执行 133ms，gzip 后仅 0.49MB——不是性能问题，不要为它做高风险重构。** 若要优化，方向是把 `allCards` 拆成按需加载的虚拟模块（参考搜索索引），但 `lib/posts.ts` 的模块级 `parsedPosts`/`allCards` 被 8 个页面同步引用，改动面较大。
+- `/review` 看板的统计条以**文章口径**重新计算（不用 `review.json` 的 `stats`，那是文章+卡片的全局值）。卡片有 10002 张，混进来会让读者看到「参与复习 10004」紧跟着「今日待复习 2」这种口径跳跃。改这个页面时保持两个口径不混。
