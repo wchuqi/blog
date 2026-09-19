@@ -18,7 +18,7 @@ noReview: true
 
 # Claude Code 学习资料：Skills、Subagents、插件和并行编排深度解析
 
-[返回索引](../Claude Code学习资料.md)
+[返回索引](<../Claude Code学习资料.md>)
 
 ## 学习目标
 

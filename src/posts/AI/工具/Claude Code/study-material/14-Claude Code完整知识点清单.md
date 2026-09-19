@@ -18,7 +18,7 @@ noReview: true
 
 # Claude Code 学习资料：完整知识点清单
 
-[返回索引](../Claude Code学习资料.md)
+[返回索引](<../Claude Code学习资料.md>)
 
 ## 一、基础和术语
 

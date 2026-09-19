@@ -1,15 +1,4 @@
 ---
-
-review:
-  created: 2026-06-20
-  lastReview: 2026-08-23
-  reps: 0
-  interval: 0
-  ease: 2.5
-noReview: true
----
-
----
 title: "AI Agent Loop Engineering 学习资料：智能体循环工程"
 date: 2026-06-20
 description: "Agent Loop Engineering 是设计和实现智能体执行循环的工程实践。它让 AI 从单次问答进化为能够多步推理、调用工具、从错误中恢复的自主系统。核心挑战是如何控制循环终止、管理跨轮状态、处理工具失败、在资源约束下完成任务。"
@@ -19,15 +8,15 @@ tags:
   - "Agent"
 review:
   created: 2026-06-20
-  lastReview: 2026-06-20
+  lastReview: 2026-08-23
   reps: 0
   interval: 0
   ease: 2.5
-  ease: 2.5---
-
+noReview: true
+---
 # AI Agent Loop Engineering 学习资料：智能体循环工程
 
-[返回索引](./AI Agent Loop Engineering学习资料.md)
+[返回索引](<./AI Agent Loop Engineering学习资料.md>)
 
 ## 学习目标
 

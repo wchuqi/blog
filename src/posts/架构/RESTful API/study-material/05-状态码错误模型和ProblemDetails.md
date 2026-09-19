@@ -16,7 +16,7 @@ noReview: true
 
 # RESTful API学习资料：状态码错误模型和ProblemDetails
 
-[返回索引](../RESTful API学习资料.md)
+[返回索引](<../RESTful API学习资料.md>)
 
 ## 学习目标
 

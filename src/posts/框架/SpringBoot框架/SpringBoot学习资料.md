@@ -29,7 +29,7 @@ noReview: true
 | 1 | 环境构建和项目结构 | [01-环境构建和项目结构.md](study-material/01-环境构建和项目结构.md) |
 | 2 | 自动配置和启动流程 | [02-自动配置和启动流程.md](study-material/02-自动配置和启动流程.md) |
 | 3 | 配置体系、Profile 和类型安全配置 | [03-配置体系Profile和类型安全配置.md](study-material/03-配置体系Profile和类型安全配置.md) |
-| 4 | Web MVC 和 REST API | [04-Web MVC和REST API.md](study-material/04-Web MVC和REST API.md) |
+| 4 | Web MVC 和 REST API | [04-Web MVC和REST API.md](<study-material/04-Web MVC和REST API.md>) |
 | 5 | 数据访问、事务和数据库迁移 | [05-数据访问事务和迁移.md](study-material/05-数据访问事务和迁移.md) |
 | 6 | 安全认证、授权和常见风险 | [06-安全认证授权和常见风险.md](study-material/06-安全认证授权和常见风险.md) |
 | 7 | 测试体系和 Testcontainers | [07-测试体系和Testcontainers.md](study-material/07-测试体系和Testcontainers.md) |

@@ -18,7 +18,7 @@ noReview: true
 
 # Claude Code 学习资料：Agent SDK 平台化架构、评估和可观测性深度解析
 
-[返回索引](../Claude Code学习资料.md)
+[返回索引](<../Claude Code学习资料.md>)
 
 ## 学习目标
 

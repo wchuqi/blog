@@ -18,7 +18,7 @@ noReview: true
 
 # Prompt Engineering 学习资料：结构化输出、Schema 约束、解析失败和修复深度解析
 
-[返回索引](../Prompt Engineering学习资料.md)
+[返回索引](<../Prompt Engineering学习资料.md>)
 
 ## 学习目标
 

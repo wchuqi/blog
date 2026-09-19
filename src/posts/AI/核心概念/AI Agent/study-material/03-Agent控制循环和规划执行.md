@@ -17,7 +17,7 @@ noReview: true
 
 # AI Agent学习资料：Agent控制循环和规划执行
 
-[返回索引](../AI Agent学习资料.md)
+[返回索引](<../AI Agent学习资料.md>)
 
 ## 学习目标
 

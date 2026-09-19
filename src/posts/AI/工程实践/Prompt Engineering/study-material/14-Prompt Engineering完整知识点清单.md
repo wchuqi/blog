@@ -18,7 +18,7 @@ noReview: true
 
 # Prompt Engineering 学习资料：完整知识点清单
 
-[返回索引](../Prompt Engineering学习资料.md)
+[返回索引](<../Prompt Engineering学习资料.md>)
 
 ## 1. 基础和术语
 
@@ -144,7 +144,7 @@ noReview: true
 | --- | --- |
 | 系统掌握 prompting 技术谱系 | [26-Prompt技术谱系和推理模式深度解析.md](26-Prompt技术谱系和推理模式深度解析.md) |
 | 理解解码和约束生成 | [27-解码采样约束生成和结构化输出机制深度解析.md](27-解码采样约束生成和结构化输出机制深度解析.md) |
-| 做长上下文和记忆治理 | [28-Context Engineering上下文工程和记忆压缩深度解析.md](28-Context Engineering上下文工程和记忆压缩深度解析.md) |
+| 做长上下文和记忆治理 | [28-Context Engineering上下文工程和记忆压缩深度解析.md](<28-Context Engineering上下文工程和记忆压缩深度解析.md>) |
 | 做可量化 RAG 评估 | [29-RAG指标体系召回精排评估和数据治理深度解析.md](29-RAG指标体系召回精排评估和数据治理深度解析.md) |
 | 做可控 Agent | [30-Agent控制架构ReAct规划反思和工作流编排深度解析.md](30-Agent控制架构ReAct规划反思和工作流编排深度解析.md) |
 | 做自动 prompt 优化 | [31-自动Prompt优化APE评估驱动和元提示深度解析.md](31-自动Prompt优化APE评估驱动和元提示深度解析.md) |

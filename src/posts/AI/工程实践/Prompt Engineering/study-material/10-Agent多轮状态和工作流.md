@@ -17,7 +17,7 @@ noReview: true
 
 # Prompt Engineering 学习资料：Agent、多轮状态和工作流
 
-[返回索引](../Prompt Engineering学习资料.md)
+[返回索引](<../Prompt Engineering学习资料.md>)
 
 ## 学习目标
 

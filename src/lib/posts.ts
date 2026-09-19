@@ -1,8 +1,10 @@
 import GithubSlugger from 'github-slugger'
 import indexData from 'virtual:posts-index'
+import { absoluteSlugFor, normalizeLinkTarget } from './link-path'
 import type {
   GraphEdge,
   GraphNode,
+  NoteLink,
   Post,
   ReviewSnapshot,
   TocItem,
@@ -80,12 +82,46 @@ function findPostByLink(posts: Post[], target: string): Post | undefined {
   )
 }
 
+/**
+ * 把 md 链接的相对目标展开成绝对 slug（规则见 lib/link-path.ts）。
+ * 纯文件名（不含 `/`）交给调用方的宽松匹配兜底。
+ */
+function resolveExactSlug(currentSlug: string, bySlug: Map<string, Post>, target: string) {
+  const resolved = absoluteSlugFor(currentSlug, target)
+  return resolved ? bySlug.get(resolved) : undefined
+}
+
+/**
+ * 解析单条链接指向的 slug。
+ *
+ * 两条完全不同的路径，不能混着套后缀匹配：
+ *   wiki —— 沿用宽松匹配（slug / 标题 / 后缀），因为 `[[00-总览与心智模型]]` 这种写法依赖后缀
+ *   md   —— 必须严格按“来源目录 + 相对路径”算出唯一 slug，算不出就算断链
+ *
+ * md 链接为什么不能后缀匹配：41 个主题各有一个 `study-material/00-总览与心智模型.md`，
+ * 后缀匹配会命中任意一个（通常不是当前主题的）。宁可断链也不要连错边——错误的边会污染图谱。
+ */
+function resolveLinkTarget(
+  posts: Post[],
+  bySlug: Map<string, Post>,
+  currentSlug: string,
+  link: NoteLink
+): string | undefined {
+  if (link.kind === 'md') {
+    return resolveExactSlug(currentSlug, bySlug, link.target)?.slug
+  }
+  return findPostByLink(posts, link.target)?.slug
+}
+
 function resolveNoteLinks(posts: Post[]): Post[] {
+  // md 链接的解析是精确 slug 查找，用 Map 而不是数组扫描：
+  // 全站 ~3100 条 md 链接 × ~11000 篇文章，数组扫描会在页面加载时阻塞好几秒。
+  const bySlug = new Map(posts.map((post) => [post.slug, post]))
   return posts.map((post) => ({
     ...post,
     noteLinks: post.noteLinks.map((link) => ({
       ...link,
-      targetSlug: findPostByLink(posts, link.target)?.slug,
+      targetSlug: resolveLinkTarget(posts, bySlug, post.slug, link),
     })),
   }))
 }
@@ -118,17 +154,10 @@ export function getPost(slug: string): Post | undefined {
   return parsedPosts.find((p) => p.slug === slug)
 }
 
-function normalizeSlugPath(path: string): string {
-  const parts: string[] = []
-  for (const segment of path.split('/')) {
-    if (!segment || segment === '.') continue
-    if (segment === '..') {
-      parts.pop()
-      continue
-    }
-    parts.push(segment)
-  }
-  return parts.join('/')
+/** slug -> 文章，供需要精确匹配的场景使用 */
+let postBySlug: Map<string, Post> | null = null
+function getPostBySlug(): Map<string, Post> {
+  return (postBySlug ??= new Map(parsedPosts.map((post) => [post.slug, post])))
 }
 
 /** 把文章内的相对 .md 链接解析成博客文章路由 */
@@ -145,19 +174,17 @@ export function resolveMarkdownPostHref(
   const suffixIndex = value.search(/[?#]/)
   const pathPart = suffixIndex >= 0 ? value.slice(0, suffixIndex) : value
   const suffix = suffixIndex >= 0 ? value.slice(suffixIndex) : ''
-  const normalizedPath = pathPart.replace(/\\/g, '/')
-  if (!/\.md$/i.test(normalizedPath)) return href
+  // react-markdown 传进来的 href 是 percent-encoded 的，slug 是原始中文，必须先解码
+  const target = normalizeLinkTarget(pathPart)
+  if (!target) return href
 
-  const withoutExt = normalizedPath.replace(/\.md$/i, '')
-  const targetSlug = withoutExt.startsWith('/')
-    ? withoutExt.replace(/^\/+/, '').replace(/^posts\//, '')
-    : normalizeSlugPath(
-        [...currentSlug.split('/').slice(0, -1), withoutExt].join('/')
-      )
-
-  const targetPost = findPostByLink(parsedPosts, targetSlug)
+  // 优先按“来源目录 + 相对路径”精确解析（和 md 链接建边用的是同一套规则），
+  // 命中不了再退回宽松匹配（允许省略目录前缀、按标题引用）
+  const targetPost =
+    resolveExactSlug(currentSlug, getPostBySlug(), target) ??
+    findPostByLink(parsedPosts, target)
   if (!targetPost) {
-    console.warn(`[resolveMarkdownPostHref] 找不到目标文章: ${targetSlug}, 当前文章: ${currentSlug}, 原始链接: ${href}`)
+    console.warn(`[resolveMarkdownPostHref] 找不到目标文章: ${target}, 当前文章: ${currentSlug}, 原始链接: ${href}`)
     return href
   }
   return `/posts/${targetPost.slug}${suffix}`
@@ -230,6 +257,28 @@ export function getBacklinks(post: Post): Post[] {
   )
 }
 
+/**
+ * 当前文章的出链：本文指向了哪些笔记。
+ *
+ * 只保留解析成功的链接（`targetSlug` 存在）、去掉自链与重复项，
+ * 同一篇被引用多次只算一条。按文章列表顺序（置顶优先 + 日期倒序）返回，
+ * 保证列表稳定。
+ */
+export function getOutgoingLinks(post: Post): Post[] {
+  const seen = new Set<string>()
+  const out: Post[] = []
+  for (const link of post.noteLinks) {
+    const slug = link.targetSlug
+    if (!slug || slug === post.slug || seen.has(slug)) continue
+    seen.add(slug)
+    const target = getPost(slug)
+    if (target) out.push(target)
+  }
+  // 按 allPosts 的顺序排，与反向链接列表的观感一致
+  const order = new Map(allPosts.map((p, i) => [p.slug, i]))
+  return out.sort((a, b) => (order.get(a.slug) ?? 0) - (order.get(b.slug) ?? 0))
+}
+
 /** 知识图谱：只展示公开文章，排除加密文章 */
 export function getPostGraph(): { nodes: GraphNode[]; edges: GraphEdge[] } {
   const publicSlugs = new Set(allPosts.map((post) => post.slug))
@@ -284,18 +333,68 @@ export function extractToc(markdown: string): TocItem[] {
   return toc
 }
 
-/** 简单的相关文章推荐：按共享标签数排序 */
+/**
+ * 「页面类型」标签：表达这篇是什么形态的页面（索引页 / 路线图 / 练习 / 面试题），
+ * 而不是它在讲什么主题。
+ *
+ * 必须从相关性计算里排除。反例：`学习资料总览` 只出现在 41 篇索引页上，
+ * IDF 权重最高（3.50），于是 Redis 索引页的“相关文章”变成了 Docker / Git / Maven
+ * 的索引页——它们同为“索引页”，但主题毫无关系。
+ *
+ * 同理，“深度解析”（247 篇）、“面试”（278 篇）也是横切维度。
+ */
+const PAGE_TYPE_TAGS = new Set([
+  '学习资料总览',
+  '学习路线图',
+  '深度解析',
+  '面试',
+  '实践练习',
+  '综合练习',
+  '知识点清单',
+])
+
+/** 取文章的“主题标签”：剔除页面类型标签后的剩余标签 */
+function topicTagsOf(post: Post): string[] {
+  return (post.tags ?? []).filter((t) => !PAGE_TYPE_TAGS.has(t))
+}
+
+/**
+ * 相关文章推荐。
+ *
+ * 两个要点，都是被实际数据教出来的：
+ *
+ * 1. **不能等权计数**：标签是层级路径式的（`AI / 核心概念 / AI RAG`），
+ *    等权时共享「开发语言」（368 篇）与共享「AI RAG」（30 篇）得分一样，
+ *    `Python学习资料` 会推荐 Java / Java设计模式 / JVM。用 log(N/df) 加权后才收敛。
+ * 2. **要剔除页面类型标签**：否则 IDF 会把“同为索引页”当成最强相似信号
+ *    （`学习资料总览` idf=3.50），Redis 索引页会推荐 Docker / Git / Maven。
+ *
+ * 另加一条同目录加成：同一目录（同一主题）下的文章优先。
+ */
 export function getRelatedPosts(post: Post, limit = 3): Post[] {
-  const tags = new Set(post.tags ?? [])
-  if (tags.size === 0) return []
+  const tags = new Set(topicTagsOf(post))
+  const ownDir = post.slug.includes('/') ? post.slug.slice(0, post.slug.lastIndexOf('/')) : ''
+
+  // 文档频率：有多少篇文章带这个标签（只统计主题标签）
+  const df = new Map<string, number>()
+  for (const p of allPosts) {
+    for (const t of topicTagsOf(p)) df.set(t, (df.get(t) ?? 0) + 1)
+  }
+  const total = allPosts.length
+  const idf = (tag: string) => Math.log(total / (df.get(tag) ?? 1))
+
   return allPosts
     .filter((p) => p.slug !== post.slug)
-    .map((p) => ({
-      post: p,
-      shared: (p.tags ?? []).filter((t) => tags.has(t)).length,
-    }))
-    .filter((x) => x.shared > 0)
-    .sort((a, b) => b.shared - a.shared)
+    .map((p) => {
+      const shared = topicTagsOf(p).filter((t) => tags.has(t))
+      const sameDir =
+        ownDir && (p.slug === ownDir || p.slug.startsWith(ownDir + '/')) ? 1 : 0
+      // 同目录给一个与标签权重同量级的加成（典型 idf 约 2~4）
+      const score = shared.reduce((sum, t) => sum + idf(t), 0) + sameDir * 3
+      return { post: p, score, hasSignal: shared.length > 0 || sameDir > 0 }
+    })
+    .filter((x) => x.hasSignal)
+    .sort((a, b) => b.score - a.score)
     .slice(0, limit)
     .map((x) => x.post)
 }

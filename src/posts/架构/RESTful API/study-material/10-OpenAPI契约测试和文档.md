@@ -16,7 +16,7 @@ noReview: true
 
 # RESTful API学习资料：OpenAPI契约测试和文档
 
-[返回索引](../RESTful API学习资料.md)
+[返回索引](<../RESTful API学习资料.md>)
 
 ## 学习目标
 

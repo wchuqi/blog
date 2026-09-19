@@ -18,7 +18,7 @@ noReview: true
 
 # AI RAG 学习资料：BM25、稀疏检索、Hybrid 融合和排序算法深度解析
 
-[返回索引](../AI RAG学习资料.md)
+[返回索引](<../AI RAG学习资料.md>)
 
 ## 学习目标
 

@@ -16,7 +16,7 @@ noReview: true
 
 # RESTful API学习资料：RESTful API设计实战项目
 
-[返回索引](../RESTful API学习资料.md)
+[返回索引](<../RESTful API学习资料.md>)
 
 ## 项目目标
 

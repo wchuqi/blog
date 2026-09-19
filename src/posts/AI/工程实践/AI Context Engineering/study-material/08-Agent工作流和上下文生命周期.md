@@ -17,7 +17,7 @@ noReview: true
 
 # AI Context Engineering 学习资料：Agent 工作流和上下文生命周期
 
-[返回索引](../AI Context Engineering学习资料.md)
+[返回索引](<../AI Context Engineering学习资料.md>)
 
 ## 学习目标
 

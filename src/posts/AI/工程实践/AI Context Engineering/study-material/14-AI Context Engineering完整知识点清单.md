@@ -18,7 +18,7 @@ noReview: true
 
 # AI Context Engineering 学习资料：完整知识点清单
 
-[返回索引](../AI Context Engineering学习资料.md)
+[返回索引](<../AI Context Engineering学习资料.md>)
 
 这份清单用于检查学习覆盖度、面试准备和项目评审。Context Engineering 横跨 prompt、RAG、Agent、记忆、工具、安全和生产治理，不能只理解为“整理上下文”。
 

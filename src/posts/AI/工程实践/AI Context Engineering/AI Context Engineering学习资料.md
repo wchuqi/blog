@@ -40,7 +40,7 @@ Context Engineering 可以理解为 AI 应用的“运行时信息架构”：pr
 | 11 | 评估、监控和 ContextOps | [11-评估监控和ContextOps.md](study-material/11-评估监控和ContextOps.md) |
 | 12 | 综合练习项目 | [12-综合练习项目.md](study-material/12-综合练习项目.md) |
 | 13 | 面试知识点整理 | [13-面试知识点整理.md](study-material/13-面试知识点整理.md) |
-| 14 | 完整知识点清单 | [14-AI Context Engineering完整知识点清单.md](study-material/14-AI Context Engineering完整知识点清单.md) |
+| 14 | 完整知识点清单 | [14-AI Context Engineering完整知识点清单.md](<study-material/14-AI Context Engineering完整知识点清单.md>) |
 | 15 | Context Engineering 架构分层和数据流 | [15-架构分层和数据流深度解析.md](study-material/15-架构分层和数据流深度解析.md) |
 | 16 | 上下文窗口、注意力限制和信息位置效应 | [16-上下文窗口注意力限制和信息位置效应深度解析.md](study-material/16-上下文窗口注意力限制和信息位置效应深度解析.md) |
 | 17 | 上下文选择、排序、预算和冲突算法 | [17-上下文选择排序预算和冲突算法深度解析.md](study-material/17-上下文选择排序预算和冲突算法深度解析.md) |

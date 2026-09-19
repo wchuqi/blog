@@ -18,7 +18,7 @@ noReview: true
 
 # SDD与Harness Engineering完整知识点清单
 
-[返回索引](../SDD与Harness Engineering学习资料.md)
+[返回索引](<../SDD与Harness Engineering学习资料.md>)
 
 这份清单用于检查是否真正掌握 SDD 和 Harness Engineering，而不是只停留在概念解释。建议读完每个模块后回到本文件逐项核对。
 

@@ -16,7 +16,7 @@ noReview: true
 
 # RESTful API学习资料：HTTP基础和资源建模
 
-[返回索引](../RESTful API学习资料.md)
+[返回索引](<../RESTful API学习资料.md>)
 
 ## 学习目标
 

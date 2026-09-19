@@ -18,7 +18,7 @@ noReview: true
 
 # Prompt Engineering 学习资料：Agent 控制架构、ReAct、规划、反思和工作流编排深度解析
 
-[返回索引](../Prompt Engineering学习资料.md)
+[返回索引](<../Prompt Engineering学习资料.md>)
 
 ## 学习目标
 

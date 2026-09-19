@@ -18,7 +18,7 @@ noReview: true
 
 # Prompt Engineering 学习资料：生产架构蓝图和 PromptOps 平台化深度解析
 
-[返回索引](../Prompt Engineering学习资料.md)
+[返回索引](<../Prompt Engineering学习资料.md>)
 
 ## 学习目标
 

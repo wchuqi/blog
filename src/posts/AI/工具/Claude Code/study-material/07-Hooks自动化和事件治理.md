@@ -17,7 +17,7 @@ noReview: true
 
 # Claude Code 学习资料：Hooks 自动化和事件治理
 
-[返回索引](../Claude Code学习资料.md)
+[返回索引](<../Claude Code学习资料.md>)
 
 ## 学习目标
 

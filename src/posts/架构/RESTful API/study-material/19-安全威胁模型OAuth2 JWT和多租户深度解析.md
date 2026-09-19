@@ -17,7 +17,7 @@ noReview: true
 
 # RESTful API学习资料：安全威胁模型OAuth2 JWT和多租户深度解析
 
-[返回索引](../RESTful API学习资料.md)
+[返回索引](<../RESTful API学习资料.md>)
 
 ## 学习目标
 

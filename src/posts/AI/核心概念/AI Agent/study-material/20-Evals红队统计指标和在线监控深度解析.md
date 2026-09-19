@@ -18,7 +18,7 @@ noReview: true
 
 # AI Agent学习资料：Evals、红队、统计指标和在线监控深度解析
 
-[返回索引](../AI Agent学习资料.md)
+[返回索引](<../AI Agent学习资料.md>)
 
 ## 学习目标
 

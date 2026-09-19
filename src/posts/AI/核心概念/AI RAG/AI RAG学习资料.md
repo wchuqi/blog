@@ -36,7 +36,7 @@ noReview: true
 | 9 | 生产架构、成本、延迟、缓存和可观测性 | [09-生产架构成本延迟缓存和可观测性.md](study-material/09-生产架构成本延迟缓存和可观测性.md) |
 | 10 | GraphRAG、多跳检索和 Agentic RAG | [10-GraphRAG多跳检索和AgenticRAG.md](study-material/10-GraphRAG多跳检索和AgenticRAG.md) |
 | 11 | 综合练习项目 | [11-综合练习项目.md](study-material/11-综合练习项目.md) |
-| 12 | 完整知识点清单 | [12-AI RAG完整知识点清单.md](study-material/12-AI RAG完整知识点清单.md) |
+| 12 | 完整知识点清单 | [12-AI RAG完整知识点清单.md](<study-material/12-AI RAG完整知识点清单.md>) |
 | 13 | 面试知识点整理 | [13-面试知识点整理.md](study-material/13-面试知识点整理.md) |
 | 14 | RAG 系统架构和生命周期深度解析 | [14-RAG系统架构和生命周期深度解析.md](study-material/14-RAG系统架构和生命周期深度解析.md) |
 | 15 | 文档解析、结构化切分和增量索引深度解析 | [15-文档解析结构化切分和增量索引深度解析.md](study-material/15-文档解析结构化切分和增量索引深度解析.md) |

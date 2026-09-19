@@ -17,7 +17,7 @@ noReview: true
 
 # AI RAG 学习资料：GraphRAG、多跳检索和 Agentic RAG
 
-[返回索引](../AI RAG学习资料.md)
+[返回索引](<../AI RAG学习资料.md>)
 
 ## 学习目标
 

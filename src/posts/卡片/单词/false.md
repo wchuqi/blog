@@ -1,5 +1,5 @@
 ---
-title: false
+title: "false"
 date: 2026-09-11
 type: card
 tags:

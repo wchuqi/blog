@@ -17,7 +17,7 @@ noReview: true
 
 # AI Context Engineering 学习资料：基础术语、上下文窗口和 Token 预算
 
-[返回索引](../AI Context Engineering学习资料.md)
+[返回索引](<../AI Context Engineering学习资料.md>)
 
 ## 学习目标
 

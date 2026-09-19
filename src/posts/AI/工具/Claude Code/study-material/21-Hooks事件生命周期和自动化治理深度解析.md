@@ -18,7 +18,7 @@ noReview: true
 
 # Claude Code 学习资料：Hooks 事件生命周期和自动化治理深度解析
 
-[返回索引](../Claude Code学习资料.md)
+[返回索引](<../Claude Code学习资料.md>)
 
 ## 学习目标
 

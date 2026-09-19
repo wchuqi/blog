@@ -17,7 +17,7 @@ noReview: true
 
 # Claude Code 学习资料：项目记忆、CLAUDE.md 和上下文治理
 
-[返回索引](../Claude Code学习资料.md)
+[返回索引](<../Claude Code学习资料.md>)
 
 ## 学习目标
 

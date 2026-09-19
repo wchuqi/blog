@@ -29,13 +29,13 @@ noReview: true
 | 0 | 总览和心智模型 | [study-material/00-总览与心智模型.md](study-material/00-总览与心智模型.md) |
 | 1 | SDD开发模式 | [study-material/01-SDD开发模式.md](study-material/01-SDD开发模式.md) |
 | 2 | 规格文档层次和工作流 | [study-material/02-规格文档层次和工作流.md](study-material/02-规格文档层次和工作流.md) |
-| 3 | Harness Engineering基础 | [study-material/03-Harness Engineering基础.md](study-material/03-Harness Engineering基础.md) |
+| 3 | Harness Engineering基础 | [study-material/03-Harness Engineering基础.md](<study-material/03-Harness Engineering基础.md>) |
 | 4 | Agent运行时上下文工具和权限 | [study-material/04-Agent运行时上下文工具和权限.md](study-material/04-Agent运行时上下文工具和权限.md) |
 | 5 | 验证反馈和可观测性 | [study-material/05-验证反馈和可观测性.md](study-material/05-验证反馈和可观测性.md) |
 | 6 | SDD到Harness的落地流程 | [study-material/06-SDD到Harness的落地流程.md](study-material/06-SDD到Harness的落地流程.md) |
 | 7 | 团队治理安全和风险 | [study-material/07-团队治理安全和风险.md](study-material/07-团队治理安全和风险.md) |
 | 8 | 综合练习项目 | [study-material/08-综合练习项目.md](study-material/08-综合练习项目.md) |
-| 9 | 完整知识点清单 | [study-material/09-SDD与Harness Engineering完整知识点清单.md](study-material/09-SDD与Harness Engineering完整知识点清单.md) |
+| 9 | 完整知识点清单 | [study-material/09-SDD与Harness Engineering完整知识点清单.md](<study-material/09-SDD与Harness Engineering完整知识点清单.md>) |
 | 10 | 面试知识点整理 | [study-material/10-面试知识点整理.md](study-material/10-面试知识点整理.md) |
 | 11 | SDD深度机制：规格正确性和可执行契约 | [study-material/11-SDD深度机制规格正确性和可执行契约.md](study-material/11-SDD深度机制规格正确性和可执行契约.md) |
 | 12 | 规格解析、冲突消解和版本治理 | [study-material/12-规格解析冲突消解和版本治理.md](study-material/12-规格解析冲突消解和版本治理.md) |

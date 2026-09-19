@@ -18,7 +18,7 @@ noReview: true
 
 # Prompt Engineering 学习资料：Few-shot 示例选择和 Prompt 模式库深度解析
 
-[返回索引](../Prompt Engineering学习资料.md)
+[返回索引](<../Prompt Engineering学习资料.md>)
 
 ## 学习目标
 

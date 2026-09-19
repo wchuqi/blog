@@ -34,7 +34,7 @@ Claude Code 的关键不是某个提示词模板，而是上下文管理、权�
 | 11 | Agent SDK 和程序化集成 | [11-AgentSDK和程序化集成.md](study-material/11-AgentSDK和程序化集成.md) |
 | 12 | 安全、成本、排障和生产治理 | [12-安全成本排障和生产治理.md](study-material/12-安全成本排障和生产治理.md) |
 | 13 | 面试知识点整理 | [13-面试知识点整理.md](study-material/13-面试知识点整理.md) |
-| 14 | 完整知识点清单 | [14-Claude Code完整知识点清单.md](study-material/14-Claude Code完整知识点清单.md) |
+| 14 | 完整知识点清单 | [14-Claude Code完整知识点清单.md](<study-material/14-Claude Code完整知识点清单.md>) |
 | 15 | 综合练习项目和能力验收 | [15-综合练习项目和能力验收.md](study-material/15-综合练习项目和能力验收.md) |
 | 16 | Agent 执行循环和状态机深度解析 | [16-Agent执行循环和状态机深度解析.md](study-material/16-Agent执行循环和状态机深度解析.md) |
 | 17 | 上下文装载、记忆检索和压缩深度解析 | [17-上下文装载记忆检索和压缩深度解析.md](study-material/17-上下文装载记忆检索和压缩深度解析.md) |

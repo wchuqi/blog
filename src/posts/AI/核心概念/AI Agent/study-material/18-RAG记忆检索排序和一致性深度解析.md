@@ -18,7 +18,7 @@ noReview: true
 
 # AI Agent学习资料：RAG、记忆、检索排序和一致性深度解析
 
-[返回索引](../AI Agent学习资料.md)
+[返回索引](<../AI Agent学习资料.md>)
 
 ## 学习目标
 

@@ -18,7 +18,7 @@ noReview: true
 
 # AI RAG 学习资料：Embedding、相似度、ANN 索引和向量库调参深度解析
 
-[返回索引](../AI RAG学习资料.md)
+[返回索引](<../AI RAG学习资料.md>)
 
 ## 学习目标
 

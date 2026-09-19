@@ -17,7 +17,7 @@ noReview: true
 
 # Claude Code 学习资料：MCP 外部工具和数据源集成
 
-[返回索引](../Claude Code学习资料.md)
+[返回索引](<../Claude Code学习资料.md>)
 
 ## 学习目标
 

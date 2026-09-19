@@ -16,7 +16,7 @@ noReview: true
 
 # RESTful API学习资料：URI路径查询和命名规范
 
-[返回索引](../RESTful API学习资料.md)
+[返回索引](<../RESTful API学习资料.md>)
 
 ## 学习目标
 

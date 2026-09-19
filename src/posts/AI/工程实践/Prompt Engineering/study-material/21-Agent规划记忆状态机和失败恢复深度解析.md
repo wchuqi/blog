@@ -18,7 +18,7 @@ noReview: true
 
 # Prompt Engineering 学习资料：Agent 规划、记忆、状态机和失败恢复深度解析
 
-[返回索引](../Prompt Engineering学习资料.md)
+[返回索引](<../Prompt Engineering学习资料.md>)
 
 ## 学习目标
 

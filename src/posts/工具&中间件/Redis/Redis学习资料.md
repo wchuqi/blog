@@ -60,7 +60,7 @@ noReview: true
 | 34 | 分布式锁、Redlock、fencing token 和幂等深度解析 | [34-分布式锁Redlockfencingtoken和幂等深度解析.md](study-material/34-分布式锁Redlockfencingtoken和幂等深度解析.md) |
 | 35 | Sentinel 选举、配置纪元和客户端切换深度解析 | [35-Sentinel选举配置纪元和客户端切换深度解析.md](study-material/35-Sentinel选举配置纪元和客户端切换深度解析.md) |
 | 36 | Cluster gossip、configEpoch、failover 和脑裂深度解析 | [36-ClustergossipconfigEpochfailover和脑裂深度解析.md](study-material/36-ClustergossipconfigEpochfailover和脑裂深度解析.md) |
-| 37 | 内存分配器、碎片、active defrag 和 RSS 深度解析 | [37-内存分配器碎片active defrag和RSS深度解析.md](study-material/37-内存分配器碎片active defrag和RSS深度解析.md) |
+| 37 | 内存分配器、碎片、active defrag 和 RSS 深度解析 | [37-内存分配器碎片active defrag和RSS深度解析.md](<study-material/37-内存分配器碎片active defrag和RSS深度解析.md>) |
 | 38 | 持久化损坏恢复、备份校验和灾备演练深度解析 | [38-持久化损坏恢复备份校验和灾备演练深度解析.md](study-material/38-持久化损坏恢复备份校验和灾备演练深度解析.md) |
 | 39 | 客户端超时、重试、连接池雪崩和保护深度解析 | [39-客户端超时重试连接池雪崩和保护深度解析.md](study-material/39-客户端超时重试连接池雪崩和保护深度解析.md) |
 | 40 | 生产容量规划、压测、SLA 和成本治理深度解析 | [40-生产容量规划压测SLA和成本治理深度解析.md](study-material/40-生产容量规划压测SLA和成本治理深度解析.md) |

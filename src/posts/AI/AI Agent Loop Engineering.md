@@ -1,5 +1,9 @@
 ---
-
+title: "AI Agent Loop Engineering"
+date: 2026-08-21
+tags:
+  - "AI"
+  - "Agent"
 review:
   created: 2026-08-21
   lastReview: 2026-08-23
@@ -8,16 +12,6 @@ review:
   ease: 2.5
 noReview: true
 ---
-
----
-review:
-  created: 2026-08-21
-  lastReview: 2026-08-21
-  reps: 0
-  interval: 0
-  ease: 2.5
-  ease: 2.5---
-
 # AI Agent Loop Engineering
 
 > Engineering the control flow and decision cycles that enable AI agents to operate autonomously, handle complex tasks, and adapt to changing conditions.

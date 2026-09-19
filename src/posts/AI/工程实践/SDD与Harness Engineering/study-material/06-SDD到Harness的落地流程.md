@@ -17,7 +17,7 @@ noReview: true
 
 # SDD与Harness Engineering学习资料：SDD到Harness的落地流程
 
-[返回索引](../SDD与Harness Engineering学习资料.md)
+[返回索引](<../SDD与Harness Engineering学习资料.md>)
 
 ## 学习目标
 

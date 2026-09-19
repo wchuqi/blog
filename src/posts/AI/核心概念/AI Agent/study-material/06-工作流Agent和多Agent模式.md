@@ -17,7 +17,7 @@ noReview: true
 
 # AI Agent学习资料：工作流Agent和多Agent模式
 
-[返回索引](../AI Agent学习资料.md)
+[返回索引](<../AI Agent学习资料.md>)
 
 ## 学习目标
 

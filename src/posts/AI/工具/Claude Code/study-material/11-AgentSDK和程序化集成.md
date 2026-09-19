@@ -17,7 +17,7 @@ noReview: true
 
 # Claude Code 学习资料：Agent SDK 和程序化集成
 
-[返回索引](../Claude Code学习资料.md)
+[返回索引](<../Claude Code学习资料.md>)
 
 ## 学习目标
 

@@ -17,7 +17,7 @@ noReview: true
 
 # AI Agent学习资料：工具调用Function Calling和MCP
 
-[返回索引](../AI Agent学习资料.md)
+[返回索引](<../AI Agent学习资料.md>)
 
 ## 学习目标
 

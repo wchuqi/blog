@@ -38,7 +38,7 @@ noReview: true
 | 11 | 常见框架和选型 | [study-material/11-常见框架和选型.md](study-material/11-常见框架和选型.md) |
 | 12 | 综合练习项目 | [study-material/12-综合练习项目.md](study-material/12-综合练习项目.md) |
 | 13 | 面试知识点整理 | [study-material/13-面试知识点整理.md](study-material/13-面试知识点整理.md) |
-| 14 | 完整知识点清单 | [study-material/14-AI Agent完整知识点清单.md](study-material/14-AI Agent完整知识点清单.md) |
+| 14 | 完整知识点清单 | [study-material/14-AI Agent完整知识点清单.md](<study-material/14-AI Agent完整知识点清单.md>) |
 | 15 | 深度故障案例和反模式 | [study-material/15-深度故障案例和反模式.md](study-material/15-深度故障案例和反模式.md) |
 | 16 | Agent控制平面和数据平面深度架构 | [study-material/16-Agent控制平面和数据平面深度架构.md](study-material/16-Agent控制平面和数据平面深度架构.md) |
 | 17 | 工具协议MCP沙箱和权限深度解析 | [study-material/17-工具协议MCP沙箱和权限深度解析.md](study-material/17-工具协议MCP沙箱和权限深度解析.md) |

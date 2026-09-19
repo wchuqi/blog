@@ -24,10 +24,10 @@
     },
     {
       "slug": "英语/1-7",
-      "title": "英语/1-7",
+      "title": "英语 1-7",
       "type": "article",
       "created": "2026-09-05",
-      "lastReview": "2026-09-05",
+      "lastReview": "2026-09-19",
       "reps": 0,
       "interval": 0,
       "ease": 2.5,
@@ -38,10 +38,10 @@
     },
     {
       "slug": "英语/单词记忆法",
-      "title": "英语/单词记忆法",
+      "title": "英语单词记忆法",
       "type": "article",
       "created": "2026-09-06",
-      "lastReview": "2026-09-06",
+      "lastReview": "2026-09-19",
       "reps": 0,
       "interval": 0,
       "ease": 2.5,
@@ -140085,7 +140085,7 @@
     },
     {
       "slug": "AI/AI Agent Loop Engineering",
-      "title": "AI/AI Agent Loop Engineering"
+      "title": "AI Agent Loop Engineering"
     },
     {
       "slug": "AI/向量数据库原理",
@@ -144376,8 +144376,12 @@
       "title": "测试场景说明"
     },
     {
+      "slug": "AI/工具/Pi-Agent",
+      "title": "Pi-Agent 学习文档"
+    },
+    {
       "slug": "AI/工程实践/AI Agent Loop Engineering",
-      "title": "AI/工程实践/AI Agent Loop Engineering"
+      "title": "AI Agent Loop Engineering 学习资料：智能体循环工程"
     },
     {
       "slug": "AI/核心概念/AI Agent/AI Agent学习资料",

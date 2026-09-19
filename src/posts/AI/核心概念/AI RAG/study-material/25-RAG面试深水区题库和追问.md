@@ -18,7 +18,7 @@ noReview: true
 
 # AI RAG 学习资料：RAG 面试深水区题库和追问
 
-[返回索引](../AI RAG学习资料.md)
+[返回索引](<../AI RAG学习资料.md>)
 
 ## 使用方式
 

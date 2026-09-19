@@ -17,7 +17,7 @@ noReview: true
 
 # AI Context Engineering 学习资料：评估、监控和 ContextOps
 
-[返回索引](../AI Context Engineering学习资料.md)
+[返回索引](<../AI Context Engineering学习资料.md>)
 
 ## 学习目标
 

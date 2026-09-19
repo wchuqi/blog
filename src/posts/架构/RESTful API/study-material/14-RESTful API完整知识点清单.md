@@ -17,7 +17,7 @@ noReview: true
 
 # RESTful API学习资料：RESTful API完整知识点清单
 
-[返回索引](../RESTful API学习资料.md)
+[返回索引](<../RESTful API学习资料.md>)
 
 ## 一、基础和术语
 

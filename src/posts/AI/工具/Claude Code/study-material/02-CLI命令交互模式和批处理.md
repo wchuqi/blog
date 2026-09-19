@@ -17,7 +17,7 @@ noReview: true
 
 # Claude Code 学习资料：CLI 命令、交互模式和批处理
 
-[返回索引](../Claude Code学习资料.md)
+[返回索引](<../Claude Code学习资料.md>)
 
 ## 学习目标
 

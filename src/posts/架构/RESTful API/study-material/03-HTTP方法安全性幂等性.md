@@ -16,7 +16,7 @@ noReview: true
 
 # RESTful API学习资料：HTTP方法安全性幂等性
 
-[返回索引](../RESTful API学习资料.md)
+[返回索引](<../RESTful API学习资料.md>)
 
 ## 学习目标
 

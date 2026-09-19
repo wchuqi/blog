@@ -17,7 +17,7 @@ noReview: true
 
 # AI Agent学习资料：多Agent协作、冲突、一致性和黑板机制
 
-[返回索引](../AI Agent学习资料.md)
+[返回索引](<../AI Agent学习资料.md>)
 
 ## 学习目标
 

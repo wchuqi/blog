@@ -17,7 +17,7 @@ noReview: true
 
 # RESTful API学习资料：HTTP语义状态码和错误边界深度解析
 
-[返回索引](../RESTful API学习资料.md)
+[返回索引](<../RESTful API学习资料.md>)
 
 ## 学习目标
 

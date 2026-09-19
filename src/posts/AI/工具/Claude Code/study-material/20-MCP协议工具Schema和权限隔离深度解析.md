@@ -18,7 +18,7 @@ noReview: true
 
 # Claude Code 学习资料：MCP 协议、工具 Schema 和权限隔离深度解析
 
-[返回索引](../Claude Code学习资料.md)
+[返回索引](<../Claude Code学习资料.md>)
 
 ## 学习目标
 

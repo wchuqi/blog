@@ -40,7 +40,7 @@ Prompt Engineering 不是记模板，而是把任务目标、上下文、约束�
 | 11 | 模板库和场景速查 | [11-模板库和场景速查.md](study-material/11-模板库和场景速查.md) |
 | 12 | 综合练习项目 | [12-综合练习项目.md](study-material/12-综合练习项目.md) |
 | 13 | 面试知识点整理 | [13-面试知识点整理.md](study-material/13-面试知识点整理.md) |
-| 14 | 完整知识点清单 | [14-Prompt Engineering完整知识点清单.md](study-material/14-Prompt Engineering完整知识点清单.md) |
+| 14 | 完整知识点清单 | [14-Prompt Engineering完整知识点清单.md](<study-material/14-Prompt Engineering完整知识点清单.md>) |
 | 15 | LLM 机制和 Prompt 行为深度解析 | [15-LLM机制和Prompt行为深度解析.md](study-material/15-LLM机制和Prompt行为深度解析.md) |
 | 16 | 指令层级、冲突和上下文隔离 | [16-指令层级冲突和上下文隔离深度解析.md](study-material/16-指令层级冲突和上下文隔离深度解析.md) |
 | 17 | Few-shot 示例选择和 Prompt 模式库 | [17-Few-shot示例选择和Prompt模式库深度解析.md](study-material/17-Few-shot示例选择和Prompt模式库深度解析.md) |
@@ -54,7 +54,7 @@ Prompt Engineering 不是记模板，而是把任务目标、上下文、约束�
 | 25 | 行业场景案例库和 Prompt 评审清单 | [25-行业场景案例库和Prompt评审清单.md](study-material/25-行业场景案例库和Prompt评审清单.md) |
 | 26 | Prompt 技术谱系和推理模式 | [26-Prompt技术谱系和推理模式深度解析.md](study-material/26-Prompt技术谱系和推理模式深度解析.md) |
 | 27 | 解码、采样、约束生成和结构化输出机制 | [27-解码采样约束生成和结构化输出机制深度解析.md](study-material/27-解码采样约束生成和结构化输出机制深度解析.md) |
-| 28 | Context Engineering、上下文工程和记忆压缩 | [28-Context Engineering上下文工程和记忆压缩深度解析.md](study-material/28-Context Engineering上下文工程和记忆压缩深度解析.md) |
+| 28 | Context Engineering、上下文工程和记忆压缩 | [28-Context Engineering上下文工程和记忆压缩深度解析.md](<study-material/28-Context Engineering上下文工程和记忆压缩深度解析.md>) |
 | 29 | RAG 指标体系、召回、精排和数据治理 | [29-RAG指标体系召回精排评估和数据治理深度解析.md](study-material/29-RAG指标体系召回精排评估和数据治理深度解析.md) |
 | 30 | Agent 控制架构、ReAct、规划和工作流编排 | [30-Agent控制架构ReAct规划反思和工作流编排深度解析.md](study-material/30-Agent控制架构ReAct规划反思和工作流编排深度解析.md) |
 | 31 | 自动 Prompt 优化、APE 和评估驱动 | [31-自动Prompt优化APE评估驱动和元提示深度解析.md](study-material/31-自动Prompt优化APE评估驱动和元提示深度解析.md) |

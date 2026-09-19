@@ -19,7 +19,7 @@ noReview: true
 
 # Prompt Engineering 学习资料：Prompt 评估、实验设计、统计和线上监控深度解析
 
-[返回索引](../Prompt Engineering学习资料.md)
+[返回索引](<../Prompt Engineering学习资料.md>)
 
 ## 学习目标
 

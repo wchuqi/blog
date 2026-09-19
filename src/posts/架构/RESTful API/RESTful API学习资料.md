@@ -35,14 +35,14 @@ noReview: true
 | 9 | 版本兼容和演进策略 | [09-版本兼容和演进策略.md](study-material/09-版本兼容和演进策略.md) |
 | 10 | OpenAPI契约测试和文档 | [10-OpenAPI契约测试和文档.md](study-material/10-OpenAPI契约测试和文档.md) |
 | 11 | 网关限流观测和排障 | [11-网关限流观测和排障.md](study-material/11-网关限流观测和排障.md) |
-| 12 | 设计实战项目 | [12-RESTful API设计实战项目.md](study-material/12-RESTful API设计实战项目.md) |
+| 12 | 设计实战项目 | [12-RESTful API设计实战项目.md](<study-material/12-RESTful API设计实战项目.md>) |
 | 13 | 面试知识点整理 | [13-面试知识点整理.md](study-material/13-面试知识点整理.md) |
-| 14 | 完整知识点清单 | [14-RESTful API完整知识点清单.md](study-material/14-RESTful API完整知识点清单.md) |
+| 14 | 完整知识点清单 | [14-RESTful API完整知识点清单.md](<study-material/14-RESTful API完整知识点清单.md>) |
 | 15 | REST约束成熟度和架构取舍深度解析 | [15-REST约束成熟度和架构取舍深度解析.md](study-material/15-REST约束成熟度和架构取舍深度解析.md) |
 | 16 | 资源建模决策树和反模式深度解析 | [16-资源建模决策树和反模式深度解析.md](study-material/16-资源建模决策树和反模式深度解析.md) |
 | 17 | HTTP语义状态码和错误边界深度解析 | [17-HTTP语义状态码和错误边界深度解析.md](study-material/17-HTTP语义状态码和错误边界深度解析.md) |
 | 18 | 幂等重试并发和一致性深度解析 | [18-幂等重试并发和一致性深度解析.md](study-material/18-幂等重试并发和一致性深度解析.md) |
-| 19 | 安全威胁模型OAuth2 JWT和多租户深度解析 | [19-安全威胁模型OAuth2 JWT和多租户深度解析.md](study-material/19-安全威胁模型OAuth2 JWT和多租户深度解析.md) |
+| 19 | 安全威胁模型OAuth2 JWT和多租户深度解析 | [19-安全威胁模型OAuth2 JWT和多租户深度解析.md](<study-material/19-安全威胁模型OAuth2 JWT和多租户深度解析.md>) |
 | 20 | 缓存分页性能网关和排障深度解析 | [20-缓存分页性能网关和排障深度解析.md](study-material/20-缓存分页性能网关和排障深度解析.md) |
 | 21 | 契约版本治理和评审清单深度解析 | [21-契约版本治理和评审清单深度解析.md](study-material/21-契约版本治理和评审清单深度解析.md) |
 

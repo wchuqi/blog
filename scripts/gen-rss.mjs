@@ -68,9 +68,12 @@ function main() {
   }
 
   // 递归收集 src/posts 下所有 .md 文件（含子目录）的绝对路径
+  // 点目录（.solomd、.pytest_cache 等）一律跳过：它们不是文章，
+  // 与 vite.config.ts 的 collectMarkdown 保持一致，否则 RSS/sitemap 会比站点多出几条垃圾 URL
   function collectMd(dir) {
     const out = []
     for (const entry of readdirSync(dir)) {
+      if (entry.startsWith('.')) continue
       const full = join(dir, entry)
       if (statSync(full).isDirectory()) {
         out.push(...collectMd(full))
@@ -133,7 +136,9 @@ ${items}
 `
 
   // ---- sitemap ----
-  const staticPaths = ['', '/archives', '/tags', '/articles', '/graph', '/review', '/cards', '/about']
+  // /about 没挂路由（App.tsx 里不存在），列进去会产出 404 URL。
+  // /search 依赖查询串、本身没有内容，故不进 sitemap。
+  const staticPaths = ['', '/archives', '/tags', '/articles', '/topics', '/graph', '/review', '/cards']
   const urls = [
     ...staticPaths.map((p) => `${site.url}${p}`),
     ...posts.map((p) => `${site.url}/posts/${p.slug}`),

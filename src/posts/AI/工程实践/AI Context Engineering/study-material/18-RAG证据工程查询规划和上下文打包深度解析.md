@@ -18,7 +18,7 @@ noReview: true
 
 # AI Context Engineering 学习资料：RAG 证据工程、查询规划和上下文打包深度解析
 
-[返回索引](../AI Context Engineering学习资料.md)
+[返回索引](<../AI Context Engineering学习资料.md>)
 
 ## 学习目标
 

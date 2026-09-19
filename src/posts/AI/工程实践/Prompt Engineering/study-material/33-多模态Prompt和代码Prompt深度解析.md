@@ -18,7 +18,7 @@ noReview: true
 
 # Prompt Engineering 学习资料：多模态 Prompt 和代码 Prompt 深度解析
 
-[返回索引](../Prompt Engineering学习资料.md)
+[返回索引](<../Prompt Engineering学习资料.md>)
 
 ## 学习目标
 

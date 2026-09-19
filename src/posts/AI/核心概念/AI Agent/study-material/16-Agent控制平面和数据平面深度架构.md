@@ -17,7 +17,7 @@ noReview: true
 
 # AI Agent学习资料：Agent控制平面和数据平面深度架构
 
-[返回索引](../AI Agent学习资料.md)
+[返回索引](<../AI Agent学习资料.md>)
 
 ## 学习目标
 

@@ -17,7 +17,7 @@ noReview: true
 
 # SDD与Harness Engineering学习资料：验证体系、Evals和质量度量
 
-[返回索引](../SDD与Harness Engineering学习资料.md)
+[返回索引](<../SDD与Harness Engineering学习资料.md>)
 
 ## 学习目标
 

@@ -17,7 +17,7 @@ noReview: true
 
 # Prompt Engineering 学习资料：行业场景案例库和 Prompt 评审清单
 
-[返回索引](../Prompt Engineering学习资料.md)
+[返回索引](<../Prompt Engineering学习资料.md>)
 
 ## 学习目标
 

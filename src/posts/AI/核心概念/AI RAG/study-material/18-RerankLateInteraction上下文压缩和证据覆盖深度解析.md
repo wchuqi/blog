@@ -18,7 +18,7 @@ noReview: true
 
 # AI RAG 学习资料：Rerank、Late Interaction、上下文压缩和证据覆盖深度解析
 
-[返回索引](../AI RAG学习资料.md)
+[返回索引](<../AI RAG学习资料.md>)
 
 ## 学习目标
 

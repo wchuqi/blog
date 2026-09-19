@@ -18,7 +18,7 @@ noReview: true
 
 # AI RAG 学习资料：RAG 系统架构和生命周期深度解析
 
-[返回索引](../AI RAG学习资料.md)
+[返回索引](<../AI RAG学习资料.md>)
 
 ## 学习目标
 

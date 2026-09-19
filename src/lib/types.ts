@@ -65,14 +65,20 @@ export interface IndexEntry extends PostFrontmatter {
   noteLinks: NoteLink[]
 }
 
-/** 双链引用 */
+/** 双链引用 / 站内 Markdown 链接 */
 export interface NoteLink {
-  /** 原始目标文本，通常是 slug，也可以写文章标题 */
+  /** 原始目标文本：双链是 slug 或标题；md 链接是相对路径（可带 ../，已去 .md） */
   target: string
   /** 页面上显示的文本 */
   label: string
   /** 解析成功后的文章 slug；未解析成功则为空 */
   targetSlug?: string
+  /**
+   * 链接写法。'wiki' = `[[双链]]`（target 是 slug / 标题 / 无前缀路径，可后缀匹配）；
+   * 'md' = `[文本](相对路径.md)`（target 必须按来源文章所在目录展开，不能后缀匹配）。
+   * 缺省视为 'wiki'，兼容旧索引。
+   */
+  kind?: 'wiki' | 'md'
 }
 
 /** 知识图谱节点 */

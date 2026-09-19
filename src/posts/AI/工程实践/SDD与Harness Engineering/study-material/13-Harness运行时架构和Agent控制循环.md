@@ -17,7 +17,7 @@ noReview: true
 
 # SDD与Harness Engineering学习资料：Harness运行时架构和Agent控制循环
 
-[返回索引](../SDD与Harness Engineering学习资料.md)
+[返回索引](<../SDD与Harness Engineering学习资料.md>)
 
 ## 学习目标
 

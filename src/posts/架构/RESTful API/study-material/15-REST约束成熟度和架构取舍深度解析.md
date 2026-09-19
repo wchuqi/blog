@@ -17,7 +17,7 @@ noReview: true
 
 # RESTful API学习资料：REST约束成熟度和架构取舍深度解析
 
-[返回索引](../RESTful API学习资料.md)
+[返回索引](<../RESTful API学习资料.md>)
 
 ## 学习目标
 

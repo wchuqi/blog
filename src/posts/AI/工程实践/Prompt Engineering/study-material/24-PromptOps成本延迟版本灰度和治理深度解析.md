@@ -18,7 +18,7 @@ noReview: true
 
 # Prompt Engineering 学习资料：PromptOps、成本、延迟、版本、灰度和治理深度解析
 
-[返回索引](../Prompt Engineering学习资料.md)
+[返回索引](<../Prompt Engineering学习资料.md>)
 
 ## 学习目标
 

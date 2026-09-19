@@ -18,7 +18,7 @@ noReview: true
 
 # AI Agent学习资料：工具协议、MCP、沙箱和权限深度解析
 
-[返回索引](../AI Agent学习资料.md)
+[返回索引](<../AI Agent学习资料.md>)
 
 ## 学习目标
 
