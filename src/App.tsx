@@ -8,6 +8,9 @@ import { Tags } from './pages/Tags'
 import { TagDetail } from './pages/TagDetail'
 import { Graph } from './pages/Graph'
 import { Review } from './pages/Review'
+import { Search } from './pages/Search'
+import { Topics } from './pages/Topics'
+import { TopicDetail } from './pages/TopicDetail'
 import { NotFound } from './pages/NotFound'
 
 // 文章详情页依赖 react-markdown + highlight.js（较重），懒加载按需引入
@@ -25,6 +28,9 @@ export function App() {
       <Route path="/" element={<Layout />}>
         <Route index element={<Home />} />
         <Route path="articles" element={<Articles />} />
+        <Route path="topics" element={<Topics />} />
+        <Route path="topics/*" element={<TopicDetail />} />
+        <Route path="search" element={<Search />} />
         <Route
           path="posts/*"
           element={

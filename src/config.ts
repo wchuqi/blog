@@ -14,6 +14,7 @@ export const siteConfig = {
   /** 导航栏链接 */
   nav: [
     { label: '首页', to: '/' },
+    { label: '主题', to: '/topics' },
     { label: '文章', to: '/articles' },
     { label: '归档', to: '/archives' },
     { label: '标签', to: '/tags' },

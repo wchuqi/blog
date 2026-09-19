@@ -1,38 +1,30 @@
 import { useState, useEffect, useRef, useMemo, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { allPosts } from '../lib/posts'
+import { allCards, allPosts } from '../lib/posts'
+import { buildSearchIndex, findRanges, parseTerms, runSearch, splitByRanges } from '../lib/search'
+import type { IndexedDoc, SearchDoc, SearchScope } from '../lib/search'
 import { formatDate } from '../lib/format'
 import type { Post } from '../lib/types'
 
-type SearchDoc = { slug: string; text: string }
+/** 模态里最多显示几条（要看全部就去 /search 结果页） */
+const MODAL_LIMIT = 8
 
-/** 在标题、摘要、标签、正文中做大小写不敏感的包含匹配并打分 */
-function search(query: string, docs: SearchDoc[] | null): Post[] {
-  const q = query.trim().toLowerCase()
-  if (!q) return []
-  const terms = q.split(/\s+/)
-  const bodyMap = docs ? new Map(docs.map((d) => [d.slug, d.text])) : null
-
-  return allPosts
-    .map((post) => {
-      const title = post.title.toLowerCase()
-      const desc = (post.description ?? '').toLowerCase()
-      const tags = (post.tags ?? []).join(' ').toLowerCase()
-
-      let score = 0
-      for (const term of terms) {
-        if (title.includes(term)) score += 10
-        if (tags.includes(term)) score += 5
-        if (desc.includes(term)) score += 3
-        // 全文索引是独立 chunk，首次打开搜索时才开始加载；未就绪前只搜元数据
-        if (bodyMap?.get(post.slug)?.includes(term)) score += 1
-      }
-      return { post, score }
-    })
-    .filter((x) => x.score > 0)
-    .sort((a, b) => b.score - a.score)
-    .slice(0, 8)
-    .map((x) => x.post)
+/** 把标题/摘要按命中词高亮。区间计算走 search.ts 的 findRanges，避免和检索逻辑分叉。 */
+function Highlighted({ text, terms }: { text: string; terms: string[] }) {
+  const parts = useMemo(() => splitByRanges(text, findRanges(text, terms)), [text, terms])
+  return (
+    <>
+      {parts.map((p, i) =>
+        p.hit ? (
+          <mark key={i} className="search-hit">
+            {p.text}
+          </mark>
+        ) : (
+          <span key={i}>{p.text}</span>
+        )
+      )}
+    </>
+  )
 }
 
 /** 站内搜索：点击后弹出模态，支持键盘 ↑↓ 选择、Enter 跳转、Esc 关闭 */
@@ -40,18 +32,48 @@ export function SearchBox() {
   const [open, setOpen] = useState(false)
   const [query, setQuery] = useState('')
   const [active, setActive] = useState(0)
-  // 全文搜索索引：首次打开搜索框时才动态加载（独立 chunk，避免拖慢首屏）
-  const [docs, setDocs] = useState<SearchDoc[] | null>(null)
+  const [scope, setScope] = useState<SearchScope>('article')
+  // 全文索引按范围分开加载：默认只拉文章索引，切到卡片才拉卡片索引
+  const [articleDocs, setArticleDocs] = useState<IndexedDoc[] | null>(null)
+  const [cardDocs, setCardDocs] = useState<IndexedDoc[] | null>(null)
   const inputRef = useRef<HTMLInputElement>(null)
   const navigate = useNavigate()
 
-  useEffect(() => {
-    if (open && docs === null) {
-      import('virtual:posts-search-index').then((m) => setDocs(m.default))
-    }
-  }, [open, docs])
+  const needArticles = scope === 'article' || scope === 'all'
+  const needCards = scope === 'card' || scope === 'all'
 
-  const results = useMemo(() => search(query, docs), [query, docs])
+  useEffect(() => {
+    if (open && needArticles && articleDocs === null) {
+      import('virtual:posts-search-index').then((m) =>
+        setArticleDocs(buildSearchIndex(m.default as SearchDoc[]))
+      )
+    }
+  }, [open, needArticles, articleDocs])
+
+  useEffect(() => {
+    if (open && needCards && cardDocs === null) {
+      import('virtual:cards-search-index').then((m) =>
+        setCardDocs(buildSearchIndex(m.default as SearchDoc[]))
+      )
+    }
+  }, [open, needCards, cardDocs])
+
+  const terms = useMemo(() => parseTerms(query), [query])
+
+  const results = useMemo(() => {
+    if (terms.length === 0) return []
+    const posts =
+      scope === 'card' ? allCards : scope === 'article' ? allPosts : [...allPosts, ...allCards]
+    const bodyIndex = new Map<string, IndexedDoc>()
+    if (articleDocs) for (const d of articleDocs) bodyIndex.set(d.slug, d)
+    if (cardDocs) for (const d of cardDocs) bodyIndex.set(d.slug, d)
+    return runSearch(
+      posts.map((post) => ({ post, body: bodyIndex.get(post.slug) })),
+      query
+    )
+  }, [terms, query, scope, articleDocs, cardDocs])
+
+  const shown = results.slice(0, MODAL_LIMIT)
 
   // 打开时聚焦输入框
   useEffect(() => {
@@ -98,17 +120,30 @@ export function SearchBox() {
     [navigate]
   )
 
+  /** 跳到结果页看全部（带上当前范围与查询） */
+  const goAll = useCallback(() => {
+    const p = new URLSearchParams({ q: query, scope })
+    navigate(`/search?${p.toString()}`)
+    setOpen(false)
+  }, [navigate, query, scope])
+
   const onKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'ArrowDown') {
       e.preventDefault()
-      setActive((a) => Math.min(a + 1, results.length - 1))
+      setActive((a) => Math.min(a + 1, shown.length - 1))
     } else if (e.key === 'ArrowUp') {
       e.preventDefault()
       setActive((a) => Math.max(a - 1, 0))
-    } else if (e.key === 'Enter' && results[active]) {
-      go(results[active])
+    } else if (e.key === 'Enter' && shown[active]) {
+      go(shown[active].post)
     }
   }
+
+  const scopeTabs: { value: SearchScope; label: string }[] = [
+    { value: 'article', label: '文章' },
+    { value: 'card', label: '卡片' },
+    { value: 'all', label: '全部' },
+  ]
 
   return (
     <>
@@ -131,7 +166,7 @@ export function SearchBox() {
               ref={inputRef}
               className="search-modal__input"
               type="text"
-              placeholder="搜索标题、标签、内容…"
+              placeholder="搜索标题、标签、内容…（多个词用空格分隔）"
               value={query}
               onChange={(e) => {
                 setQuery(e.target.value)
@@ -140,12 +175,34 @@ export function SearchBox() {
               onKeyDown={onKeyDown}
             />
 
+            <div className="search-modal__scopes" role="tablist" aria-label="搜索范围">
+              {scopeTabs.map((t) => (
+                <button
+                  key={t.value}
+                  type="button"
+                  role="tab"
+                  aria-selected={scope === t.value}
+                  className={
+                    'search-modal__scope' + (scope === t.value ? ' search-modal__scope--active' : '')
+                  }
+                  onClick={() => {
+                    setScope(t.value)
+                    setActive(0)
+                  }}
+                >
+                  {t.label}
+                </button>
+              ))}
+            </div>
+
             <ul className="search-modal__results">
               {query && results.length === 0 && (
-                <li className="search-modal__empty">没有找到相关文章</li>
+                <li className="search-modal__empty">
+                  {needCards && cardDocs === null ? '索引加载中…' : '没有找到相关内容'}
+                </li>
               )}
-              {results.map((post, i) => (
-                <li key={post.slug}>
+              {shown.map((hit, i) => (
+                <li key={hit.post.slug}>
                   <button
                     type="button"
                     className={
@@ -153,21 +210,35 @@ export function SearchBox() {
                       (i === active ? ' search-modal__item--active' : '')
                     }
                     onMouseEnter={() => setActive(i)}
-                    onClick={() => go(post)}
+                    onClick={() => go(hit.post)}
                   >
-                    <span className="search-modal__item-title">{post.title}</span>
-                    <span className="search-modal__item-date">
-                      {formatDate(post.date)}
+                    <span className="search-modal__item-body">
+                      <span className="search-modal__item-title">
+                        <Highlighted text={hit.post.title} terms={terms} />
+                      </span>
+                      {hit.snippet && (
+                        <span className="search-modal__item-snippet">
+                          <Highlighted text={hit.snippet} terms={terms} />
+                        </span>
+                      )}
                     </span>
+                    <span className="search-modal__item-date">{formatDate(hit.post.date)}</span>
                   </button>
                 </li>
               ))}
             </ul>
 
+            {query && results.length > MODAL_LIMIT && (
+              <button type="button" className="search-modal__all" onClick={goAll}>
+                查看全部 {results.length} 条结果 →
+              </button>
+            )}
+
             <div className="search-modal__footer">
               <kbd>↑</kbd><kbd>↓</kbd> 选择
               <kbd>↵</kbd> 打开
               <kbd>esc</kbd> 关闭
+              {query && <span className="search-modal__footer-hint">结果不全？回车搜全部</span>}
             </div>
           </div>
         </div>
