@@ -10,7 +10,16 @@
   --bg: #cce8cf;
   --bg-soft: #bedfc3;
   --bg-elevated: #dff0e2;
-  --bg-code: #26211a;
+  /* 代码块跟随主题：浅色主题下是比纸色深一档的同族绿，而不是深色板。
+     深色板在豆沙绿纸面上是明暗反差 + 冷暖冲突的叠加（暖棕 #26211a vs 冷绿 #cce8cf），
+     与「排版为中心、少卡片」的原则也相左。 */
+  --bg-code: #b2d3b8;
+  --code-text: #1f2d24;
+  --code-bar-bg: rgba(36, 51, 41, 0.05);
+  --code-bar-border: rgba(36, 51, 41, 0.1);
+  --code-chip-border: rgba(36, 51, 41, 0.18);
+  --code-chip-hover: #243329;
+  --code-sel-bg: rgba(176, 82, 28, 0.22);
 
   --text: #243329;
   --text-soft: #5c6f60;
@@ -38,18 +47,19 @@
   /* 卡片静态阴影：几乎贴平，只在 hover 时才抬起 */
   --shadow-rest: 0 1px 2px rgba(45, 80, 52, 0.05);
 
-  /* 语法高亮（鲜艳，暗底高对比） */
-  --hl-keyword: #ff7b94;
-  --hl-string: #7ee787;
-  --hl-comment: #6b7686;
-  --hl-func: #d2a8ff;
-  --hl-number: #79c0ff;
-  --hl-builtin: #ffa657;
-  --hl-attr: #ffcb6b;
-  --hl-tag: #7ee787;
-  --hl-punct: #c9d1d9;
-  --hl-deletion-bg: rgba(248, 81, 73, 0.16);
-  --hl-addition-bg: rgba(63, 185, 80, 0.16);
+  /* 语法高亮：浅色主题用深色字。暗底亮色那套（下面深色主题里的）在浅绿底上读不出来。
+     色值都按与 --bg-code 的对比度选过，最低的 --hl-comment 也有 3.2:1 */
+  --hl-keyword: #a0305e;
+  --hl-string: #0b6b4f;
+  --hl-comment: #5c7062;
+  --hl-func: #6b3fa0;
+  --hl-number: #0b5394;
+  --hl-builtin: #9a4a06;
+  --hl-attr: #8a5a00;
+  --hl-tag: #0b6b4f;
+  --hl-punct: #2f4034;
+  --hl-deletion-bg: rgba(207, 34, 46, 0.13);
+  --hl-addition-bg: rgba(26, 127, 55, 0.13);
 
   --radius: 12px;
   --radius-sm: 8px;
@@ -83,6 +93,12 @@
   --bg-soft: #201b14;
   --bg-elevated: #262019;
   --bg-code: #211c15;
+  --code-text: #e6edf3;
+  --code-bar-bg: rgba(255, 255, 255, 0.03);
+  --code-bar-border: rgba(255, 255, 255, 0.06);
+  --code-chip-border: rgba(255, 255, 255, 0.12);
+  --code-chip-hover: #ffffff;
+  --code-sel-bg: rgba(237, 228, 211, 0.3);
 
   --text: #ede4d3;
   --text-soft: #b3a78f;
@@ -106,6 +122,19 @@
   --shadow: 0 1px 3px rgba(0, 0, 0, 0.3),
     0 8px 28px rgba(0, 0, 0, 0.4);
   --shadow-rest: 0 1px 2px rgba(0, 0, 0, 0.25);
+
+  /* 语法高亮：暗底用亮色（与浅色主题那套一一对应） */
+  --hl-keyword: #ff7b94;
+  --hl-string: #7ee787;
+  --hl-comment: #6b7686;
+  --hl-func: #d2a8ff;
+  --hl-number: #79c0ff;
+  --hl-builtin: #ffa657;
+  --hl-attr: #ffcb6b;
+  --hl-tag: #7ee787;
+  --hl-punct: #c9d1d9;
+  --hl-deletion-bg: rgba(248, 81, 73, 0.16);
+  --hl-addition-bg: rgba(63, 185, 80, 0.16);
 }
 
 /* ============================================================
@@ -164,6 +193,18 @@ img {
 ::selection {
   background: var(--accent-soft);
   color: var(--text);
+}
+
+/* 代码块选中样式：按主题取 --code-sel-bg（浅色主题下是赭橙底，深色主题下是暖白底）。
+   注意别退回全局那条 ::selection —— 它把字色设成 --text，而代码块有自己的
+   --code-text，两者不一定同向，会出现「深字压深底」。
+   这里用 color: inherit，让 hljs-* 的语法高亮字色原样保留。 */
+.code-block::selection,
+.code-block ::selection,
+.markdown-body > pre::selection,
+.markdown-body > pre ::selection {
+  background: var(--code-sel-bg);
+  color: inherit;
 }
 
 /* ============================================================
@@ -1575,8 +1616,8 @@ button.navbar__link--refresh {
   align-items: center;
   justify-content: space-between;
   padding: 0.5rem 0.9rem;
-  background: rgba(255, 255, 255, 0.03);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  background: var(--code-bar-bg);
+  border-bottom: 1px solid var(--code-bar-border);
 }
 .code-block__lang {
   font-family: var(--mono);
@@ -1599,7 +1640,7 @@ button.navbar__link--refresh {
 }
 .code-block__copy {
   background: transparent;
-  border: 1px solid rgba(255, 255, 255, 0.12);
+  border: 1px solid var(--code-chip-border);
   color: var(--text-dim);
   font-size: 0.74rem;
   padding: 0.2rem 0.6rem;
@@ -1609,8 +1650,8 @@ button.navbar__link--refresh {
   font-family: var(--font);
 }
 .code-block__copy:hover {
-  color: #fff;
-  border-color: rgba(255, 255, 255, 0.3);
+  color: var(--code-chip-hover);
+  border-color: var(--code-chip-hover);
 }
 .code-block pre {
   margin: 0;
@@ -1622,7 +1663,7 @@ button.navbar__link--refresh {
   font-family: var(--mono);
   font-size: 0.88rem;
   line-height: 1.7;
-  color: #e6edf3;
+  color: var(--code-text);
   background: none;
   padding: 0;
   border: none;
@@ -1642,7 +1683,7 @@ button.navbar__link--refresh {
 .markdown-body > pre code {
   font-family: var(--mono);
   font-size: 0.88rem;
-  color: #e6edf3;
+  color: var(--code-text);
   background: none;
 }
 
