@@ -27,3 +27,14 @@ __pycache__/
 .design-audit/
 plans/
 src/posts/.solomd/
+
+# 下载资源（skill: video-to-markdown 的产物，不入仓库）
+.download/
+
+# 凭据（skill: video-to-markdown 用，绝不入仓库）
+.env
+.cookie
+
+# dancer 的 vendor 会往 cwd 写 .cookies.json（抖音 Cookie），
+# 手动从仓库根跑 jjdown 时会落到这里
+.cookies.json

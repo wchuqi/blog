@@ -1,0 +1,11 @@
+# video-to-markdown skill 的抖音登录 Cookie。
+# 复制成 .cookie 后粘贴真实值；.cookie 已在 .gitignore 里，不会进版本库。
+#
+# 获取方式：浏览器登录抖音 → F12 → Network → 任意请求 → 复制 Request Headers
+# 里完整的 Cookie 头，整行粘进来即可（形如 sessionid=xxx; ttwid=yyy; ...）。
+# 只要 sessionid / sessionid_ss / ttwid 是最新的就能用。
+#
+# 也接受 JSON 对象格式：{"sessionid": "...", "ttwid": "..."}
+#
+# 只影响抖音；B 站链接不需要这个文件。
+sessionid=; ttwid=; odin_tt=
