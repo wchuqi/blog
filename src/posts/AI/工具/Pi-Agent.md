@@ -15,7 +15,8 @@ review:
 noReview: true
 ---
 
-Pi 是 npm 包 `@earendil-works/pi-coding-agent`，一个极简的终端 coding harness。
+Pi 是一个极简的终端 coding harness，命令 `pi` 由 npm 包
+`@earendil-works/pi-coding-agent` 分发。
 
 「harness」这个词比「AI 编程助手」更准确——它指的是**把模型、工具、上下文注入和 agent 循环组装起来的那一层**。模型本身不属于它：Pi 可以换任意 provider，包括本地 llama.cpp。所以它的价值不在模型能力，而在交互设计和扩展能力。
 
@@ -49,6 +50,22 @@ Pi 是 npm 包 `@earendil-works/pi-coding-agent`，一个极简的终端 coding 
 - [附录：速查表](#附录速查表)
 
 ## 为什么很多东西「没有」
+
+先看这个取舍换来了什么。Pi 的系统提示词约 1000 token，默认只给模型四个工具
+（`read` / `write` / `edit` / `bash`）。同一句「你好」开场消息的开销对比：
+
+| | 输入 token | 占上下文窗口 |
+| --- | --- | --- |
+| Pi | 约 1100 | 千分之四 |
+| Codex | 约 18000 | 7% |
+
+一个庞大的 harness 在你还没提出任何需求之前，就已经吃掉了一部分上下文预算。
+
+第三方基准给出同方向的结论：
+
+- **Composio**：Pi 完成编程任务的速度约为其他 coding agent 的 1.5–2 倍，成本更低。
+- **百万行代码仓库基准**（横轴任务成本、纵轴通过率）：Pi 在多数场景优于 Claude Code
+  与 Codex；代码质量的最高点出现在 Pi 搭配 Claude Opus 的组合上。
 
 官方把一批常见功能明确列为「不做」。这张表值得先看，因为它决定了你该怎么评价 Pi：
 
@@ -229,6 +246,17 @@ Agent 工作时你依然可以提交消息，两种语义：
 
 投递方式可在 settings 里配：`steeringMode` / `followUpMode` 取 `"one-at-a-time"`（默认）或 `"all"`；`transport` 选 provider 传输偏好（`"sse"` / `"websocket"` / `"auto"`）。
 
+这两个投递时机不是随意的实现细节，它对应 Pi 的**双层循环**：
+
+- **内层循环**：模型调用工具 → 工具结果回给模型 → 模型判断是否做完，没做完进下一轮。
+- **外层循环**：内层跑完（模型认为这一轮任务结束）之后，检查是否还有排队的消息。
+
+**steering 消息注入内层**，所以在下一个工具批次边界就能被看到，实现「实时纠偏」；
+**follow-up 消息挂在外层**，必须等内层完全结束才被读到，然后 Pi 开启外层循环继续工作。
+
+这正好对应事件图里 `turn` 循环与 `agent_end` / `agent_settled` 的分界。
+由此可以推出选择的依据：**要让它在半路改变方向，消息就必须进入内层循环**。
+
 > **平台坑**：Windows Terminal 下 `Alt+Enter` 默认是全屏切换，需要按 `docs/terminal-setup.md` 重映射，否则 Pi 收不到 follow-up 快捷键。
 
 ### 什么时候用 steering，什么时候用 Escape
@@ -294,6 +322,10 @@ Pi 的会话存成 JSONL，而且结构是**树**：每条记录带 `id` 和 `pa
 上下文长且还需要完整推理链  → /fork 或新开会话
 ```
 
+> **实践里的偏好是「清空好于压缩」**。`/compact` 是权宜，不是首选：多出来的历史会
+> 持续分散模型注意力，所以一轮任务做完之后更好的做法是 `/new` 开新会话。
+> 只有「这一轮还要接着做、又不得不腾空间」时才用 `/compact`。
+
 > **易错**：把 `/compact` 当成无损总结，压缩后继续追问细节。被摘要掉的细节不在上下文里了，需要细节应该用 `/tree` 回到原始消息。
 
 ## 上下文注入
@@ -343,6 +375,18 @@ repo-a/packages/db/AGENTS.md   子模块：改 schema 必须附迁移脚本
 ```
 
 反例（不该写进来）：一次性讨论的结论、大段日志与报错栈、详细业务背景。判据是「这条信息是不是每次任务都需要」。写太多会挤占上下文预算，还会稀释重点。详细的背景应该放单独文档，由 `AGENTS.md` 里一个链接指向它。
+
+全局 `AGENTS.md` 里值得放一类特殊内容：**破坏性操作的防护**。
+
+```markdown
+## 危险操作
+- 禁止批量删除文件或目录，只能通过明确的文件路径逐个删除。
+- 需要批量删除时停下来，向用户说明要删什么，由用户手动执行。
+```
+
+但需要明确它挡得住什么：这仍然只是**建议**，不是强制。模型可以不遵守上下文文件
+里的规则，因此不能把它当作安全边界。真正拦住必须落到扩展上（见
+[三种扩展层次](#三种扩展层次) 与 [团队落地](#团队落地) 的第 3 层）。
 
 ### 系统提示
 
@@ -692,6 +736,35 @@ pi update --all                           # 更新 pi 和包
 
 > **依赖的一个坑**：git 包默认用 `npm install --omit=dev` 装依赖，所以**运行时要用的依赖必须放 `dependencies`**。配了 `npmCommand` 时 git 包会改用普通 `install`。用 Node 版本管理器时可以设置 `npmCommand` 让包安装复用稳定环境：`["mise", "exec", "node@20", "--", "npm"]`。
 
+### 生态里的现成包
+
+Pi 本体不做的事，基本都有社区包补上。下载量靠前的几个（统计于 2026-09）：
+
+| 能力 | 包 | 月下载 | 说明 |
+| --- | --- | --- | --- |
+| MCP | `pi-mcp-adapter` | ~97 万 | 读项目下的 `.mcp.json`，把 MCP server 接进来 |
+| 子 Agent | `pi-subagents` | ~44 万 | 单 agent 委派与脚本化多 agent 编排 |
+| 联网 | `pi-web-access` | ~42 万 | 联网搜索、抓网页、克隆 GitHub 仓库、解析 PDF |
+| plan mode | `@narumitw/pi-plan-mode` | ~2.7 万 | 只读的 `/plan` 协作模式 |
+| 旁路对话 | `pi-btw` | ~1.6 万 | `/btw` 开一个不打断主线的子对话 |
+| 手机接入 | `pi-wechat-assistant` | ~1900 | 通过微信远程与 pi 交互 |
+| 权限审批 | `pi-permission-system` | ~1600 | 敏感操作前弹审批，类似 Claude Code 的权限系统 |
+| 动态工作流 | `pi-dynamic-workflows` | ~1200 | 编排几十上百个子 Agent 并行 |
+
+量级参照：`@earendil-works/pi-coding-agent` 本体约 900 万下载。
+
+**同一个能力往往有多个互相竞争的包。** plan mode 在 npm 上至少 6 个同能力变体
+（`pi-plan-mode`、`@narumitw/pi-plan-mode`、`@hank-warren/pi-plan-mode`、
+`@signalridge/pi-plan-mode` 等），子 Agent 也至少 3 个。选择依据是两个指标：
+**最近发布时间**与**下载量**——与同能力的其他包相差一个数量级，通常意味更被实际使用。
+这类包生命周期较短，README 的功能描述不足以作为选择依据。
+
+> 装不装、装哪个都是取舍：**每个包都会往系统提示词里加内容**。用不到的项目里它就是
+> 纯负担，所以能项目级安装（`pi install -l`）就不要装全局。
+
+社区还有把 Pi 接进网页的 Web UI（star 数最高的一个有 4000+ star），提供项目切换、
+模型配置，以及**技能与插件的开关管理**——关掉用不到的技能能省 token。
+
 ### 安全
 
 官方给了一行明确警告：**Pi 包以完整系统权限运行**。
@@ -829,6 +902,20 @@ Pi 认为项目含有「需要信任的资源」，是指从当前工作目录�
 
 ## 程序化集成
 
+先看包结构，它决定了该引哪个包。`pi` 命令由 `@earendil-works/pi-coding-agent`
+提供（它的 `bin` 指向 `pi`），该包依赖另外几个独立发布的包：
+
+| 包 | 职责 | 可执行文件 |
+| --- | --- | --- |
+| `@earendil-works/pi-ai` | 模型调用层，把几十家 provider 统一成一套调用接口 | `pi-ai` |
+| `@earendil-works/pi-agent-core` | agent 循环本体（前面讲的**双层循环**就在这里） | — |
+| `@earendil-works/pi-coding-agent` | coding agent：四个内置工具、系统提示词、skills 与扩展机制 | `pi` |
+| `@earendil-works/pi-tui` | 终端 UI 组件库 | — |
+| `@earendil-works/chord` | 服务组合运行时（RPC 与插件组合） | — |
+
+选型依据：只需「在项目里调任意模型」则引 `pi-ai`（`createModel`）；需要一个完整的
+agent 则引 `pi-coding-agent`。
+
 三种方式共享同一套会话与工具机制。
 
 ### SDK
@@ -947,3 +1034,4 @@ Pi 会给自己设置两个标识变量，供子进程识别自己在 Pi 里运�
 - npm：https://www.npmjs.com/package/@earendil-works/pi-coding-agent
 - 设计理念（为什么没有 MCP / 子 Agent / plan mode）：https://mariozechner.at/posts/2025-11-30-pi-coding-agent/
 - MCP 取舍的完整论证：https://mariozechner.at/posts/2025-11-02-what-if-you-dont-need-mcp/
+- 视频教程：[Pi 大道至简，超越 Codex 和 Claude Code 的极简 Agent](https://www.bilibili.com/video/BV139bD6gEa8/)
