@@ -354,6 +354,7 @@ BLOG_ENCRYPT_KEY=pw node scripts/encrypt.mjs src/posts/<临时>.md
 
 ## 注意事项
 
+- **改完前端源文件后，dev server 可能继续供应陈旧/空白模块**（实测两类症状：改 `src/styles.css` 后整个样式表变空、页面全裸；改 `src/components/TableOfContents.tsx` 后控制台报 `does not provide an export named 'TableOfContents'`，懒加载的 `PostDetail` 整个不渲染）。**磁盘上的文件始终是完好的，`npm run build` 也正常**，所以不要去找语法错误。判据：`curl -s localhost:5173/src/styles.css | wc -c` 正常约 106KB，若为 **439** 就是中了；或浏览器控制台出现“缺导出”。恢复方式：重启 dev server（或再用原子写重写一次那个文件）。根因是 Vite 在文件被截断的瞬间读到空内容并把这份 transform 缓存住——写入时序竞态，不是内容问题：已验证原子写（写临时文件 + `os.replace`）不触发，直接截断写会；`edit` 工具改文件后会稳定命中。**验证 UI 改动后一定要确认 dev 侧真的加载了新代码**，否则会把“陈旧模块”误判成自己的改动写坏了。
 - `npm run lint` 会失败——`eslint` 在脚本中引用但不在 `devDependencies` 中。需单独安装或跳过 lint。
 - `scripts/gen-rss.mjs` 使用正则解析 `src/config.ts`（不是导入 TS）。如果重命名配置键，RSS 脚本会静默失败。
 - `gen-rss.mjs` 也读取 `encrypted` frontmatter 以从 RSS/sitemap 中排除加密文章。
