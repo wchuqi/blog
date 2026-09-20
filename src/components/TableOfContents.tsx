@@ -213,7 +213,12 @@ export function TableOfContents({
                     aria-label={expanded.has(item.id) ? '收起子标题' : '展开子标题'}
                     onClick={() => toggle(item.id)}
                   >
-                    {expanded.has(item.id) ? '▾' : '▸'}
+                    {/* 用内联 SVG 而不是 ▸/▾ 字符：那两个是「小三角形」专用码点，
+                        实测 11.5px 下墨迹只有 4px 高，字号放大到 15px 也才 5px，
+                        而且不同字体下大小不可控。展开/收起靠旋转同一个图形。 */}
+                    <svg viewBox="0 0 16 16" aria-hidden="true" focusable="false">
+                      <path d="M6 3.5 10.5 8 6 12.5" />
+                    </svg>
                   </button>
                 )}
               </div>

@@ -1080,8 +1080,11 @@ button.navbar__link--refresh {
 /* 树形目录：标题行 + 展开箭头 */
 .toc__row {
   display: flex;
-  align-items: baseline;
-  gap: 0.25rem;
+  /* 原来是 baseline：图标是文字字符，跟标题基线对齐。现在图标是 SVG，
+     基线对齐会让它上下跳；改居中对齐。行高仍由标题的 <a> 决定（约 31px），
+     按钮只有 24px，所以列表节奏不变、有子项与无子项的行高仍一致。 */
+  align-items: center;
+  gap: 0.3rem;
 }
 .toc__row > a {
   flex: 1 1 auto;
@@ -1089,18 +1092,43 @@ button.navbar__link--refresh {
 }
 .toc__chevron {
   flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  /* 24px 点击区：比原来的 17.6×21.1 好点，但仍小于标题行，不会撑高列表 */
+  width: 1.5rem;
+  height: 1.5rem;
+  padding: 0;
   border: 0;
+  border-radius: 5px;
   background: none;
-  color: var(--text-dim);
-  font: inherit;
-  font-size: 0.72rem;
-  line-height: 1;
-  padding: 0.3rem 0.25rem;
+  /* text-dim (#7d907f) 太淡，图标本来就小，用 text-soft 提一档 */
+  color: var(--text-soft);
   cursor: pointer;
-  transition: color 0.15s;
+  transition: color 0.15s, background 0.15s;
+}
+.toc__chevron svg {
+  width: 0.75rem;
+  height: 0.75rem;
+  fill: none;
+  stroke: currentColor;
+  /* viewBox 16 渲染到 12px，实际描边 = 2 × 0.75 = 1.5px */
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.toc__chevron[aria-expanded='true'] svg {
+  transform: rotate(90deg);
 }
 .toc__chevron:hover {
   color: var(--accent);
+  background: var(--accent-soft);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .toc__chevron svg {
+    transition: transform 0.18s var(--ease-out, ease-out);
+  }
 }
 .toc__empty {
   margin: 0;
