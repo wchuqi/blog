@@ -169,6 +169,10 @@ function scanPosts(): {
 
     const words = countWords(body)
 
+    // 知识库同步进来的文章没有 date,用 frontmatter 的 created,再退到文件修改时间 ——
+    // 都没有才落到 1970(排序沉底,不影响渲染)。
+    const fileMtimeDate = new Date(fs.statSync(file).mtimeMs).toISOString().slice(0, 10)
+
     // frontmatter 里的 title 未必是字符串：YAML 会把 `title: false` / `title: none`
     // 解析成布尔值 / null。这类标题会让前端 `.toLowerCase()` 直接抛错（搜索、排序都挂）。
     // 单词卡里恰好有 false / none 两个词，生成脚本已修，这里再加一道兵兵。
@@ -183,7 +187,7 @@ function scanPosts(): {
     meta.push({
       slug,
       title,
-      date: (attrs.date as string) ?? '1970-01-01',
+      date: (attrs.date as string) ?? (attrs.created as string) ?? fileMtimeDate,
       description: attrs.description as string | undefined,
       tags: attrs.tags as string[] | undefined,
       cover: attrs.cover as string | undefined,

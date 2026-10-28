@@ -216,6 +216,20 @@ export function getArchives() {
     .sort((a, b) => b.year - a.year)
 }
 
+/**
+ * 知识库同步进来的本地图片：发布副本里写的是 `knowledge-assets/…` 相对令牌，
+ * 渲染时补上部署基地址（GitHub Pages 是 `/blog/`，本地 dev 是 `/`）——
+ * 这样同一份内容在任何部署目标下图片都能命中。
+ */
+export function rewriteKnowledgeImages(markdown: string): string {
+  const raw = import.meta.env.BASE_URL
+  const base = raw.endsWith('/') ? raw : `${raw}/`
+  return markdown.replace(
+    /(!\[[^\]]*\]\()(knowledge-assets\/[^)\s]+(?:\s+"[^"]*")?\))/g,
+    (_raw, head: string, tail: string) => `${head}${base}${tail}`,
+  )
+}
+
 /** 把正文中的 [[双链]] 转成普通 Markdown 链接，供 react-markdown 渲染（跳过代码块与行内代码） */
 export function renderNoteLinks(markdown: string): string {
   let inCodeBlock = false

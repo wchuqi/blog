@@ -12,6 +12,7 @@ import {
   getPostContent,
   getRelatedPosts,
   renderNoteLinks,
+  rewriteKnowledgeImages,
   resolveMarkdownPostHref,
 } from '../lib/posts'
 import { siteConfig } from '../config'
@@ -105,7 +106,7 @@ export function PostDetail() {
   // 实际用于渲染的正文：加密文章用解密后的明文，否则用原文
   const displayContent = (post?.encrypted ? decrypted : content) ?? ''
   const renderedContent = useMemo(
-    () => renderNoteLinks(displayContent),
+    () => rewriteKnowledgeImages(renderNoteLinks(displayContent)),
     [displayContent]
   )
 
