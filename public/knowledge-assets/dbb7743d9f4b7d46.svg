@@ -1,0 +1,55 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="760" height="430" viewBox="0 0 760 430">
+  <defs>
+    <style>
+      text { font-family: 'Microsoft YaHei', 'Noto Sans SC', sans-serif; }
+      .title { font-size: 17px; font-weight: bold; fill: #171a21; }
+      .label { font-size: 14px; fill: #171a21; }
+      .small { font-size: 12px; fill: #596274; }
+      .box { fill: #ffffff; stroke: #cdd3dd; stroke-width: 1.5; rx: 10; }
+    </style>
+  </defs>
+  <rect x="0" y="0" width="760" height="430" fill="#f6f7f9"/>
+
+  <!-- 顶:遇到一件事 -->
+  <rect x="290" y="18" width="180" height="42" rx="10" class="box"/>
+  <text x="380" y="45" text-anchor="middle" class="title">遇到一件事</text>
+
+  <line x1="380" y1="60" x2="380" y2="96" stroke="#8b93a3" stroke-width="1.6"/>
+  <polygon points="380,104 375,94 385,94" fill="#8b93a3"/>
+
+  <!-- 判断 -->
+  <rect x="245" y="106" width="270" height="46" rx="23" fill="#eceffe" stroke="#c3cdfa" stroke-width="1.5"/>
+  <text x="380" y="134" text-anchor="middle" class="label" font-weight="bold">直接后果由谁承担？</text>
+
+  <!-- 三条分支线 -->
+  <polyline points="380,152 380,180 130,180 130,214" fill="none" stroke="#8b93a3" stroke-width="1.6"/>
+  <line x1="380" y1="152" x2="380" y2="214" stroke="#8b93a3" stroke-width="1.6"/>
+  <polyline points="380,152 380,180 630,180 630,214" fill="none" stroke="#8b93a3" stroke-width="1.6"/>
+  <polygon points="130,222 125,212 135,212" fill="#8b93a3"/>
+  <polygon points="380,222 375,212 385,212" fill="#8b93a3"/>
+  <polygon points="630,222 625,212 635,212" fill="#8b93a3"/>
+
+  <!-- 我的事 -->
+  <rect x="28" y="224" width="204" height="110" rx="12" fill="#eceffe" stroke="#3d5bd9" stroke-width="2"/>
+  <text x="130" y="254" text-anchor="middle" class="title" fill="#3d5bd9">我的事 · 可控</text>
+  <text x="130" y="282" text-anchor="middle" class="label">我的努力 · 我的回应</text>
+  <text x="130" y="304" text-anchor="middle" class="label">我说的话 · 我的作息</text>
+  <text x="130" y="326" text-anchor="middle" class="small" font-weight="bold" fill="#3d5bd9">全力做好，只考核行动</text>
+
+  <!-- 别人的事 -->
+  <rect x="278" y="224" width="204" height="110" rx="12" class="box"/>
+  <text x="380" y="254" text-anchor="middle" class="title">别人的事 · 不可控</text>
+  <text x="380" y="282" text-anchor="middle" class="label">别人怎么看我</text>
+  <text x="380" y="304" text-anchor="middle" class="label">别人怎么做、怎么决定</text>
+  <text x="380" y="326" text-anchor="middle" class="small" font-weight="bold">只能影响，不能决定</text>
+
+  <!-- 老天的事 -->
+  <rect x="528" y="224" width="204" height="110" rx="12" class="box"/>
+  <text x="630" y="254" text-anchor="middle" class="title">老天的事 · 不可控</text>
+  <text x="630" y="282" text-anchor="middle" class="label">天气 · 运气 · 经济</text>
+  <text x="630" y="304" text-anchor="middle" class="label">生老病死</text>
+  <text x="630" y="326" text-anchor="middle" class="small" font-weight="bold">接受 + 预案，不为它焦虑</text>
+
+  <text x="380" y="382" text-anchor="middle" class="label" font-weight="bold">烦恼的根源：把力气花在后两类上；平静的来源：全部收回第一类。</text>
+  <text x="380" y="408" text-anchor="middle" class="small">细分一句：行动可控，结果不可控 —— 对自己只考核行动，不考核结果。</text>
+</svg>

@@ -1,0 +1,42 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="720" height="440" viewBox="0 0 720 440">
+  <defs>
+    <style>
+      text { font-family: 'Microsoft YaHei', 'Noto Sans SC', sans-serif; }
+      .label { font-size: 14px; fill: #171a21; }
+      .small { font-size: 12px; fill: #596274; }
+    </style>
+  </defs>
+  <rect x="0" y="0" width="720" height="440" fill="#f6f7f9"/>
+
+  <!-- 关注圈(外) -->
+  <circle cx="280" cy="220" r="175" fill="#ffffff" stroke="#cdd3dd" stroke-width="2"/>
+  <!-- 影响圈(内) -->
+  <circle cx="280" cy="220" r="90" fill="#eceffe" stroke="#3d5bd9" stroke-width="2.5"/>
+
+  <!-- 影响圈内容 -->
+  <text x="280" y="196" text-anchor="middle" class="label" font-weight="bold" fill="#3d5bd9">影响圈 · 可控</text>
+  <text x="280" y="222" text-anchor="middle" class="label">我的行动</text>
+  <text x="280" y="244" text-anchor="middle" class="label">我的回应</text>
+  <text x="280" y="266" text-anchor="middle" class="label">我的时间</text>
+
+  <!-- 关注圈内容(环上) -->
+  <text x="280" y="78" text-anchor="middle" class="label" font-weight="bold">关注圈</text>
+  <text x="150" y="150" text-anchor="middle" class="small">别人的评价</text>
+  <text x="410" y="150" text-anchor="middle" class="small">他人的选择</text>
+  <text x="128" y="300" text-anchor="middle" class="small">天气与运气</text>
+  <text x="432" y="300" text-anchor="middle" class="small">经济环境</text>
+  <text x="280" y="372" text-anchor="middle" class="small">所有我关心、但决定不了的事</text>
+
+  <!-- 右侧说明 -->
+  <rect x="500" y="120" width="200" height="200" rx="12" fill="#ffffff" stroke="#cdd3dd" stroke-width="1.5"/>
+  <text x="600" y="152" text-anchor="middle" class="label" font-weight="bold">两种活法</text>
+  <text x="600" y="186" text-anchor="middle" class="label" fill="#3d5bd9">力气放进影响圈</text>
+  <text x="600" y="208" text-anchor="middle" class="small">影响圈慢慢扩大</text>
+  <line x1="530" y1="224" x2="670" y2="224" stroke="#e2e6ed" stroke-width="1"/>
+  <text x="600" y="252" text-anchor="middle" class="label" fill="#c77700">只盯着关注圈</text>
+  <text x="600" y="274" text-anchor="middle" class="small">影响圈反而萎缩</text>
+  <text x="600" y="302" text-anchor="middle" class="small">——《高效能人士的</text>
+  <text x="600" y="318" text-anchor="middle" class="small">七个习惯》第一个习惯</text>
+
+  <text x="360" y="420" text-anchor="middle" class="small">同一个思想的三种说法：控制二分法（爱比克泰德）· 课题分离（阿德勒）· 影响圈（柯维）</text>
+</svg>

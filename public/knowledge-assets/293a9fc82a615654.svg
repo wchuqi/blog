@@ -1,0 +1,55 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="760" height="360" viewBox="0 0 760 360">
+  <defs>
+    <style>
+      text { font-family: 'Microsoft YaHei', 'Noto Sans SC', sans-serif; }
+      .label { font-size: 14px; fill: #171a21; }
+      .small { font-size: 12px; fill: #596274; }
+      .box { fill: #ffffff; stroke: #cdd3dd; stroke-width: 1.5; }
+    </style>
+    <marker id="tree-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#3d5bd9"/>
+    </marker>
+  </defs>
+  <rect x="0" y="0" width="760" height="360" fill="#f6f7f9"/>
+
+  <!-- 入口 -->
+  <rect x="255" y="24" width="250" height="52" rx="12" fill="#eceffe" stroke="#3d5bd9" stroke-width="2"/>
+  <text x="380" y="47" text-anchor="middle" class="label" font-weight="bold" fill="#3d5bd9">控制二分法（入口笔记）</text>
+  <text x="380" y="66" text-anchor="middle" class="small">可控 / 不可控 —— 总原则</text>
+
+  <!-- 四条延伸线 -->
+  <line x1="380" y1="76" x2="380" y2="108" stroke="#3d5bd9" stroke-width="1.6"/>
+  <polyline points="110,108 650,108" fill="none" stroke="#3d5bd9" stroke-width="1.6"/>
+  <line x1="110" y1="108" x2="110" y2="140" stroke="#3d5bd9" stroke-width="1.6" marker-end="url(#tree-arrow)"/>
+  <line x1="290" y1="108" x2="290" y2="140" stroke="#3d5bd9" stroke-width="1.6" marker-end="url(#tree-arrow)"/>
+  <line x1="470" y1="108" x2="470" y2="140" stroke="#3d5bd9" stroke-width="1.6" marker-end="url(#tree-arrow)"/>
+  <line x1="650" y1="108" x2="650" y2="140" stroke="#3d5bd9" stroke-width="1.6" marker-end="url(#tree-arrow)"/>
+
+  <!-- 四个延伸笔记 -->
+  <rect x="15" y="144" width="190" height="118" rx="12" class="box"/>
+  <text x="110" y="172" text-anchor="middle" class="label" font-weight="bold">课题分离</text>
+  <text x="110" y="196" text-anchor="middle" class="small">人际版:后果由谁承担,</text>
+  <text x="110" y="214" text-anchor="middle" class="small">就是谁的课题</text>
+  <text x="110" y="240" text-anchor="middle" class="small" fill="#3d5bd9">管好边界,不替别人答题</text>
+
+  <rect x="215" y="144" width="150" height="118" rx="12" class="box"/>
+  <text x="290" y="172" text-anchor="middle" class="label" font-weight="bold">影响圈与关注圈</text>
+  <text x="290" y="196" text-anchor="middle" class="small">行动版:力气花在</text>
+  <text x="290" y="214" text-anchor="middle" class="small">真能改变的地方</text>
+  <text x="290" y="240" text-anchor="middle" class="small" fill="#3d5bd9">抱怨翻译成「我可以」</text>
+
+  <rect x="375" y="144" width="190" height="118" rx="12" class="box"/>
+  <text x="470" y="172" text-anchor="middle" class="label" font-weight="bold">消极想象</text>
+  <text x="470" y="196" text-anchor="middle" class="small">演练版:提前想最坏结果,</text>
+  <text x="470" y="214" text-anchor="middle" class="small">和不可控和解</text>
+  <text x="470" y="240" text-anchor="middle" class="small" fill="#3d5bd9">想象完去行动,不是去焦虑</text>
+
+  <rect x="575" y="144" width="170" height="118" rx="12" class="box"/>
+  <text x="660" y="172" text-anchor="middle" class="label" font-weight="bold">安之若命</text>
+  <text x="660" y="196" text-anchor="middle" class="small">接纳版:庄子版的放下,</text>
+  <text x="660" y="214" text-anchor="middle" class="small">自事其心</text>
+  <text x="660" y="240" text-anchor="middle" class="small" fill="#3d5bd9">不是躺平,是顺势而为</text>
+
+  <text x="380" y="308" text-anchor="middle" class="small">箭头 = 从入口延伸出去的方向;每篇末尾的 [[双链]] 都能跳回这里或跳到姊妹篇。</text>
+  <text x="380" y="332" text-anchor="middle" class="small">动态版在知识库右上角的「关系图」里:被引用最多的笔记自动居中,新笔记连进来就会长在图上。</text>
+</svg>
